@@ -61,6 +61,16 @@ Create dir to house the application
 mkdir /media/nvme/node_rpc
 ```
 
+# Application
+
+## Install
+Fetch the application code
+```
+cd /media/nvme/node_rpc
+git clone https://github.com/second-state/wasm-joey.git
+cd /media/nvme/node_rpc/wasm-joey/src
+```
+
 # Node
 Fetch
 ```bash
@@ -68,16 +78,19 @@ curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
 ```
 Install
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 sudo apt-get install -y nodejs
 ```
 
 ## Node libraries
 Dotenv
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install dotenv
 ```
 Raptor
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install raptor-rpc
 ```
 MySQL driver
@@ -140,18 +153,10 @@ Create blank tables for the application to use
 
 ```
 
-# Application
-
-## Install
-Application code
-```
-cd ~
-git clone https://github.com/second-state/wasm-joey.git
-cd ~/wasm-joey/src
-```
-## Run
+## Deployment
 Serve
 ```
+cd /media/nvme/node_rpc/wasm-joey/src
 node server.js
 ```
 
