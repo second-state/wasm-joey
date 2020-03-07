@@ -52,10 +52,11 @@ df -h
 sudo chown -R ubuntu:ubuntu /media/nvme/
 ```
 
-Create dir for data 
+Create dir to house the application 
 ```bash
 mkdir /media/nvme/node_rpc
 ```
+
 # Node
 Fetch
 ```bash
@@ -66,21 +67,39 @@ Install
 sudo apt-get install -y nodejs
 ```
 
-MySQL
+# MySQL Server
 ```bash
 sudo apt-get install -y mysql-server
 ```
-
+Create dir to house the database and update the default MySQL config
+```
+mkdir /media/nvme/joey_database
+sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
+```
+## MySQL data directory
+Configure Ubuntu to allow new MySQL directory
+```bash
+sudo vi /etc/apparmor.d/tunables/alias
+```
+Add the following line
+```
+alias /var/lib/mysql/ -> /media/nvme/joey_database,
+```
+Then restart AppArmor
+```
+sudo systemctl restart apparmor
+```
+## MySQL Security
 Tighten MySQL security
 ```bash
 sudo mysql_secure_installation utility
 ```
-
+## MySQL startup
 Autostart MySQL on reboot
 ```bash
 sudo systemctl enable mysql
 ```
-
+## MySQL setup for application
 Access MySQL console use the following
 ```bash
 sudo mysql -u root -p
@@ -92,6 +111,11 @@ CREATE DATABASE joeydb;
 CREATE USER 'joey'@'localhost' IDENTIFIED BY 'your_password_goes_here';
 GRANT ALL PRIVILEGES ON joeydb . * TO 'joey'@'localhost';
 FLUSH PRIVILEGES;
+```
+
+Create blank tables for the application to use
+```
+
 ```
 
 Create configuration storage so that application can access username, passwords and config
