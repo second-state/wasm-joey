@@ -144,7 +144,7 @@ sudo mysql -u root -p
 Create new user and database for the application
 ```bash
 CREATE DATABASE joeydb;
-CREATE USER 'joey'@'localhost' IDENTIFIED BY 'your_password_goes_here';
+CREATE USER 'joey'@'localhost' IDENTIFIED BY 'your_password_here';
 GRANT ALL PRIVILEGES ON joeydb . * TO 'joey'@'localhost';
 FLUSH PRIVILEGES;
 ```
