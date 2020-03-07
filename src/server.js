@@ -71,7 +71,7 @@ raptor.method("load_wasm_executable", function(req) {
         connection.query(sql, function(err, result) {
             if (err) throw err;
             console.log("1 record inserted");
-            console.log(result);
+            console.log(result.insertId);
         });
     }
 })
@@ -80,8 +80,12 @@ raptor.method("load_wasm_executable", function(req) {
 raptor.method("read_wasm_executable", function(req) {
     console.log("Reading Wasm executable ... ");
     console.log(req.params[0].wasm_id);
-    //INSERT INTO wasm_binary_files (wasm_description,wasm_binary)
-    //VALUES ('System generated entry for testing','0x1234567890');
+            var sql = "SELECT wasm_binary from wasm_binary_files WHERE wasm_id = '" + req.params[0].wasm_id + "'";
+        connection.query(sql, function(err, result) {
+            if (err) throw err;
+            console.log("1 record retrieved");
+            console.log(result);
+        });
 })
 
 // Execute Wasm executable
