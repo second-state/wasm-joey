@@ -151,7 +151,17 @@ FLUSH PRIVILEGES;
 
 Create blank tables for the application to use
 ```
-
+CREATE TABLE wasm_binary_files(
+    wasm_id INT(6) NOT NULL AUTO_INCREMENT,
+    wasm_description CHAR(255) NOT NULL,
+    wasm_binary LONGBLOB NOT NULL,
+    PRIMARY KEY(wasm_id)
+);
+```
+Create test data and insert into the table
+```
+INSERT INTO wasm_binary_files (wasm_description,wasm_binary)
+VALUES ('System generated entry for testing','0x1234567890');
 ```
 
 ## Deployment
