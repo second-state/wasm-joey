@@ -3,6 +3,9 @@ The following information provides enough detail to install and deploy wasm-joey
 - MySQL Database; including user, tables, sample data etc.
 - All relevant dependencies; CORS, SSL etc.
 
+# Automatic installation
+There is a [feature enhancement/issue](https://github.com/second-state/wasm-joey/issues/1) which requests that the following commands are all written into a bash script. This will make it much quicker to install.
+
 To begin, create a new EC2 Ubuntu Server instance which has an additional SSD i.e. m5d.large (which has 1 x 75 NVMe SSD).
 
 # Software (OS)
