@@ -2,6 +2,7 @@
 
 Once deployed Wasm-joey performs tasks which are all defined as service endpoints (URLs). These tasks/services include the following ...
 - Load Wasm executable
+- Read Wasm executable
 - Execute Wasm executable
 - Update Wasm executable
 - Remove Wasm executable
