@@ -10,7 +10,32 @@ Once deployed Wasm-joey performs tasks which are all defined as service endpoint
 # Storage
 Wasm-joey (using MySQL) stores the actual executable Wasm binary code, as well as all other information relating to execution (who, what, when etc.). This information can be used to generate usage reports, auditing and so forth.
 
-# Requests
+# Request data specifications
+When a request is made Wasm-joey expects to see certain parameters in the request object. For example if you want to load a wasm binary then you need to provide a `wasm_binary` field in your request. This is very straight forward and simple to understand. Here are the examples of JSON that you will send in.
+
+## Read a Wasm executable
+Give me the Wasm which has the `wasm_id` of `2`
+```
+{"jsonrpc": "2.0", "method":"read_wasm_executable", "params":[{"wasm_id": "2"}], "id": 1}
+```
+## Load a Wasm executable
+Load this Wasm into the system and give me back the `wasm_id` for future use.
+```
+{"jsonrpc": "2.0", "method":"load_wasm_executable", "params":[{"wasm_description": "Test description", "wasm_binary": "0x1234567890"}], "id": 1}
+```
+## Remove a Wasm executable
+Remove the Wasm from the system which has a `wasm_id` of `1`
+```
+{"jsonrpc": "2.0", "method":"remove_wasm_executable", "params":[{"wasm_id": "1"}], "id": 1}
+```
+
+## Update (Hot Swap) a Wasm executable
+Update the `wasm_binary` to this new `wasm_binary` which we are providing here, where the `wasm_id` is `2`
+```
+{"jsonrpc": "2.0", "method":"update_wasm_executable", "params":[{"wasm_id": "2", "wasm_binary": "0x0987654321"}], "id": 1}
+```
+
+# Request overview - using different languages to create HTTP request
 Wasm-joey is designed to accept HTTP requests from any software which is capable of creating a valid request. The data payload for the request following a convention.
 
 For a quick test, you can just `ping` Wasm-joey to make sure it is working. This requires no parameters; just the following simple JSON object.
