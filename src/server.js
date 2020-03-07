@@ -67,7 +67,7 @@ raptor.method("load_wasm_executable", function(req) {
     if (req.params[0].wasm_binary.startsWith("http")) {
         console.log("This binary is a link which we need to fetch");
     } else {
-        var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES (" + req.params[0].wasm_description + "," + req.params[0].wasm_binary + ")";
+        var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + req.params[0].wasm_binary + "')";
         connection.query(sql, function(err, result) {
             if (err) throw err;
             console.log("1 record inserted");
