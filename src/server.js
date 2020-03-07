@@ -63,6 +63,7 @@ raptor.method("ping", function(req) {
 raptor.method("load_wasm_executable", function(req) {
     console.log("Loading Wasm executable ... ");
     console.log(req.params[0].wasm_description);
+    console.log(req.params[0].wasm_binary);
     //INSERT INTO wasm_binary_files (wasm_description,wasm_binary)
     //VALUES ('System generated entry for testing','0x1234567890');
 })
