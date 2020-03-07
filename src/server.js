@@ -96,6 +96,12 @@ raptor.method("execute_wasm_executable", function(req) {
 // Update Wasm executable
 raptor.method("update_wasm_executable", function(req) {
     console.log("Updating Wasm executable ... ");
+    var sql = "UPDATE wasm_binary_files SET wasm_binary = '" + req.params[0].wasm_binary + "' WHERE wasm_id = '" + req.params[0].wasm_id + "'";
+    connection.query(sql, function(err, result) {
+        if (err) throw err;
+        console.log("1 record updated");
+        console.log(result);
+    });
 })
 
 // Remove Wasm executable
