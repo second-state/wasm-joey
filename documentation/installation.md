@@ -78,7 +78,10 @@ sudo apt-get install -y mysql-server
 Create dir to house the database and update the default MySQL config
 ```
 mkdir /media/nvme/joey_database
-sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
+```
+Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. Then Change the datadir line from the default to what is listed directly below this line
+```
+datadir = /media/nvme/joey_database
 ```
 ## MySQL data directory
 Configure Ubuntu to allow new MySQL directory
