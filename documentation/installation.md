@@ -1,3 +1,10 @@
+The following information provides enough detail to install and deploy wasm-joey on an Amazon EC2 instance with:
+- Additional storage device
+- MySQL Database; including user, tables, sample data etc.
+- All relevant dependencies; CORS, SSL etc.
+
+To begin, create a new EC2 Ubuntu Server instance which has an additional SSD i.e. m5d.large (which has 1 x 75 NVMe SSD).
+
 # Software (OS)
 ```bash
 sudo apt-get update
@@ -92,15 +99,6 @@ Create configuration storage so that application can access username, passwords 
 npm install dotenv
 ```
 
-Create a new file in the same folder as the server.js and add the following credentials
-```bash
-db_host=127.0.0.1
-db_port=8080
-db_name=joeydb
-db_user=joey
-db_password=your_password_goes_here
-```
-
 Raptor and other libraries
 ```bash
 npm install raptor-rpc
@@ -114,8 +112,8 @@ npm install mysql
 Application code
 ```
 cd ~
-git clone https://.......
-cd ~/joey
+git clone https://github.com/second-state/wasm-joey.git
+cd ~/wasm-joey/src
 ```
 
 Serve
