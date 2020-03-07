@@ -74,6 +74,7 @@ raptor.method("load_wasm_executable", function(req) {
             console.log(result.insertId);
         });
     }
+    // #TODO decide on the response object's design and then create and return it
 })
 
 // Read Wasm executable
@@ -86,11 +87,13 @@ raptor.method("read_wasm_executable", function(req) {
         console.log("1 record retrieved");
         console.log(result);
     });
+    // #TODO decide on the response object's design and then create and return it
 })
 
 // Execute Wasm executable
 raptor.method("execute_wasm_executable", function(req) {
     console.log("Executing Wasm executable ... ");
+    // #TODO decide on the response object's design and then create and return it
 })
 
 // Update Wasm executable
@@ -102,6 +105,7 @@ raptor.method("update_wasm_executable", function(req) {
         console.log("1 record updated");
         console.log(result);
     });
+    // #TODO decide on the response object's design and then create and return it
 })
 
 // Remove Wasm executable
@@ -113,6 +117,7 @@ raptor.method("remove_wasm_executable", function(req) {
         console.log("1 record deleted");
         console.log(result);
     });
+    // #TODO decide on the response object's design and then create and return it
 })
 
 // Serve
