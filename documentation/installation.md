@@ -75,6 +75,8 @@ sudo apt-get install -y nodejs
 ```bash
 sudo apt-get install -y mysql-server
 ```
+
+## MySQL data directory
 Create dir to house the database and update the default MySQL config
 ```
 mkdir /media/nvme/joey_database
@@ -83,7 +85,6 @@ Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. Then Chang
 ```
 datadir = /media/nvme/joey_database
 ```
-## MySQL data directory
 Configure Ubuntu to allow new MySQL directory
 ```bash
 sudo vi /etc/apparmor.d/tunables/alias
