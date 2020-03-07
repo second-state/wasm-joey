@@ -55,7 +55,7 @@ raptor.use(function(req, next) {
 
 // Methods of the RPC server
 raptor.method("ping", function(req) {
-	console.log("Processing request for \"ping\" function ... ");
+    console.log("Processing request for \"ping\" function ... ");
     return "pong";
 })
 
@@ -64,6 +64,22 @@ raptor.method("load_wasm_executable", function(req) {
     console.log("Loading Wasm executable ... ");
     console.log(req.params[0].wasm_description);
     console.log(req.params[0].wasm_binary);
+    if (req.params[0].wasm_binary.startsWith("http")) {
+        console.log("This binary is a link which we need to fetch");
+    } else {
+        var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES (" + req.params[0].wasm_description + "," + req.params[0].wasm_binary + ")";
+        connection.query(sql, function(err, result) {
+            if (err) throw err;
+            console.log("1 record inserted");
+            console.log(result);
+        });
+    }
+})
+
+// Read Wasm executable
+raptor.method("read_wasm_executable", function(req) {
+    console.log("Reading Wasm executable ... ");
+    console.log(req.params[0].wasm_id);
     //INSERT INTO wasm_binary_files (wasm_description,wasm_binary)
     //VALUES ('System generated entry for testing','0x1234567890');
 })
