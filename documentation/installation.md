@@ -71,14 +71,13 @@ git clone https://github.com/second-state/wasm-joey.git
 cd /media/nvme/node_rpc/wasm-joey/src
 ```
 
-# Node
+# Node.js on the system
 Fetch
 ```bash
 curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
 ```
-Install
+Install Node.js on the system
 ```bash
-cd /media/nvme/node_rpc/wasm-joey/src
 sudo apt-get install -y nodejs
 ```
 
@@ -95,10 +94,12 @@ npm install raptor-rpc
 ```
 MySQL driver
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install mysql
 ```
 
-# MySQL Server
+# MySQL Server on the system
+Install MySQL on the system
 ```bash
 sudo apt-get install -y mysql-server
 ```
