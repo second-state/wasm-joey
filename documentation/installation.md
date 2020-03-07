@@ -132,18 +132,21 @@ MySQL driver
 ```bash
 npm install mysql
 ```
+# Application
 
+## Install
 Application code
 ```
 cd ~
 git clone https://github.com/second-state/wasm-joey.git
 cd ~/wasm-joey/src
 ```
-
+## Run
 Serve
 ```
 node server.js
 ```
+
 
 
 
