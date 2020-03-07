@@ -71,6 +71,20 @@ Install
 sudo apt-get install -y nodejs
 ```
 
+## Node libraries
+Dotenv
+```bash
+npm install dotenv
+```
+Raptor
+```bash
+npm install raptor-rpc
+```
+MySQL driver
+```bash
+npm install mysql
+```
+
 # MySQL Server
 ```bash
 sudo apt-get install -y mysql-server
@@ -126,20 +140,6 @@ Create blank tables for the application to use
 
 ```
 
-Create configuration storage so that application can access username, passwords and config
-```bash
-npm install dotenv
-```
-
-Raptor and other libraries
-```bash
-npm install raptor-rpc
-```
-
-MySQL driver
-```bash
-npm install mysql
-```
 # Application
 
 ## Install
