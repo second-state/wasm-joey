@@ -47,6 +47,8 @@ server = http.createServer(function(req, res) {
 });
 console.log("\n");
 
+// Request mechanism
+const rp = require('request-promise');
 
 raptor.use(function(req, next) {
     console.log("Joey has just received an incoming request!");
