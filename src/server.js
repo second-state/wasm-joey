@@ -63,90 +63,79 @@ raptor.method("ping", function(req) {
 
 // Load Wasm executable
 raptor.method("load_wasm_executable", function(req) {
-    console.log("Loading Wasm executable ... ");
-    console.log(req.params[0].wasm_description);
-    console.log(req.params[0].wasm_binary);
-    if (req.params[0].wasm_binary.startsWith("https://")) {
-        console.log("This a URL - we will go ahead and fetch this raw wasm file now ...");
-        urllib.request(req.params[0].wasm_binary, function (err, data, res) {
-            if (err) {
-              throw err; // you need to handle error
+            console.log("Loading Wasm executable ... ");
+            console.log(req.params[0].wasm_description);
+            console.log(req.params[0].wasm_binary);
+            if (req.params[0].wasm_binary.startsWith("https://")) {
+                console.log("This a URL - we will go ahead and fetch this raw wasm file now ...");
+                urllib.request(req.params[0].wasm_binary, function(err, data, res) {
+                    if (err) {
+                        throw err; // you need to handle error
+                    }
+                    console.log(res.statusCode);
+                    console.log(res.headers);
+                    // data is Buffer instance
+                    //console.log(data.toString());
+                    var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + data + "')";
+                    console.log("SQL");
+                    console.log(sql);
+                    connection.query(sql, function(err, result) {
+                        if (err) {
+                            throw err;
+                        }
+                        console.log("1 record inserted");
+                        console.log(result.insertId);
+                    });
+                });
             }
-            console.log(res.statusCode);
-            console.log(res.headers);
-            // data is Buffer instance
-            //console.log(data.toString());
-            var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + data + "')";
-            console.log("SQL");
-            console.log(sql);
+})
+
+        // #TODO decide on the response object's design and then create and return it
+
+        // Read Wasm executable
+        raptor.method("read_wasm_executable", function(req) {
+            console.log("Reading Wasm executable ... ");
+            console.log(req.params[0].wasm_id);
+            var sql = "SELECT wasm_binary from wasm_binary_files WHERE wasm_id = '" + req.params[0].wasm_id + "'";
             connection.query(sql, function(err, result) {
-            if (err) throw err;
-        }
-            console.log("1 record inserted");
-            console.log(result.insertId);
-        });
-        });
+                if (err) throw err;
+                console.log("1 record retrieved");
+                console.log(result);
+            });
+            // #TODO decide on the response object's design and then create and return it
+        })
 
-        
+        // Execute Wasm executable
+        raptor.method("execute_wasm_executable", function(req) {
+            console.log("Executing Wasm executable ... ");
+            // #TODO decide on the response object's design and then create and return it
+        })
 
+        // Update Wasm executable
+        raptor.method("update_wasm_executable", function(req) {
+            console.log("Updating Wasm executable ... ");
+            var sql = "UPDATE wasm_binary_files SET wasm_binary = '" + req.params[0].wasm_binary + "' WHERE wasm_id = '" + req.params[0].wasm_id + "'";
+            connection.query(sql, function(err, result) {
+                if (err) throw err;
+                console.log("1 record updated");
+                console.log(result);
+            });
+            // #TODO decide on the response object's design and then create and return it
+        })
 
-    } else {
-        var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + req.params[0].wasm_binary + "')";
-        connection.query(sql, function(err, result) {
-            if (err) throw err;
-            console.log("1 record inserted");
-            console.log(result.insertId);
-        });
-    }
-    // #TODO decide on the response object's design and then create and return it
-})
+        // Remove Wasm executable
+        raptor.method("remove_wasm_executable", function(req) {
+            console.log("Removing Wasm executable ... ");
+            var sql = "DELETE from wasm_binary_files WHERE wasm_id = '" + req.params[0].wasm_id + "'";
+            connection.query(sql, function(err, result) {
+                if (err) throw err;
+                console.log("1 record deleted");
+                console.log(result);
+            });
+            // #TODO decide on the response object's design and then create and return it
+        })
 
-// Read Wasm executable
-raptor.method("read_wasm_executable", function(req) {
-    console.log("Reading Wasm executable ... ");
-    console.log(req.params[0].wasm_id);
-    var sql = "SELECT wasm_binary from wasm_binary_files WHERE wasm_id = '" + req.params[0].wasm_id + "'";
-    connection.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log("1 record retrieved");
-        console.log(result);
-    });
-    // #TODO decide on the response object's design and then create and return it
-})
+        // Serve
+        console.log("Starting server, please wait ... "); raptor.attach(server); server.listen(8080);
 
-// Execute Wasm executable
-raptor.method("execute_wasm_executable", function(req) {
-    console.log("Executing Wasm executable ... ");
-    // #TODO decide on the response object's design and then create and return it
-})
-
-// Update Wasm executable
-raptor.method("update_wasm_executable", function(req) {
-    console.log("Updating Wasm executable ... ");
-    var sql = "UPDATE wasm_binary_files SET wasm_binary = '" + req.params[0].wasm_binary + "' WHERE wasm_id = '" + req.params[0].wasm_id + "'";
-    connection.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log("1 record updated");
-        console.log(result);
-    });
-    // #TODO decide on the response object's design and then create and return it
-})
-
-// Remove Wasm executable
-raptor.method("remove_wasm_executable", function(req) {
-    console.log("Removing Wasm executable ... ");
-    var sql = "DELETE from wasm_binary_files WHERE wasm_id = '" + req.params[0].wasm_id + "'";
-    connection.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log("1 record deleted");
-        console.log(result);
-    });
-    // #TODO decide on the response object's design and then create and return it
-})
-
-// Serve
-console.log("Starting server, please wait ... ");
-raptor.attach(server);
-server.listen(8080);
-
-// END
+        // END
