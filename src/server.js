@@ -48,7 +48,7 @@ server = http.createServer(function(req, res) {
 console.log("\n");
 
 // Request mechanism
-const rp = require('request-promise');
+var urllib = require('urllib');
 
 raptor.use(function(req, next) {
     console.log("Joey has just received an incoming request!");
@@ -68,6 +68,19 @@ raptor.method("load_wasm_executable", function(req) {
     console.log(req.params[0].wasm_binary);
     if (req.params[0].wasm_binary.startsWith("http")) {
         console.log("This binary is a link which we need to fetch");
+        urllib.request(req.params[0].wasm_binary, function (err, data, res) {
+            if (err) {
+              throw err; // you need to handle error
+            }
+            console.log(res.statusCode);
+            console.log(res.headers);
+            // data is Buffer instance
+            console.log(data.toString());
+        });
+
+        
+
+
     } else {
         var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + req.params[0].wasm_binary + "')";
         connection.query(sql, function(err, result) {

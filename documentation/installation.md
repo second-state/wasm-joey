@@ -82,10 +82,10 @@ sudo apt-get install -y nodejs
 ```
 
 ## Node libraries
-Request and request-promise
+Urllib
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
-npm install request request-promise
+npm install urllib
 ```
 Dotenv
 ```bash
