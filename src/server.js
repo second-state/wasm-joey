@@ -100,7 +100,7 @@ raptor.method("load_wasm_executable", function(req) {
             connection.query(sql, function(err, result) {
                 if (err) throw err;
                 console.log("1 record retrieved");
-                console.log(result);
+                console.log(result.toString());
             });
             // #TODO decide on the response object's design and then create and return it
         })
