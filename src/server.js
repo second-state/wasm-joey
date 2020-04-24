@@ -77,9 +77,6 @@ raptor.method("load_wasm_executable", function(req) {
                     const hex = "0x" + data.toString('hex');
                     console.log(hex);
                     var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('"+req.params[0].wasm_description+"','"+hex+"');";
-                    /*
-                    console.log("SQL");
-                    console.log(sql);
                     connection.query(sql, function(err, result) {
                         if (err) {
                             throw err;
@@ -87,9 +84,10 @@ raptor.method("load_wasm_executable", function(req) {
                         console.log("1 record inserted");
                         console.log(result.insertId);
                     });
-                    */
+                    
                 });
             }
+            return result.insertId;
 })
 
         // #TODO decide on the response object's design and then create and return it
