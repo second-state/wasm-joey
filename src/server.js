@@ -66,8 +66,8 @@ raptor.method("load_wasm_executable", function(req) {
     console.log("Loading Wasm executable ... ");
     console.log(req.params[0].wasm_description);
     console.log(req.params[0].wasm_binary);
-    if (req.params[0].wasm_binary.startsWith("https://raw.githubusercontent.com/")) {
-        console.log("This a raw Github URL - we will go ahead and fetch this raw wasm file now ...");
+    if (req.params[0].wasm_binary.startsWith("https://")) {
+        console.log("This a URL - we will go ahead and fetch this raw wasm file now ...");
         urllib.request(req.params[0].wasm_binary, function (err, data, res) {
             if (err) {
               throw err; // you need to handle error
