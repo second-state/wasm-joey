@@ -76,9 +76,11 @@ raptor.method("load_wasm_executable", function(req) {
                     console.log(res.headers);
                     // Data is Buffer instance
                     const bin = data.toString('binary');
+                    console.log(bin);
                     const hex = bin.toString('hex');
+                    console.log(hex);
                     //var s_test = "\u0000asm\u0001\u0000\u0000\u0000\u0001\u0006\u0001`\u0001\u0001\u0003\u0002\u0001\u0000\u0004\u0005\u0001p\u0001\u0001\u0001\u0005\u0003\u0001\u0000\u0010\u0006\u0019\u0003\u0001A���\u0000\u000b\u0000A���\u0000\u000b\u0000A���\u0000\u000b\u0007.\u0004\u0006memory\u0002\u0000\u0006triple\u0000\u0000\n";
-                    var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('"+req.params[0].wasm_description+"','"+hex+"');";
+                    //var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('"+req.params[0].wasm_description+"','"+hex+"');";
                     console.log("SQL");
                     console.log(sql);
                     connection.query(sql, function(err, result) {
