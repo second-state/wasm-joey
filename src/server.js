@@ -77,8 +77,11 @@ raptor.method("load_wasm_executable", function(req) {
             // data is Buffer instance
             //console.log(data.toString());
             var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + data + "')";
+            console.log("SQL");
+            console.log(sql);
             connection.query(sql, function(err, result) {
             if (err) throw err;
+        }
             console.log("1 record inserted");
             console.log(result.insertId);
         });
