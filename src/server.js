@@ -144,7 +144,8 @@ raptor.method("load_wasm_executable", function(req) {
         raptor.method("execute_via_file", function(req) {
             console.log("Executing wasm ... ");
             // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
-            var vm = new ssvm.VM("/home/ubuntu/hello_bg.wasm");
+            var vm = new ssvm.VM("/home/ubuntu/wasm_executables/hello_bg.wasm");
+            console.log(vm);
             console.log(req.params[0].function_name);
             console.log(req.params[0].arguments);
             var argument_list = req.params[0].arguments.join(", ");
