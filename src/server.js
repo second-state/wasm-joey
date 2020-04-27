@@ -148,13 +148,13 @@ raptor.method("load_wasm_executable", function(req) {
             console.log(vm);
             console.log(req.params[0].function_name);
             console.log(req.params[0].arguments);
-            var argument_list = req.params[0].arguments.join(", ");
+            var argument_list = req.params[0].arguments.toString();
             if (typeof req.params[0].arguments[0] == "string") {
                 console.log("Calling run string: " + req.params[0].function_name + " with: " + argument_list);
                 ret = vm.RunString(req.params[0].function_name, argument_list);
             } else if (typeof req.params[0].arguments[0] == "number") {
                 console.log("Calling run int: " + req.params[0].function_name + " with: " + argument_list);
-                ret = vm.RunInt(req.params[0].function_name, 1, 1);
+                ret = vm.RunInt(req.params[0].function_name, argument_list);
             }
             var response_object = {};
             var key = "ssvm_response";
