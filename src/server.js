@@ -165,6 +165,6 @@ raptor.method("load_wasm_executable", function(req) {
         })
 
         // Serve
-        console.log("Starting server, please wait ... "); raptor.attach(server); server.listen(8080);
+        console.log("Starting server, please wait ... "); raptor.attach(server); server.listen(8081);
 
         // END
