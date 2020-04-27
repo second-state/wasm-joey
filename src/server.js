@@ -110,6 +110,7 @@ raptor.method("read_wasm_executable", function(req) {
 // Execute Wasm executable
 raptor.method("execute_wasm_executable", function(req) {
     console.log("Executing Wasm executable ... ");
+    console.log(req);
     // #TODO decide on the response object's design and then create and return it
 })
 
