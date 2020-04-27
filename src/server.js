@@ -141,7 +141,7 @@ raptor.method("load_wasm_executable", function(req) {
         // Takes request parameters like this (function_name as a string and arguments as a list)
         // {"jsonrpc": "2.0", "method":"execute_via_file", "params":[{"function_name": "add", "arguments": [333, 555]}], "id": 1}
         // {"jsonrpc": "2.0", "method":"execute_via_file", "params":[{"function_name": "say", "arguments": ["World"]}], "id": 1}
-        raptor.method("execute_via_file", function(req) {
+        raptor.method("execute_hello_bg_file", function(req) {
             console.log("Executing wasm ... ");
             // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
             var vm = new ssvm.VM("/home/ubuntu/wasm_executables/hello_bg.wasm");
@@ -150,10 +150,10 @@ raptor.method("load_wasm_executable", function(req) {
             console.log(req.params[0].arguments);
             var argument_list = req.params[0].arguments.join(", ");
             if (typeof req.params[0].arguments[0] == "string") {
-                console.log("Calling: " + req.params[0].function_name + " with: " + argument_list);
+                //console.log("Calling: " + req.params[0].function_name + " with: " + argument_list);
                 ret = vm.RunString(req.params[0].function_name, argument_list);
             } else if (typeof req.params[0].arguments[0] == "number") {
-                console.log("Calling: " + req.params[0].function_name + " with: " + argument_list);
+                //console.log("Calling: " + req.params[0].function_name + " with: " + argument_list);
                 ret = vm.RunInt(req.params[0].function_name, argument_list);
             }
             var response_object = {};
