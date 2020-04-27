@@ -157,7 +157,7 @@ raptor.method("load_wasm_executable", function(req) {
             }}
             if (typeof req.params[0].arguments[0] == "string") {
                 console.log("Calling run string: " + stringToExecute);
-                ret = vm.RunString(stringToExecute);
+                ret = vm.RunString(`${stringToExecute}`);
             } else if (typeof req.params[0].arguments[0] == "number") {
                 console.log("Calling run int: " + stringToExecute);
                 ret = vm.RunInt(stringToExecute);
