@@ -149,9 +149,11 @@ raptor.method("load_wasm_executable", function(req) {
             console.log(req.params[0].function_name);
             console.log(req.params[0].arguments);
             var argument_list = req.params[0].arguments.join(", ");
-            if (typeof argument_list[0] == "string") {
+            if (typeof req.params[0].arguments[0] == "string") {
+                console.log("Calling: " + req.params[0].function_name + " with: " + argument_list);
                 ret = vm.RunString(req.params[0].function_name, argument_list);
-            } else if (typeof argument_list[0] == "number") {
+            } else if (typeof req.params[0].arguments[0] == "number") {
+                console.log("Calling: " + req.params[0].function_name + " with: " + argument_list);
                 ret = vm.RunInt(req.params[0].function_name, argument_list);
             }
             var response_object = {};
