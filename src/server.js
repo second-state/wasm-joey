@@ -151,7 +151,7 @@ raptor.method("load_wasm_executable", function(req) {
             var argument_list = req.params[0].arguments.join(", ");
             if (typeof argument_list[0] == "string") {
                 ret = vm.RunString(req.params[0].function_name, argument_list);
-            } else if (typeof d[0] == "number") {
+            } else if (typeof argument_list[0] == "number") {
                 ret = vm.RunInt(req.params[0].function_name, argument_list);
             }
             var response_object = {};
