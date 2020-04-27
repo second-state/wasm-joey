@@ -148,12 +148,6 @@ raptor.method("load_wasm_executable", function(req) {
             console.log(vm);
             console.log(req.params[0].function_name);
             console.log(req.params[0].arguments);
-            for (var i = 0; i < req.params[0].arguments.length; i++) {
-            if (i < req.params[0].arguments.length - 1){
-                string = string + "argument_list[" + i + "], ";
-            } else if (i == req.params[0].arguments.length - 1){
-            string = string + "argument_list[" + i + "]";
-            }}
             var argument_list = req.params[0].arguments.toString();
             if (typeof req.params[0].arguments[0] == "string") {
                 console.log("Calling run string: " + req.params[0].function_name + " with: " + argument_list);
