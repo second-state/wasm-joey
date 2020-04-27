@@ -190,6 +190,8 @@ raptor.method("execute_hello_bg_file", function(req) {
                     break;
             }
         }
+    } else if (req.params[0].arguments.length > 5){
+                ret = vm.RunUint8Array(req.params[0].function_name, Uint8Array.from(req.params[0].arguments));
     }
     var response_object = {};
     var key = "ssvm_response";
