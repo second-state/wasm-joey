@@ -148,13 +148,46 @@ raptor.method("load_wasm_executable", function(req) {
             console.log(vm);
             console.log(req.params[0].function_name);
             console.log(req.params[0].arguments);
+            console.log("Total arguments provided = " + req.params[0].arguments.length);
             var argument_list = req.params[0].arguments.toString();
             if (typeof req.params[0].arguments[0] == "string") {
                 console.log("Calling run string: " + req.params[0].function_name + " with: " + argument_list);
-                ret = vm.RunString(req.params[0].function_name, argument_list);
+                switch (req.params[0].arguments.length){
+                    case 1:
+                    ret = vm.RunString(req.params[0].function_name, req.params[0].arguments[0]);
+                    break;
+                    case 2:
+                    ret = vm.RunString(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1]);
+                    break;
+                    case 3:
+                    ret = vm.RunString(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1], req.params[0].arguments[2]);
+                    break;
+                    case 4:
+                    ret = vm.RunString(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1], req.params[0].arguments[2], req.params[0].arguments[3]);
+                    break;
+                    case 5:
+                    ret = vm.RunString(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1], req.params[0].arguments[2], req.params[0].arguments[3], req.params[0].arguments[4]);
+                    break;
+                }
             } else if (typeof req.params[0].arguments[0] == "number") {
                 console.log("Calling run int: " + req.params[0].function_name + " with: " + argument_list);
-                ret = vm.RunInt(req.params[0].function_name, `${argument_list}`);
+                switch (req.params[0].arguments.length){
+                    case 1:
+                    ret = vm.RunInt(req.params[0].function_name, req.params[0].arguments[0]);
+                    break;
+                    case 2:
+                    ret = vm.RunInt(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1]);
+                    break;
+                    case 3:
+                    ret = vm.RunInt(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1], req.params[0].arguments[2]);
+                    break;
+                    case 4:
+                    ret = vm.RunInt(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1], req.params[0].arguments[2], req.params[0].arguments[3]);
+                    break;
+                    case 5:
+                    ret = vm.RunInt(req.params[0].function_name, req.params[0].arguments[0], req.params[0].arguments[1], req.params[0].arguments[2], req.params[0].arguments[3], req.params[0].arguments[4]);
+                    break;
+                }
             }
             var response_object = {};
             var key = "ssvm_response";
