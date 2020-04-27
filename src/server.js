@@ -148,19 +148,19 @@ raptor.method("load_wasm_executable", function(req) {
             console.log(vm);
             console.log(req.params[0].function_name);
             console.log(req.params[0].arguments);
-            stringToExecute = "req.params[0].function_name, ";
             for (var i = 0; i < req.params[0].arguments.length; i++) {
             if (i < req.params[0].arguments.length - 1){
-                stringToExecute = stringToExecute + "argument_list[" + i + "], ";
+                string = string + "argument_list[" + i + "], ";
             } else if (i == req.params[0].arguments.length - 1){
-            stringToExecute = stringToExecute + "argument_list[" + i + "]";
+            string = string + "argument_list[" + i + "]";
             }}
+            var argument_list = req.params[0].arguments.toString();
             if (typeof req.params[0].arguments[0] == "string") {
-                console.log("Calling run string: " + stringToExecute);
-                ret = vm.RunString(`${stringToExecute}`);
+                console.log("Calling run string: " + req.params[0].function_name + " with: " + argument_list);
+                ret = vm.RunString(req.params[0].function_name, argument_list);
             } else if (typeof req.params[0].arguments[0] == "number") {
-                console.log("Calling run int: " + stringToExecute);
-                ret = vm.RunInt(stringToExecute);
+                console.log("Calling run int: " + req.params[0].function_name + " with: " + argument_list);
+                ret = vm.RunInt(req.params[0].function_name, `${argument_list}`);
             }
             var response_object = {};
             var key = "ssvm_response";
