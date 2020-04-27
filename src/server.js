@@ -25,7 +25,6 @@ connection.connect((err) => {
 });
 console.log("\n");
 
-
 // Raptor library
 const Raptor = require("raptor-rpc");
 const raptor = new Raptor();
@@ -47,13 +46,16 @@ server = http.createServer(function(req, res) {
 });
 console.log("\n");
 
-// Request mechanism
+// HTTP request mechanism
 var urllib = require('urllib');
 
 raptor.use(function(req, next) {
     console.log("Joey has just received an incoming request!");
     return next();
 })
+
+// SSVM
+var ssvm = require('ssvm');
 
 // Methods of the RPC server
 raptor.method("ping", function(req) {
@@ -133,6 +135,30 @@ raptor.method("load_wasm_executable", function(req) {
                 console.log(result);
             });
             // #TODO decide on the response object's design and then create and return it
+        })
+
+        // Temporary - execute Wasm executable from file system
+        // Takes request parameters like this (function_name as a string and arguments as a list)
+        // {"jsonrpc": "2.0", "method":"execute_via_file", "params":[{"function_name": "add", "arguments": [333, 555]}], "id": 1}
+        // {"jsonrpc": "2.0", "method":"execute_via_file", "params":[{"function_name": "say", "arguments": ["World"]}], "id": 1}
+        raptor.method("execute_via_file", function(req) {
+            console.log("Executing wasm ... ");
+            // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
+            var vm = new ssvm.VM("/home/ubuntu/hello_bg.wasm");
+            console.log(req.params[0].function_name);
+            console.log(req.params[0].arguments);
+            var argument_list = req.params[0].arguments.join(", ");
+            if (typeof argument_list[0] == "string") {
+                ret = vm.RunString(req.params[0].function_name, argument_list);
+            } else if (typeof d[0] == "number") {
+                ret = vm.RunInt(req.params[0].function_name, argument_list);
+            }
+            var response_object = {};
+            var key = "ssvm_response";
+            response_object[key] = [];
+            var data = ret;
+            response_object[key].push(data);
+            return response_object;
         })
 
         // Serve
