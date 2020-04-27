@@ -154,7 +154,7 @@ raptor.method("load_wasm_executable", function(req) {
                 ret = vm.RunString(req.params[0].function_name, argument_list);
             } else if (typeof req.params[0].arguments[0] == "number") {
                 console.log("Calling run int: " + req.params[0].function_name + " with: " + argument_list);
-                ret = vm.RunInt(req.params[0].function_name, argument_list);
+                ret = vm.RunInt(req.params[0].function_name, 1, 1);
             }
             var response_object = {};
             var key = "ssvm_response";
