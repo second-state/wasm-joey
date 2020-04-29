@@ -63,6 +63,9 @@ raptor.method("ping", function(req) {
     return "pong";
 })
 
+// Location of stored wasm executables
+const wasm_file_path = "/media/nvme/wasm_executables/"
+
 // Load Wasm executable
 raptor.method("load_wasm_executable", function(req) {
     console.log("Loading Wasm executable ... ");
@@ -145,7 +148,7 @@ raptor.method("remove_wasm_executable", function(req) {
 raptor.method("execute_hello_bg_file", function(req) {
     console.log("Executing wasm ... ");
     // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
-    var vm = new ssvm.VM("/home/ubuntu/wasm_executables/hello_bg.wasm");
+    var vm = new ssvm.VM("/media/nvme/wasm_executables/hello_bg.wasm");
     console.log(vm);
     console.log(req.params[0].function_name);
     console.log(req.params[0].arguments);
@@ -194,6 +197,21 @@ raptor.method("execute_hello_bg_file", function(req) {
     } else if (req.params[0].arguments.length > 5){
                 ret = vm.RunUint8Array(req.params[0].function_name, Uint8Array.from(req.params[0].arguments));
     }
+    var response_object = {};
+    var key = "ssvm_response";
+    response_object[key] = [];
+    var data = ret;
+    response_object[key].push(data);
+    return response_object;
+})
+
+raptor.method("execute_run_string", function(req) {
+    console.log("Executing wasm ... ");
+    // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
+    var vm = new ssvm.VM(wasm_file_path + req.params[0].wasm_executable_id + ".wasm");
+    console.log("Total arguments provided = " + req.params[0].arguments.length);
+    var argument_list = req.params[0].arguments.toString();
+    ret = vm.RunString(req.params[0].function_name, req.params[0].arguments);
     var response_object = {};
     var key = "ssvm_response";
     response_object[key] = [];
