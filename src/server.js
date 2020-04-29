@@ -209,8 +209,6 @@ raptor.method("execute_run_string", function(req) {
     console.log("Executing wasm ... ");
     // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
     var vm = new ssvm.VM(wasm_file_path + req.params[0].wasm_executable_id + ".wasm");
-    console.log("Total arguments provided = " + req.params[0].arguments.length);
-    //var argument_list = req.params[0].arguments.toString();
     ret = vm.RunString(req.params[0].function_name, req.params[0].arguments);
     var response_object = {};
     var key = "ssvm_response";
