@@ -26,8 +26,35 @@ Get a Wasm binary which has a certain `wasm_id` and return that specific Wasm bi
 ```
 ### Execute a Wasm function
 Execute a specific function which resides in a Wasm executable. The Wasm executable must have previously been set/updated into the wasm-joey system and will be identified by its `wasm_id`
+Request Type
 ```
+POST
 ```
+Endpoint
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
+```
+https://rpc.ssvm.secondstate.io:3000/executables/1
+```
+Header
+Content-Type, jsonrpc, application id (This id is used for debugging and reporting inside your 3rd-party application. This id is generated and consumed by your 3rd-party application which is calling our wasm-joey application)
+```
+Content-Type: application/json
+jsonrpc: "2.0"
+id: 1
+```
+Body
+```
+{"method":"add", "params":[1, 2]}
+```
+Curl example
+```
+curl --location --request POST '3.24.150.181:3000/executables/1' \
+--header 'Content-Type: application/json' \
+--header 'jsonrpc: "2.0"' \
+--header 'id: 1' \
+--data-raw '{"method":"add", "params":[1, 2]}'
+```
+
 ### Update (Hot Swap) a Wasm executable
 Remove and replace an existing Wasm executable in binary-code format. Future execute calls will of course run this new executable's logic
 ```
