@@ -1,11 +1,15 @@
 
-const express = require('express')
-const app = express()
-require('dotenv').config()
+const express = require('express');
+const app = express();
+require('dotenv').config();
 
 app.get('/', (req, res) => res.send('Hello World!'))
 
-app.listen(process.api_port, process.env.host, () => console.log(`Welcome to wasm-joey`))
+app.post('/deploy_wasm_executable', function (req, res) {
+  res.send('Got a POST request to deploy a Wasm executable')
+})
+
+app.listen(process.env.api_port, process.env.host, () => {console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + process.env.api_port);})
 
 /*
 
