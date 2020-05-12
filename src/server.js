@@ -1,3 +1,14 @@
+
+const express = require('express')
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => res.send('Hello World!'))
+
+app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+
+/*
+
 // Start
 console.log("Starting service, please wait ... ");
 console.log("\n");
@@ -210,6 +221,20 @@ raptor.method("execute_run_string", function(req) {
     // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
     var vm = new ssvm.VM(wasm_file_path + req.params[0].wasm_executable_id + ".wasm");
     ret = vm.RunString(req.params[0].function_name, JSON.stringify(req.params[0].arguments));
+    var response_object = {};
+    var key = "ssvm_response";
+    response_object[key] = [];
+    var data = ret;
+    response_object[key].push(data);
+    return response_object;
+})
+
+// Custom endpoint for video processing prototype
+raptor.method("execute_run_uint8array", function(req) {
+    console.log("Executing wasm ... ");
+    // This is temporary linking to wasm on file system. This will instantiate with Buffer (not file path) in the future
+    var vm = new ssvm.VM(wasm_file_path + req.params[0].wasm_executable_id + ".wasm");
+    ret = vm.RunUint8Array(req.params[0].function_name, Uint8Array.from(req.params[0].arguments));
     var response_object = {};
     var key = "ssvm_response";
     response_object[key] = [];

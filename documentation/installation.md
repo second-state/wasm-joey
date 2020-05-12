@@ -95,7 +95,7 @@ npm install dotenv
 Raptor
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
-npm install raptor-rpc
+npm install express
 ```
 MySQL driver
 ```bash
