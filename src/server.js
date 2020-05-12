@@ -10,6 +10,8 @@ app.post('/deploy_wasm_executable', function(req, res) {
     console.log("Loading Wasm executable ... ");
     console.log("Headers");
     console.log(req.headers);
+    console.log("Header test");
+    console.log(req.headers["header-test"]);
     console.log("Body");
     console.log(req.body);
 
