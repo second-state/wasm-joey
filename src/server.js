@@ -8,7 +8,11 @@ app.get('/', (req, res) => res.send('Hello World!'))
 
 app.post('/deploy_wasm_executable', function(req, res) {
     console.log("Loading Wasm executable ... ");
+    console.log("Headers");
+    console.log(req.headers);
+    console.log("Body");
     console.log(req.body);
+
     //var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + hex + "');";
     //connection.query(sql, function(err, result) {
     //    if (err) {
