@@ -1,15 +1,29 @@
-
 const express = require('express');
 const app = express();
 require('dotenv').config();
 
 app.get('/', (req, res) => res.send('Hello World!'))
 
-app.post('/deploy_wasm_executable', function (req, res) {
-  res.send('Got a POST request to deploy a Wasm executable')
+app.post('/deploy_wasm_executable', function(req, res) {
+    console.log("Connecting to database, please wait ... ");
+    const mysql = require('mysql');
+    const connection = mysql.createConnection({
+        host: process.env.db_host,
+        user: process.env.db_user,
+        password: process.env.db_password,
+        database: process.env.db_name
+    });
+    connection.connect((err) => {
+        if (err) throw err;
+        console.log('Connection to database succeeded!');
+    });
+    console.log("\n");
+    res.send('Got a POST request to deploy a Wasm executable')
 })
 
-app.listen(process.env.api_port, process.env.host, () => {console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + process.env.api_port);})
+app.listen(process.env.api_port, process.env.host, () => {
+    console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + process.env.api_port);
+})
 
 /*
 
