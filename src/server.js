@@ -5,6 +5,28 @@ require('dotenv').config();
 app.get('/', (req, res) => res.send('Hello World!'))
 
 app.post('/deploy_wasm_executable', function(req, res) {
+    console.log("Loading Wasm executable ... ");
+    console.log(req.body);
+    //var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + hex + "');";
+    //connection.query(sql, function(err, result) {
+    //    if (err) {
+    //        throw err;
+    //    }
+    //    console.log("1 record inserted");
+    //});
+    res.json(req.body);
+});
+
+
+app.listen(process.env.api_port, process.env.host, () => {
+    console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + process.env.api_port);
+    console.log("Reading database configuration, please wait ... ");
+    console.log("Database host: " + process.env.db_host);
+    console.log("Database port: " + process.env.db_port);
+    console.log("Database name: " + process.env.db_name);
+    console.log("Database user: " + process.env.db_user);
+    console.log("\n");
+
     console.log("Connecting to database, please wait ... ");
     const mysql = require('mysql');
     const connection = mysql.createConnection({
@@ -18,11 +40,6 @@ app.post('/deploy_wasm_executable', function(req, res) {
         console.log('Connection to database succeeded!');
     });
     console.log("\n");
-    res.send('Got a POST request to deploy a Wasm executable')
-})
-
-app.listen(process.env.api_port, process.env.host, () => {
-    console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + process.env.api_port);
 })
 
 /*
