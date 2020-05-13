@@ -170,7 +170,13 @@ VALUES ('System generated entry for testing','0x1234567890');
 ```
 
 ## Deployment
-Serve
+
+### Port
+Set which port you would like wasm-joey to be served on, using the following command
+```
+export PORT=5000
+```
+### Serve
 ```
 cd /media/nvme/node_rpc/wasm-joey/src
 node server.js

@@ -1,13 +1,18 @@
+// System
+// Express
 const express = require('express');
 const app = express();
-app.use(express.json())
+// Config
 require('dotenv').config();
-app.use(express.urlencoded({ extended: true }))
+// Data ser/des
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+//Port
+const port = process.env.PORT || 3000;
 
 
 /* Startup */
-//Port
-const port = process.env.PORT || 3000;
+// Serve
 app.listen(port, process.env.host, () => {
     console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + port);
     console.log("Reading database configuration, please wait ... ");
@@ -16,7 +21,7 @@ app.listen(port, process.env.host, () => {
     console.log("Database name: " + process.env.db_name);
     console.log("Database user: " + process.env.db_user);
     console.log("\n");
-
+// Database
     console.log("Connecting to database, please wait ... ");
     const mysql = require('mysql');
     const connection = mysql.createConnection({
@@ -30,13 +35,16 @@ app.listen(port, process.env.host, () => {
         console.log('Connection to database succeeded!');
     });
     console.log("\n");
-})
+});
 /* End Startup*/
 
-app.get('/', (req, res) => res.send('Welcome to wasm-joey'))
+app.get('/', (req, res) => res.send('Welcome to wasm-joey'));
 
 // Get all wasm executables which are currently stored in wasm-joey
-app.get('/api/executables', (req, res) => res.send('["0x123", "0x456", "0x678"]'))
+app.get('/api/executables', (req, res) => res.send('["0x123", "0x456", "0x678"]'));
+
+// Get a specific wasm executables by wasm_id parameter dynamically
+app.get('/api/executables/:wasm_id', (req, res) => res.send(req.params.wasm_id));
 /*
 app.post('/executables', function(req, res) {
     console.log("Loading Wasm executable ... ");
