@@ -47,7 +47,7 @@ app.get('/', (req, res) => res.send('Welcome to wasm-joey'));
 app.post('/api/executables', (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
     var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
-    console.log(sql);
+    console.log(sqlInsert);
     connection.query(sqlInsert, function(err, resultInsert) {
         if (err) {
             res.status(400).send("Perhaps a bad request, or database is not running");
