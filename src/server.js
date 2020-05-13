@@ -41,9 +41,16 @@ app.listen(port, process.env.host, () => {
 /* End Startup*/
 
 /* RESTful endpoints */
-app.get('/', (req, res) => res.send('Welcome to wasm-joey'));
+app.get('/', (req, res) => {
+    json_response = [{
+        "application": "wasm_joey"
+    }, {
+        "usage:": "https://github.com/second-state/wasm-joey/blob/master/documentation/usage.md"
+    }];
+    res.send(JSON.stringify(json_response));
+});
 
-// Set a wasm executable
+// Set a Wasm executable
 app.post('/api/executables', (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
     var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
@@ -63,18 +70,30 @@ app.post('/api/executables', (req, res) => {
 
 });
 
+// Get a Wasm executable
+app.post('/api/executables', (req, res) => {
+    var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.body["wasm_id"] + "'";
+    console.log(sqlSelect);
+    connection.query(sqlSelect, function(err, resultSelect) {
+        if (err) {
+            res.status(400).send("Perhaps a bad request, or database is not running");
+        }
+        console.log(resultSelect);
+    });
+});
+
 // Get all wasm executables which are currently stored in wasm-joey
 app.get('/api/executables', (req, res) => {
-        var sqlSelect = "SELECT wasm_id, wasm_description from wasm_executables;";
-        console.log(sqlSelect);
-        connection.query(sqlSelect, function(err, resultSelect) {
-            if (err) {
-                res.status(400).send("Perhaps a bad request, or database is not running");
-            }
-            console.log(resultSelect);
-            res.send(JSON.stringify(resultSelect));
-        });
+    var sqlSelect = "SELECT wasm_id, wasm_description from wasm_executables;";
+    console.log(sqlSelect);
+    connection.query(sqlSelect, function(err, resultSelect) {
+        if (err) {
+            res.status(400).send("Perhaps a bad request, or database is not running");
+        }
+        console.log(resultSelect);
+        res.send(JSON.stringify(resultSelect));
     });
+});
 
 // Get a specific wasm executables by wasm_id parameter dynamically
 app.get('/api/executables/:wasm_id', (req, res) => res.send(req.params.wasm_id));
