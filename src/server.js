@@ -79,7 +79,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             res.status(400).send("Perhaps a bad request, or database is not running");
         }
         console.log(resultSelect);
-        console.log(resultSelect.wasm_id);
+        console.log(resultSelect["wasm_id"];
         console.log(resultSelect.wasm_description);
         var json_stringified = JSON.stringify(resultSelect);
         console.log("Stringified: " + json_stringified);
