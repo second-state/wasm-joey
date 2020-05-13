@@ -43,7 +43,9 @@ app.get('/', (req, res) => res.send('Welcome to wasm-joey'));
 
 // Set a wasm executable
 app.post('/api/executables', (req, res) => { 
+console.log("Request to set a new wasm hex into the database ...");
 var sql = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
+console.log(sql);
 connection.query(sql, function(err, result) {
     if (err) {
         throw err;
