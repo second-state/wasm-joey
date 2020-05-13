@@ -6,8 +6,10 @@ app.use(express.urlencoded({ extended: true }))
 
 
 /* Startup */
-app.listen(process.env.api_port, process.env.host, () => {
-    console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + process.env.api_port);
+//Port
+cont port = process.env.PORT || 3000;
+app.listen(port, process.env.host, () => {
+    console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + port);
     console.log("Reading database configuration, please wait ... ");
     console.log("Database host: " + process.env.db_host);
     console.log("Database port: " + process.env.db_port);
@@ -33,6 +35,7 @@ app.listen(process.env.api_port, process.env.host, () => {
 
 app.get('/', (req, res) => res.send('Welcome to wasm-joey'))
 
+// Get all wasm executables which are currently stored in wasm-joey
 app.get('/api/executables', (req, res) => res.send('["0x123", "0x456", "0x678"]'))
 /*
 app.post('/executables', function(req, res) {
@@ -57,32 +60,6 @@ app.post('/executables', function(req, res) {
 
 /*
 
-// Start
-console.log("Starting service, please wait ... ");
-console.log("\n");
-// Application config
-console.log("Reading configuration, please wait ... ");
-require('dotenv').config()
-console.log("Database host: " + process.env.db_host);
-console.log("Database port: " + process.env.db_port);
-console.log("Database name: " + process.env.db_name);
-console.log("Database user: " + process.env.db_user);
-console.log("\n");
-
-// MySQL
-console.log("Connecting to database, please wait ... ");
-const mysql = require('mysql');
-const connection = mysql.createConnection({
-    host: process.env.db_host,
-    user: process.env.db_user,
-    password: process.env.db_password,
-    database: process.env.db_name
-});
-connection.connect((err) => {
-    if (err) throw err;
-    console.log('Connection to database succeeded!');
-});
-console.log("\n");
 
 // Raptor library
 const Raptor = require("raptor-rpc");
