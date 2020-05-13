@@ -64,7 +64,17 @@ app.post('/api/executables', (req, res) => {
 });
 
 // Get all wasm executables which are currently stored in wasm-joey
-app.get('/api/executables', (req, res) => res.send('["0x123", "0x456", "0x678"]'));
+app.get('/api/executables', (req, res) => {
+        var sqlSelect = "SELECT wasm_id, wasm_description from wasm_executables;";
+        console.log(sqlSelect);
+        connection.query(sqlSelect, function(err, resultSelect) {
+            if (err) {
+                res.status(400).send("Perhaps a bad request, or database is not running");
+            }
+            console.log(resultSelect);
+            res.send(JSON.stringify(resultSelect));
+        });
+    });
 
 // Get a specific wasm executables by wasm_id parameter dynamically
 app.get('/api/executables/:wasm_id', (req, res) => res.send(req.params.wasm_id));
@@ -170,12 +180,15 @@ raptor.method("load_wasm_executable", function(req) {
 raptor.method("read_wasm_executable", function(req) {
     console.log("Reading Wasm executable ... ");
     console.log(req.params[0].wasm_id);
-    var sql = "SELECT wasm_binary from wasm_binary_files WHERE wasm_id = '" + req.params[0].wasm_id + "'";
-    connection.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log("1 record retrieved");
-        console.log(result.toString());
-    });
+        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.body["wasm_id"] + "'";
+        console.log(sqlSelect);
+        connection.query(sqlSelect, function(err, resultSelect) {
+            if (err) {
+                res.status(400).send("Perhaps a bad request, or database is not running");
+            }
+            console.log(resultSelect.toString());
+            console.log(resultSelect);
+        });
     // #TODO decide on the response object's design and then create and return it
 })
 
