@@ -46,16 +46,24 @@ app.get('/', (req, res) => res.send('Welcome to wasm-joey'));
 // Set a wasm executable
 app.post('/api/executables', (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
-    var sql = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
+    var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
     console.log(sql);
-    connection.query(sql, function(err, result) {
+    connection.query(sql, function(err, resultInsert) {
         if (err) {
             res.status(400).send("Perhaps a bad request, or database is not running");
         }
-        console.log("1 record inserted");
-        console.log(result.insertId);
+        console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
+        console.log();
+        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + resultInsert.insertId + "'";
+        connection.query(sql, function(err, resultSelect) {
+            if (err) {
+                res.status(400).send("Perhaps a bad request, or database is not running");
+            }
+            console.log(resultSelect.toString());
+        });
     });
-    res.send();
+
+    res.send("res");
 });
 
 // Get all wasm executables which are currently stored in wasm-joey
