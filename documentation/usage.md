@@ -52,7 +52,46 @@ The above request will return a response in the following JSON format
 ```
 {"wasm_id":8}
 ```
-### Get a Wasm executable 
+### Get all Wasm executables (as list) 
+Get all Wasm executables and return that list back to the calling code
+#### Verb
+```
+GET
+```
+#### Endpoint
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
+```
+https://rpc.ssvm.secondstate.io:3000/executables
+```
+#### Body
+No body required
+#### Curl example
+```
+curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executables' \
+--header 'Content-Type: application/json' \
+--data-raw ''
+```
+#### Response
+```
+[{
+	"wasm_id": 1,
+	"wasm_description": "System generated entry for testing"
+}, {
+	"wasm_id": 2,
+	"wasm_description": "Put here by the API"
+}, {
+	"wasm_id": 3,
+	"wasm_description": "Put here by the API"
+}, {
+	"wasm_id": 4,
+	"wasm_description": "Put here by the API"
+}, {
+	"wasm_id": 5,
+	"wasm_description": "Put here by the API"
+}]
+```
+
+### Get a specific Wasm executable 
 Get a Wasm binary which has a certain `wasm_id` and return that specific Wasm executable back to the calling code as a Buffer
 #### Verb
 ```

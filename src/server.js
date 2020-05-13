@@ -72,6 +72,8 @@ app.post('/api/executables', (req, res) => {
 
 // Get a Wasm executable
 app.get('/api/executables/:wasm_id', (req, res) => {
+    filters = req.query;
+    console.log(filters);
     var sqlSelect = "SELECT wasm_id, wasm_description from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
     console.log(sqlSelect);
     connection.query(sqlSelect, function(err, resultSelect) {
