@@ -82,8 +82,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         var json_response = {
             "wasm_id": resultSelect.wasm_id,
             "wasm_description": resultSelect.wasm_description,
-            //"wasm_as_hex": resultSelect.wasm_hex.toString(),
-            //"wasm_as_buffer": resultSelect.wasm_hex.toJSON(),
         }
         var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
         console.log(sqlSelect2);
@@ -92,7 +90,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
             console.log(resultSelect2);
-            json_response["wasm_as_hex"] = resultSelect2.wasm_hex.toString();
+            console.log(resultSelect2.wasm_hex);
+            json_response["wasm_as_hex"] = resultSelect2.wasm_hex.toString('utf8');
             json_response["wasm_description"] = resultSelect.wasm_hex.toJSON();
             res.send(JSON.stringify(json_response));
         });
