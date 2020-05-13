@@ -89,8 +89,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
-            json_response["wasm_as_hex"] = resultSelect2[0].wasm_hex.toString('utf8');
-            json_response["wasm_description"] = resultSelect2[0].wasm_hex.toJSON();
+            json_response["wasm_as_buffer"] = resultSelect2[0].wasm_hex.toString('utf8');
+            json_response["wasm_as_hex"] = resultSelect2[0].wasm_hex.toJSON();
             res.send(JSON.stringify(json_response));
         });
     });
