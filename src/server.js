@@ -81,10 +81,14 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         console.log(resultSelect);
         console.log(resultSelect.wasm_id);
         console.log(resultSelect.wasm_description);
+        var json_stringified = JSON.stringify(resultSelect);
+        console.log("Stringified: " + json_stringified);
+        var json_parsed = JSON.parse(json_stringified);
         var json_response = {
-            "wasm_id": resultSelect.wasm_id,
-            "wasm_description": resultSelect.wasm_description,
+            "wasm_id": json_parsed.wasm_id,
+            "wasm_description": json_parsed.wasm_description,
         }
+        console.log(JSON.stringify(json_response));
         var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
         console.log(sqlSelect2);
         connection.query(sqlSelect2, function(err, resultSelect2) {
