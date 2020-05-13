@@ -7,7 +7,7 @@ app.use(express.urlencoded({ extended: true }))
 
 /* Startup */
 //Port
-cont port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 app.listen(port, process.env.host, () => {
     console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + port);
     console.log("Reading database configuration, please wait ... ");
