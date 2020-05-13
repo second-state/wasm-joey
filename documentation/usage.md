@@ -58,6 +58,27 @@ curl --location --request POST '3.24.150.181:3000/executables/1' \
 ### Update (Hot Swap) a Wasm executable
 Remove and replace an existing Wasm executable in binary-code format. Future execute calls will of course run this new executable's logic
 ```
+PUT
+```
+Endpoint
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
+```
+https://rpc.ssvm.secondstate.io:3000/executables/1
+```
+Header
+Content-Type
+```
+Content-Type: application/json
+```
+Body
+```
+{"method":"add", "params":[1, 2]}
+```
+Curl example
+```
+curl --location --request POST '3.24.150.181:3000/executables/1' \
+--header 'Content-Type: application/json' \
+--data-raw '{"method":"add", "params":[1, 2]}'
 ```
 ### Delete a Wasm executable
 Delete an existing Wasm executable in binary-code format, from the system
