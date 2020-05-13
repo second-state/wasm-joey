@@ -50,12 +50,12 @@ app.post('/api/executables', (req, res) => {
     console.log(sql);
     connection.query(sql, function(err, result) {
         if (err) {
-            throw err;
+            res.status(400).send("Perhaps a bad request, or database is not running");
         }
         console.log("1 record inserted");
         console.log(result.insertId);
     });
-    res.send("Post was a success!");
+    res.send();
 });
 
 // Get all wasm executables which are currently stored in wasm-joey
