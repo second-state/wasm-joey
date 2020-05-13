@@ -52,7 +52,7 @@ connection.query(sql, function(err, result) {
     console.log(result);
 });
 res.send("Post was a success!");
-}
+});
 
 // Get all wasm executables which are currently stored in wasm-joey
 app.get('/api/executables', (req, res) => res.send('["0x123", "0x456", "0x678"]'));
