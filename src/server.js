@@ -60,11 +60,12 @@ app.post('/api/executables', (req, res) => {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
-            console.log(resultSelect);
+            json_response = {"wasm_id": resultSelect.wasm_id};
+            console.log(JSON.stringify(json_response));
         });
     });
 
-    res.send("res");
+    res.send(JSON.stringify(json_response));
 });
 
 // Get all wasm executables which are currently stored in wasm-joey
