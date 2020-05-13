@@ -53,7 +53,7 @@ app.post('/api/executables', (req, res) => {
             throw err;
         }
         console.log("1 record inserted");
-        console.log(result);
+        console.log(result.insertId);
     });
     res.send("Post was a success!");
 });
