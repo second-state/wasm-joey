@@ -55,11 +55,12 @@ app.post('/api/executables', (req, res) => {
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
         console.log();
         var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + resultInsert.insertId + "'";
+        console.log(sqlSelect);
         connection.query(sqlSelect, function(err, resultSelect) {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
-            console.log(resultSelect.toString());
+            console.log(resultSelect);
         });
     });
 
