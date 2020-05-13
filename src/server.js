@@ -72,22 +72,34 @@ app.post('/api/executables', (req, res) => {
 
 // Get a Wasm executable
 app.get('/api/executables/:wasm_id', (req, res) => {
-    var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+    var sqlSelect = "SELECT wasm_id, wasm_description from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
     console.log(sqlSelect);
     connection.query(sqlSelect, function(err, resultSelect) {
         if (err) {
             res.status(400).send("Perhaps a bad request, or database is not running");
         }
         console.log(resultSelect);
-        const json_response = {
+        var json_response = {
             "wasm_id": resultSelect.wasm_id,
             "wasm_description": resultSelect.wasm_description,
             //"wasm_as_hex": resultSelect.wasm_hex.toString(),
             //"wasm_as_buffer": resultSelect.wasm_hex.toJSON(),
         }
+        var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+        console.log(sqlSelect2);
+        connection.query(sqlSelect2, function(err, resultSelect2) {
+            if (err) {
+                res.status(400).send("Perhaps a bad request, or database is not running");
+            }
+            console.log(resultSelect2);
+            json_response["wasm_as_hex"] = resultSelect2.wasm_hex.toString();
+            json_response["wasm_description"] = resultSelect.wasm_hex.toJSON();
             res.send(JSON.stringify(json_response));
+        });
     });
 });
+
+
 
 // Get all wasm executables which are currently stored in wasm-joey
 app.get('/api/executables', (req, res) => {
