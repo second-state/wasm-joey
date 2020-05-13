@@ -61,7 +61,7 @@ app.post('/api/executables', (req, res) => {
         }
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
 
-        json_response = {
+        const json_response = {
             "wasm_id": resultInsert.insertId
         };
         console.log(JSON.stringify(json_response));
@@ -79,6 +79,13 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             res.status(400).send("Perhaps a bad request, or database is not running");
         }
         console.log(resultSelect);
+        const json_response = {
+            "wasm_id": resultSelect.wasm_id,
+            "wasm_description": resultSelect.wasm_description,
+            "wasm_as_hex": resultSelect.wasm_hex.toString();
+            "wasm_as_buffer": resultSelect.wasm_hex.toJSON();
+            res.send(JSON.stringify(json_response));
+        }
     });
 });
 
