@@ -54,11 +54,13 @@ app.post('/api/executables', (req, res) => {
         }
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
 
-            json_response = {"wasm_id": resultInsert.insertId};
-            console.log(JSON.stringify(json_response));
-            res.send(JSON.stringify(json_response));
+        json_response = {
+            "wasm_id": resultInsert.insertId
+        };
+        console.log(JSON.stringify(json_response));
+        res.send(JSON.stringify(json_response));
+    });
 
-    
 });
 
 // Get all wasm executables which are currently stored in wasm-joey
