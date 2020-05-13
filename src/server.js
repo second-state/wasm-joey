@@ -53,18 +53,10 @@ app.post('/api/executables', (req, res) => {
             res.status(400).send("Perhaps a bad request, or database is not running");
         }
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
-        console.log();
-        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + resultInsert.insertId + "'";
-        console.log(sqlSelect);
-        connection.query(sqlSelect, function(err, resultSelect) {
-            if (err) {
-                res.status(400).send("Perhaps a bad request, or database is not running");
-            }
-            json_response = {"wasm_id": resultSelect.wasm_id};
+
+            json_response = {"wasm_id": resultInsert.insertId};
             console.log(JSON.stringify(json_response));
             res.send(JSON.stringify(json_response));
-        });
-    });
 
     
 });
