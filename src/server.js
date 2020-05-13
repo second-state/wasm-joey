@@ -81,8 +81,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         var json_response = {
             "wasm_id": resultSelect[0].wasm_id,
             "wasm_description": resultSelect[0].wasm_description,
-            "wasm_as_buffer": resultSelect2[0].wasm_hex.toString('utf8'),
-            "wasm_as_hex": resultSelect2[0].wasm_hex.toJSON(),
+            "wasm_as_buffer": resultSelect[0].wasm_hex.toString('utf8'),
+            "wasm_as_hex": resultSelect[0].wasm_hex.toJSON(),
         }
         res.send(JSON.stringify(json_response));
 
