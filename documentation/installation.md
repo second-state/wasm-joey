@@ -156,16 +156,16 @@ FLUSH PRIVILEGES;
 
 Create blank tables for the application to use
 ```
-CREATE TABLE wasm_binary_files(
+CREATE TABLE wasm_executables(
     wasm_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_description CHAR(255) NOT NULL,
-    wasm_binary LONGBLOB NOT NULL,
+    wasm_hex LONGBLOB NOT NULL,
     PRIMARY KEY(wasm_id)
 );
 ```
 Create test data and insert into the table
 ```
-INSERT INTO wasm_binary_files (wasm_description,wasm_binary)
+INSERT INTO wasm_executables (wasm_description,wasm_hex)
 VALUES ('System generated entry for testing','0x1234567890');
 ```
 
@@ -173,11 +173,11 @@ VALUES ('System generated entry for testing','0x1234567890');
 
 ### Port
 Set which port you would like wasm-joey to be served on, using the following command
-```
-export PORT=5000
+```bash
+export PORT=3000 # or 5000 etc.
 ```
 ### Serve
-```
+```bash
 cd /media/nvme/node_rpc/wasm-joey/src
 node server.js
 ```

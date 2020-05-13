@@ -38,13 +38,29 @@ app.listen(port, process.env.host, () => {
 });
 /* End Startup*/
 
+/* RESTful endpoints */
 app.get('/', (req, res) => res.send('Welcome to wasm-joey'));
+
+// Set a wasm executable
+app.post('/api/executables', (req, res) => { 
+var sql = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
+connection.query(sql, function(err, result) {
+    if (err) {
+        throw err;
+    }
+    console.log("1 record inserted");
+    console.log(result);
+});
+res.send("Post was a success!");
+}
 
 // Get all wasm executables which are currently stored in wasm-joey
 app.get('/api/executables', (req, res) => res.send('["0x123", "0x456", "0x678"]'));
 
 // Get a specific wasm executables by wasm_id parameter dynamically
 app.get('/api/executables/:wasm_id', (req, res) => res.send(req.params.wasm_id));
+
+
 /*
 app.post('/executables', function(req, res) {
     console.log("Loading Wasm executable ... ");
