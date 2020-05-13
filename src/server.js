@@ -1,29 +1,11 @@
 const express = require('express');
 const app = express();
 app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
 require('dotenv').config();
-
-app.get('/', (req, res) => res.send('Hello World!'))
-
-app.post('/executables', function(req, res) {
-    console.log("Loading Wasm executable ... ");
-    console.log("Headers");
-    console.log(req.headers);
-    console.log("Body");
-    console.log(req.body);
-
-    //var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + hex + "');";
-    //connection.query(sql, function(err, result) {
-    //    if (err) {
-    //        throw err;
-    //    }
-    //    console.log("1 record inserted");
-    //});
-    res.json(req.body);
-});
+app.use(express.urlencoded({ extended: true }))
 
 
+/* Startup */
 app.listen(process.env.api_port, process.env.host, () => {
     console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + process.env.api_port);
     console.log("Reading database configuration, please wait ... ");
@@ -47,6 +29,31 @@ app.listen(process.env.api_port, process.env.host, () => {
     });
     console.log("\n");
 })
+/* End Startup*/
+
+app.get('/', (req, res) => res.send('Welcome to wasm-joey'))
+
+app.get('/api/executables', (req, res) => res.send('["0x123", "0x456", "0x678"]'))
+/*
+app.post('/executables', function(req, res) {
+    console.log("Loading Wasm executable ... ");
+    console.log("Headers");
+    console.log(req.headers);
+    console.log("Body");
+    console.log(req.body);
+
+    //var sql = "INSERT INTO wasm_binary_files (wasm_description,wasm_binary) VALUES ('" + req.params[0].wasm_description + "','" + hex + "');";
+    //connection.query(sql, function(err, result) {
+    //    if (err) {
+    //        throw err;
+    //    }
+    //    console.log("1 record inserted");
+    //});
+    res.json(req.body);
+});
+*/
+
+
 
 /*
 

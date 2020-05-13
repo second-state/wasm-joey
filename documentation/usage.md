@@ -16,11 +16,37 @@ wasm-joey (using MySQL) stores the actual executable Wasm binary code, as well a
 ## Request data specifications
 Please read the following request types (load, read, execute, update, delete) and take note of the data specifications. We provide examples for each.
 
-### Set a Wasm executable in binary-code format
+### Set a Wasm executable in hex format
 Set a Wasm binary into the system and return a freshly minted `wasm_id` back to the calling code
 ```
+POST
 ```
-### Get a Wasm in binary-code format
+Endpoint
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
+```
+https://rpc.ssvm.secondstate.io:3000/executables
+```
+Header
+Content-Type
+```
+Content-Type: application/json
+```
+Body
+Wasm binary can be converted to hexadecimal string using the following command
+```
+ xxd -p wasm_file.wasm | tr -d $'\n'
+```
+The hexadecimal string can then be passed into wasm-joey for future execution
+```
+{"wasm_binary": "0x1234567890"}
+```
+Curl example
+```
+curl --location --request POST https://rpc.ssvm.secondstate.io:3000/executables' \
+--header 'Content-Type: application/json' \
+--data-raw '{"wasm_binary":"0x1234567890"}'
+```
+### Get a Wasm in hex format
 Get a Wasm binary which has a certain `wasm_id` and return that specific Wasm binary back to the calling code
 ```
 ```
@@ -36,27 +62,23 @@ scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables
 https://rpc.ssvm.secondstate.io:3000/executables/1
 ```
 Header
-Content-Type, jsonrpc, application id (This id is used for debugging and reporting inside your 3rd-party application. This id is generated and consumed by your 3rd-party application which is calling our wasm-joey application)
+Content-Type
 ```
 Content-Type: application/json
-jsonrpc: "2.0"
-id: 1
 ```
 Body
 ```
-{"method":"add", "params":[1, 2]}
+{"wasm_method":"add", "params":[1, 2]}
 ```
 Curl example
 ```
-curl --location --request POST '3.24.150.181:3000/executables/1' \
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:3000/executables/1' \
 --header 'Content-Type: application/json' \
---header 'jsonrpc: "2.0"' \
---header 'id: 1' \
 --data-raw '{"method":"add", "params":[1, 2]}'
 ```
 
 ### Update (Hot Swap) a Wasm executable
-Remove and replace an existing Wasm executable in binary-code format. Future execute calls will of course run this new executable's logic
+Remove and replace an existing Wasm executable in hex format. Future execute calls will of course run this new executable's logic
 ```
 PUT
 ```
@@ -72,16 +94,16 @@ Content-Type: application/json
 ```
 Body
 ```
-{"method":"add", "params":[1, 2]}
+{"wasm_method":"add", "params":[1, 2]}
 ```
 Curl example
 ```
-curl --location --request POST '3.24.150.181:3000/executables/1' \
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:3000/executables/1' \
 --header 'Content-Type: application/json' \
 --data-raw '{"method":"add", "params":[1, 2]}'
 ```
 ### Delete a Wasm executable
-Delete an existing Wasm executable in binary-code format, from the system
+Delete an existing Wasm executable in hex format, from the system
 ```
 ```
 
@@ -97,7 +119,7 @@ Here are some examples of usage in different calling languages
 ## Javascript
 Calling with client-side Javascript using Javascript XMLHttpRequest
 ```javascript
-var url = "http://13.211.208.187:8080";
+var url = "https://rpc.ssvm.secondstate.io:3000";
 
 var xhr = new XMLHttpRequest();
 xhr.open("POST", url, true);
@@ -119,7 +141,7 @@ xhr.send(JSON.stringify(data));
 ## Python
 ```python
 >>> import requests
->>> url = "http://13.211.208.187:8080"
+>>> url = "https://rpc.ssvm.secondstate.io:3000"
 >>> data = {} 
 >>> r = requests.get(url=url, params=data)
 ```
