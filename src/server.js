@@ -82,10 +82,10 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         const json_response = {
             "wasm_id": resultSelect.wasm_id,
             "wasm_description": resultSelect.wasm_description,
-            "wasm_as_hex": resultSelect.wasm_hex.toString();
-            "wasm_as_buffer": resultSelect.wasm_hex.toJSON();
-            res.send(JSON.stringify(json_response));
+            "wasm_as_hex": resultSelect.wasm_hex.toString(),
+            "wasm_as_buffer": resultSelect.wasm_hex.toJSON(),
         }
+            res.send(JSON.stringify(json_response));
     });
 });
 
