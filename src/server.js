@@ -6,10 +6,26 @@ const app = express();
 require('dotenv').config();
 // Data ser/des
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+    extended: true
+}));
 //Port
 const port = process.env.PORT || 3000;
-
+// Database
+// Database
+console.log("Connecting to database, please wait ... ");
+const mysql = require('mysql');
+const connection = mysql.createConnection({
+    host: process.env.db_host,
+    user: process.env.db_user,
+    password: process.env.db_password,
+    database: process.env.db_name
+});
+connection.connect((err) => {
+    if (err) throw err;
+    console.log('Connection to database succeeded!');
+});
+console.log("\n");
 
 /* Startup */
 // Serve
@@ -21,20 +37,6 @@ app.listen(port, process.env.host, () => {
     console.log("Database name: " + process.env.db_name);
     console.log("Database user: " + process.env.db_user);
     console.log("\n");
-// Database
-    console.log("Connecting to database, please wait ... ");
-    const mysql = require('mysql');
-    const connection = mysql.createConnection({
-        host: process.env.db_host,
-        user: process.env.db_user,
-        password: process.env.db_password,
-        database: process.env.db_name
-    });
-    connection.connect((err) => {
-        if (err) throw err;
-        console.log('Connection to database succeeded!');
-    });
-    console.log("\n");
 });
 /* End Startup*/
 
@@ -42,18 +44,18 @@ app.listen(port, process.env.host, () => {
 app.get('/', (req, res) => res.send('Welcome to wasm-joey'));
 
 // Set a wasm executable
-app.post('/api/executables', (req, res) => { 
-console.log("Request to set a new wasm hex into the database ...");
-var sql = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
-console.log(sql);
-connection.query(sql, function(err, result) {
-    if (err) {
-        throw err;
-    }
-    console.log("1 record inserted");
-    console.log(result);
-});
-res.send("Post was a success!");
+app.post('/api/executables', (req, res) => {
+    console.log("Request to set a new wasm hex into the database ...");
+    var sql = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
+    console.log(sql);
+    connection.query(sql, function(err, result) {
+        if (err) {
+            throw err;
+        }
+        console.log("1 record inserted");
+        console.log(result);
+    });
+    res.send("Post was a success!");
 });
 
 // Get all wasm executables which are currently stored in wasm-joey
