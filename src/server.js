@@ -71,8 +71,8 @@ app.post('/api/executables', (req, res) => {
 });
 
 // Get a Wasm executable
-app.post('/api/executables', (req, res) => {
-    var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.body["wasm_id"] + "'";
+app.get('/api/executables/:wasm_id', (req, res) => {
+    var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
     console.log(sqlSelect);
     connection.query(sqlSelect, function(err, resultSelect) {
         if (err) {
@@ -94,10 +94,6 @@ app.get('/api/executables', (req, res) => {
         res.send(JSON.stringify(resultSelect));
     });
 });
-
-// Get a specific wasm executables by wasm_id parameter dynamically
-app.get('/api/executables/:wasm_id', (req, res) => res.send(req.params.wasm_id));
-
 
 /*
 app.post('/executables', function(req, res) {
