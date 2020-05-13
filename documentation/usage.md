@@ -18,21 +18,22 @@ Please read the following request types (load, read, execute, update, delete) an
 
 ### Set a Wasm executable in hex format
 Set a Wasm binary into the system and return a freshly minted `wasm_id` back to the calling code
+#### Verb
 ```
 POST
 ```
-Endpoint
+#### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
 ```
 https://rpc.ssvm.secondstate.io:3000/executables
 ```
-Header
+#### Header
 Content-Type
 ```
 Content-Type: application/json
 ```
-Body
-Wasm binary can be converted to hexadecimal string using the following command
+#### Body
+Wasm binary can be converted to hexadecimal string using the following command. Please ensure to add the `0x` to the start of the string as shown, in the request JSON, below.
 ```
  xxd -p wasm_file.wasm | tr -d $'\n'
 ```
@@ -40,16 +41,41 @@ The hexadecimal string can then be passed into wasm-joey for future execution
 ```
 {"wasm_binary": "0x1234567890"}
 ```
-Curl example
+#### Curl example
 ```
 curl --location --request POST https://rpc.ssvm.secondstate.io:3000/executables' \
 --header 'Content-Type: application/json' \
 --data-raw '{"wasm_binary":"0x1234567890"}'
 ```
-### Get a Wasm in hex format
-Get a Wasm binary which has a certain `wasm_id` and return that specific Wasm binary back to the calling code
+#### Response
+The above request will return a response in the following JSON format 
 ```
+{"wasm_id":8}
 ```
+### Get a Wasm executable 
+Get a Wasm binary which has a certain `wasm_id` and return that specific Wasm executable back to the calling code as a Buffer
+#### Verb
+```
+GET
+```
+#### Endpoint
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, `wasm_id`
+```
+https://rpc.ssvm.secondstate.io:3000/executables/14
+```
+#### Body
+No body required
+#### Curl example
+```
+curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executables/14' \
+--header 'Content-Type: application/json' \
+--data-raw ''
+```
+#### Response
+```
+{"wasm_id":14,"wasm_description":"Put here by the API","wasm_as_hex":"0x1234567890","wasm_as_buffer":{"type":"Buffer","data":[48,120,49,50,51,52,53,54,55,56,57,48]}}
+```
+
 ### Execute a Wasm function
 Execute a specific function which resides in a Wasm executable. The Wasm executable must have previously been set/updated into the wasm-joey system and will be identified by its `wasm_id`
 Request Type
