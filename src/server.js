@@ -48,14 +48,14 @@ app.post('/api/executables', (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
     var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.body["wasm_description"] + "','" + req.body["wasm_hex"] + "');";
     console.log(sql);
-    connection.query(sql, function(err, resultInsert) {
+    connection.query(sqlInsert, function(err, resultInsert) {
         if (err) {
             res.status(400).send("Perhaps a bad request, or database is not running");
         }
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
         console.log();
         var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + resultInsert.insertId + "'";
-        connection.query(sql, function(err, resultSelect) {
+        connection.query(sqlSelect, function(err, resultSelect) {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
