@@ -110,10 +110,12 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             });
         }
         var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+        console.log("SQL with filters.join()" + sqlSelect);
         connection.query(sqlSelect, function(err, resultSelect) {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
+            console.log("Result from SQL using .join()" + resultSelect);
             json_response["wasm_id"] = resultSelect[0].wasm_id;
             json_response["wasm_description"] = resultSelect[0].wasm_description;
         });
