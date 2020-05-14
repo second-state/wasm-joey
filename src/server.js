@@ -92,7 +92,7 @@ function performSqlQuery(string_query) {
         // Get a Wasm executable
         app.get('/api/executables/:wasm_id', (req, res) => {
             var json_response = {};
-            console.log(JSON.stringify("1" + JSON.stringify(json_response)));
+            console.log(req.query.filterBy);
             // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
             filters = JSON.parse(req.query.filterBy);
             console.log(typeof filters);
