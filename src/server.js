@@ -83,6 +83,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     var json_response = {};
     // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
     filters = JSON.parse(req.query.filterBy);
+    console.log(typeof filters);
+    console.log(filters);
     if (filters.length >= 1) {
         if (filters.includes("wasm_as_hex")) {
             filters = removeElementFromArray(filters, "wasm_as_hex");
