@@ -168,8 +168,8 @@ app.get('/api/executables', (req, res) => {
 });
 
 app.put('/api/executables/:wasm_id', (req, res) => {
-    var sql = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.body["wasm_id"] + "'";
-    performSqlQuery(sqlSelect).then((result) => {
+    var sqlUpdate = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.body["wasm_id"] + "'";
+    performSqlQuery(sqlUpdate).then((result) => {
         const json_response = {
             "wasm_id": req.body["wasm_id"]
         };
@@ -179,8 +179,8 @@ app.put('/api/executables/:wasm_id', (req, res) => {
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
-    var sql = "DELETE from wasm_executables WHERE wasm_id = '" + req.body["wasm_id"] + "'";
-    performSqlQuery(sqlSelect).then((result) => {
+    var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.body["wasm_id"] + "'";
+    performSqlQuery(sqlDelete).then((result) => {
         const json_response = {
             "wasm_id": req.body["wasm_id"]
         };

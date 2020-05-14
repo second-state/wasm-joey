@@ -39,21 +39,21 @@ Wasm binary can be converted to hexadecimal string using the following command. 
 ```
 The hexadecimal string can then be passed into wasm-joey for future execution
 ```
-{"wasm_binary": "0x1234567890"}
+{"wasm_hex": "0x1234567890"}
 ```
 #### Curl example
 ```
 curl --location --request POST https://rpc.ssvm.secondstate.io:3000/executables' \
 --header 'Content-Type: application/json' \
---data-raw '{"wasm_binary":"0x1234567890"}'
+--data-raw '{"wasm_hex":"0x1234567890"}'
 ```
 #### Response
 The above request will return a response in the following JSON format 
 ```
 {"wasm_id":8}
 ```
-### Get all Wasm executables (as list) 
-Get all Wasm executables and return that list back to the calling code
+### Get all Wasm executable identification numbers (as list) 
+Get all Wasm executable `wasm_id`s The `wasm_id` is they key use to perform other tasks
 #### Verb
 ```
 GET
@@ -73,25 +73,10 @@ curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executab
 ```
 #### Response
 ```
-[{
-	"wasm_id": 1,
-	"wasm_description": "System generated entry for testing"
-}, {
-	"wasm_id": 2,
-	"wasm_description": "Put here by the API"
-}, {
-	"wasm_id": 3,
-	"wasm_description": "Put here by the API"
-}, {
-	"wasm_id": 4,
-	"wasm_description": "Put here by the API"
-}, {
-	"wasm_id": 5,
-	"wasm_description": "Put here by the API"
-}]
+[{"wasm_id":1},{"wasm_id":2},{"wasm_id":3},{"wasm_id":4} ... {"wasm_id":12},{"wasm_id":13},{"wasm_id":14},{"wasm_id":15},{"wasm_id":16}]
 ```
 
-### Get a specific Wasm executable 
+### Get a specific Wasm executable - see below for optional filtering usage
 Get a Wasm binary which has a certain `wasm_id` and return that specific Wasm executable back to the calling code as a Buffer
 #### Verb
 ```
@@ -177,7 +162,7 @@ Content-Type: application/json
 ```
 Body
 ```
-{"wasm_method":"add", "params":[1, 2]}
+{"wasm_hex": "0x1234567890"}
 ```
 Curl example
 ```
