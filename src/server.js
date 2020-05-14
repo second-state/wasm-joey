@@ -2,9 +2,6 @@
 // Express
 const express = require('express');
 const app = express();
-// Implement only simple query parser
-const querystring = require('querystring');
-app.set('query parser', 'simple');
 // Config
 require('dotenv').config();
 // Data ser/des
@@ -85,11 +82,7 @@ app.post('/api/executables', (req, res) => {
 app.get('/api/executables/:wasm_id', (req, res) => {
     var json_response = {};
     // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
-    console.log("TypeOf:" + typeof req.query);
-    console.log(req.query);
-    filters = querystring.parse(req.query.filterBy);
-    console.log("TypeOf:" + typeof filters);
-    console.log(filters);
+    filters = JSON.parse(req.query.filterBy);
     if (filters.length >= 1) {
         if (filters.includes("wasm_as_hex")) {
             filters = removeElementFromArray(filters, "wasm_as_hex");
