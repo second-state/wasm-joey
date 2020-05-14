@@ -102,7 +102,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             console.log("With filters");
             if (filters.includes("wasm_as_hex")) {
                 filters = removeElementFromArray(filters, "wasm_as_hex");
-                var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+                var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                 console.log(sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_as_hex"] = result[0].wasm_hex.toString('utf8');
@@ -114,7 +114,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             }
             if (filters.includes("wasm_as_buffer")) {
                 filters = removeElementFromArray(filters, "wasm_as_buffer");
-                var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+                var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                 console.log(sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_as_buffer"] = result[0].wasm_hex.toJSON();
@@ -125,7 +125,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 });
             }
             if (filters.length >= 1) {
-                var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+                var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                 console.log("SQL with filters.join()\n" + sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_id"] = result[0].wasm_id;
@@ -141,14 +141,14 @@ app.get('/api/executables/:wasm_id', (req, res) => {
 
     } else {
         console.log("No filters");
-        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         console.log(sqlSelect);
         performSqlQuery(sqlSelect).then((result) => {
             json_response["wasm_id"] = result[0].wasm_id;
             json_response["wasm_description"] = result.wasm_description;
 
         });
-        var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+        var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect2).then((result2) => {
             json_response["wasm_as_hex"] = result2[0].wasm_hex.toString('utf8');
             json_response["wasm_as_buffer"] = result2[0].wasm_hex.toJSON();
@@ -168,18 +168,18 @@ app.get('/api/executables', (req, res) => {
 });
 
 app.put('/api/executables/:wasm_id', (req, res) => {
-    var sqlUpdate = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.body["wasm_id"] + "'";
+    var sqlUpdate = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.body["wasm_id"] + "';";
+    console.log(sqlUpdate);
     performSqlQuery(sqlUpdate).then((result) => {
-        const json_response = {
-            "wasm_id": req.body["wasm_id"]
-        };
+        const json_response = {"wasm_id": req.body["wasm_id"]};
         console.log(JSON.stringify(json_response));
         res.send(JSON.stringify(json_response));
     });
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
-    var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.body["wasm_id"] + "'";
+    var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.body["wasm_id"] + "';";
+    console.log(sqlDelete);
     performSqlQuery(sqlDelete).then((result) => {
         const json_response = {
             "wasm_id": req.body["wasm_id"]
