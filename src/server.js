@@ -94,7 +94,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     var json_response = {};
     if (req.query.filterBy != undefined) {
         // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
-        filters = JSON.parse(req.query.filterBy);
+        var filters = JSON.parse(req.query.filterBy);
         console.log(typeof filters);
         console.log(filters);
         if (filters.length >= 1) {
@@ -106,6 +106,9 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_as_hex"] = result.wasm_hex.toString('utf8');
                     console.log(JSON.stringify("2" + JSON.stringify(json_response)));
+                    if (filters.length == 0) {
+                        res.send(JSON.stringify(json_response));
+                    }
                 });
             }
             if (filters.includes("wasm_as_buffer")) {
@@ -115,6 +118,9 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_as_buffer"] = result.wasm_hex.toJSON();
                     console.log(JSON.stringify("3" + JSON.stringify(json_response)));
+                    if (filters.length == 0) {
+                        res.send(JSON.stringify(json_response));
+                    }
                 });
             }
             if (filters.length >= 1) {
@@ -124,10 +130,11 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                     json_response["wasm_id"] = result.wasm_id;
                     json_response["wasm_description"] = result.wasm_description;
                     console.log(JSON.stringify("4" + JSON.stringify(json_response)));
-                    res.send(JSON.stringify(json_response));
+                    filters = [];
+                    if (filters.length == 0) {
+                        res.send(JSON.stringify(json_response));
+                    }
                 });
-            } else {
-                res.send(JSON.stringify(json_response));
             }
         }
 
