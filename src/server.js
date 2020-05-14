@@ -53,10 +53,7 @@ function performSqlQuery(string_query) {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
-            console.log("." + string_query);
-            console.log(".." + resultSelect);
-            console.log("..." + resultSelect[0]);
-            resolve(resultSelect[0]);
+            resolve(resultSelect);
         });
     });
 }
