@@ -25,7 +25,7 @@ POST
 #### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
 ```
-https://rpc.ssvm.secondstate.io:3000/executables
+https://rpc.ssvm.secondstate.io:3000/api/executables
 ```
 #### Header
 Content-Type
@@ -43,7 +43,7 @@ The hexadecimal string can then be passed into wasm-joey for future execution
 ```
 #### Curl example
 ```
-curl --location --request POST https://rpc.ssvm.secondstate.io:3000/executables' \
+curl --location --request POST https://rpc.ssvm.secondstate.io:3000/api/executables' \
 --header 'Content-Type: application/json' \
 --data-raw '{"wasm_hex":"0x1234567890"}'
 ```
@@ -61,7 +61,7 @@ GET
 #### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
 ```
-https://rpc.ssvm.secondstate.io:3000/executables
+https://rpc.ssvm.secondstate.io:3000/api/executables
 ```
 #### Body
 No body required
@@ -85,33 +85,33 @@ GET
 #### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, `wasm_id`
 ```
-https://rpc.ssvm.secondstate.io:3000/executables/14
+https://rpc.ssvm.secondstate.io:3000/api/executables/1
 ```
 #### Body
 No body required
 #### Curl example
 ```
-curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executables/14' \
+curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
 --header 'Content-Type: application/json' \
 --data-raw ''
 ```
 #### Response
 ```
-{"wasm_id":14,"wasm_description":"Put here by the API","wasm_as_hex":"0x1234567890","wasm_as_buffer":{"type":"Buffer","data":[48,120,49,50,51,52,53,54,55,56,57,48]}}
+{"wasm_id":1,"wasm_description":"Put here by the API","wasm_as_hex":"0x1234567890","wasm_as_buffer":{"type":"Buffer","data":[48,120,49,50,51,52,53,54,55,56,57,48]}}
 ```
 ### Get a specific Wasm executable - with optional filtering
 The following query string syntax will filter the response to ONLY return the fields which are explicitly listed.
 For example the following syntax will only return the `wasm_id` field
 ```
-https://rpc.ssvm.secondstate.io:3000/executables/14?filterBy=["wasm_id"]
+https://rpc.ssvm.secondstate.io:3000/api/executables/1?filterBy=["wasm_id"]
 ```
 Result
 ```
-{"wasm_id":14}
+{"wasm_id":1}
 ```
 The following syntax will only return `wasm_as_hex` and `wasm_description` 
 ```
-https://rpc.ssvm.secondstate.io:3000/executables/14?filterBy=["wasm_as_hex", "wasm_description"]
+https://rpc.ssvm.secondstate.io:3000/api/executables/1?filterBy=["wasm_as_hex", "wasm_description"]
 ```
 Result
 ```
@@ -127,7 +127,7 @@ POST
 Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
 ```
-https://rpc.ssvm.secondstate.io:3000/executables/1
+https://rpc.ssvm.secondstate.io:3000/api/executables/1
 ```
 Header
 Content-Type
@@ -140,9 +140,9 @@ Body
 ```
 Curl example
 ```
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:3000/executables/1' \
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
 --header 'Content-Type: application/json' \
---data-raw '{"method":"add", "params":[1, 2]}'
+--data-raw '{"wasm_method":"add", "params":[1, 2]}'
 ```
 
 ### Update (Hot Swap) a Wasm executable
@@ -153,7 +153,7 @@ PUT
 Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
 ```
-https://rpc.ssvm.secondstate.io:3000/executables/1
+https://rpc.ssvm.secondstate.io:3000/api/executables/1
 ```
 Header
 Content-Type
@@ -162,65 +162,35 @@ Content-Type: application/json
 ```
 Body
 ```
-{"wasm_hex": "0x1234567890"}
+{"wasm_hex": "0x8888888"}
 ```
 Curl example
 ```
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:3000/executables/1' \
+curl --location --request PUT 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
 --header 'Content-Type: application/json' \
---data-raw '{"method":"add", "params":[1, 2]}'
+--data-raw '{"wasm_hex": "0x8888888"}'
+```
+Result, confirms which item was updated
+```
+{"wasm_id":1}
 ```
 ### Delete a Wasm executable
 Delete an existing Wasm executable in hex format, from the system
 ```
+DELETE
 ```
-
-
-# Request overview - using different languages to create HTTP request
-wasm-joey is designed to accept HTTP requests from any software which is capable of creating a valid request. The data payload for the request following a convention.
-
+Endpoint
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
 ```
+https://rpc.ssvm.secondstate.io:3000/api/executables/1
 ```
-
-Here are some examples of usage in different calling languages
-
-## Javascript
-Calling with client-side Javascript using Javascript XMLHttpRequest
-```javascript
-var url = "https://rpc.ssvm.secondstate.io:3000";
-
-var xhr = new XMLHttpRequest();
-xhr.open("POST", url, true);
-xhr.setRequestHeader("Content-Type", "application/json");
-var data = {
-
-};
-xhr.onload = function(e) {
-    if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-            console.log(xhr.response)
-        }
-    }
-};
-xhr.open("POST", url, true);
-xhr.send(JSON.stringify(data));
+Curl example 
 ```
-
-## Python
-```python
->>> import requests
->>> url = "https://rpc.ssvm.secondstate.io:3000"
->>> data = {} 
->>> r = requests.get(url=url, params=data)
+curl --location --request DELETE 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
+--header 'Content-Type: application/json' \
+--data-raw ''
 ```
-
-## Curl
-```bash
-curl --header "Content-Type: application/json" \                     
---request POST \
---data '{}' \
-http://13.211.208.187:8080
+Result, confirms which item was deleted
 ```
-
-
-## Response data specifications
+{"wasm_id":1}
+```
