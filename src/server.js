@@ -92,6 +92,7 @@ function performSqlQuery(string_query) {
         // Get a Wasm executable
         app.get('/api/executables/:wasm_id', (req, res) => {
             var json_response = {};
+            console.log(JSON.stringify(json_response));
             // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
             filters = JSON.parse(req.query.filterBy);
             console.log(typeof filters);
@@ -104,6 +105,7 @@ function performSqlQuery(string_query) {
                     console.log(sqlSelect);
                     performSqlQuery(sqlSelect).then((result) => {
                         json_response["wasm_as_hex"] = result.wasm_hex.toString('utf8');
+                        console.log(JSON.stringify(json_response));
                     });
                 }
                 if (filters.includes("wasm_as_buffer")) {
@@ -112,6 +114,7 @@ function performSqlQuery(string_query) {
                     console.log(sqlSelect);
                     performSqlQuery(sqlSelect).then((result) => {
                         json_response["wasm_as_buffer"] = result.wasm_hex.toJSON();
+                        console.log(JSON.stringify(json_response));
                     });
                 }
                 var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
@@ -119,7 +122,9 @@ function performSqlQuery(string_query) {
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_id"] = result.wasm_id;
                     json_response["wasm_description"] = result.wasm_description;
+                    console.log(JSON.stringify(json_response));
                 });
+                console.log(JSON.stringify(json_response));
                 res.send(JSON.stringify(json_response));
             } else {
                 console.log("No filters");
