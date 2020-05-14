@@ -3,6 +3,7 @@
 const express = require('express');
 const app = express();
 // Implement only simple query parser
+const querystring = require('querystring');
 app.set('query parser', 'simple');
 // Config
 require('dotenv').config();
