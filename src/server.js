@@ -53,7 +53,7 @@ function performSqlQuery(string_query) {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
-            console.log("Number of items: " + resultSelect.length());
+            console.log("Result of select": resultSelect);
             resolve(resultSelect);
         });
     });
@@ -128,7 +128,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
                 console.log("SQL with filters.join()\n" + sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
-                    json_response["wasm_id"] = result.wasm_id;
+                    json_response["wasm_id"] = result[0].wasm_id;
                     json_response["wasm_description"] = result[0].wasm_description;
                     console.log(JSON.stringify("4" + JSON.stringify(json_response)));
                     filters = [];
@@ -151,7 +151,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
         performSqlQuery(sqlSelect2).then((result2) => {
             json_response["wasm_as_hex"] = result2[0].wasm_hex.toString('utf8');
-            json_response["wasm_as_buffer"] = result2.wasm_hex.toJSON();
+            json_response["wasm_as_buffer"] = result2[0].wasm_hex.toJSON();
             res.send(JSON.stringify(json_response));
         });
 
