@@ -55,7 +55,7 @@ function performSqlQuery(string_query) {
                     }
                     resolve(resultSelect[0]);
                 });
-            };
+            });
         }
         /* Utils end */
 
