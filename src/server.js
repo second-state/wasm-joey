@@ -46,6 +46,15 @@ function removeElementFromArray(arr, value) {
         return ele != value;
     });
 }
+
+async function performSqlQuery(string_query){
+    connection.query(string_query, function(err, resultSelect) {
+        if (err) {
+            res.status(400).send("Perhaps a bad request, or database is not running");
+        }
+        return resultSelect[0];
+    });
+}
 /* Utils end */
 
 /* RESTful endpoints */
@@ -91,33 +100,23 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             filters = removeElementFromArray(filters, "wasm_as_hex");
             var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
             console.log(sqlSelect);
-            connection.query(sqlSelect, function(err, resultSelect) {
-                if (err) {
-                    res.status(400).send("Perhaps a bad request, or database is not running");
-                }
-                json_response["wasm_as_hex"] = resultSelect[0].wasm_hex.toString('utf8');
+            performSqlQuery(sqlSelect).then( result => {
+                json_response["wasm_as_hex"] = result.wasm_hex.toString('utf8');
             });
         }
         if (filters.includes("wasm_as_buffer")) {
             filters = removeElementFromArray(filters, "wasm_as_buffer");
             var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
             console.log(sqlSelect);
-            connection.query(sqlSelect, function(err, resultSelect) {
-                if (err) {
-                    res.status(400).send("Perhaps a bad request, or database is not running");
-                }
-                json_response["wasm_as_buffer"] = resultSelect[0].wasm_hex.toJSON();
+            performSqlQuery(sqlSelect).then( result => {
+                json_response["wasm_as_buffer"] = result.wasm_hex.toJSON();
             });
         }
         var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
         console.log("SQL with filters.join()" + sqlSelect);
-        connection.query(sqlSelect, function(err, resultSelect) {
-            if (err) {
-                res.status(400).send("Perhaps a bad request, or database is not running");
-            }
-            console.log("Result from SQL using .join()" + resultSelect);
-            json_response["wasm_id"] = resultSelect[0].wasm_id;
-            json_response["wasm_description"] = resultSelect[0].wasm_description;
+       performSqlQuery(sqlSelect).then( result => {
+            json_response["wasm_id"] = result.wasm_id;
+            json_response["wasm_description"] = result.wasm_description;
         });
         res.send(JSON.stringify(json_response));
     } else {
