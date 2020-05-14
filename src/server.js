@@ -123,9 +123,10 @@ function performSqlQuery(string_query) {
                     json_response["wasm_id"] = result.wasm_id;
                     json_response["wasm_description"] = result.wasm_description;
                     console.log(JSON.stringify("4" + JSON.stringify(json_response)));
+                    res.send(JSON.stringify(json_response));
                 });
-                console.log("*" + JSON.stringify(json_response));
-                res.send(JSON.stringify(json_response));
+
+                
             } else {
                 console.log("No filters");
                 var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
