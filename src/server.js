@@ -2,6 +2,8 @@
 // Express
 const express = require('express');
 const app = express();
+// Implement only simple query parser
+app.set('query parser', 'simple');
 // Config
 require('dotenv').config();
 // Data ser/des
