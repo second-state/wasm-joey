@@ -160,21 +160,73 @@ app.get('/api/executables/:wasm_id', (req, res) => {
 
 
 
-// Get all wasm executables which are currently stored in wasm-joey
+// Get all Wasm executable
 app.get('/api/executables', (req, res) => {
-    filters = req.query;
-    if (filters.length >= 1) {
-        var sqlSelect = "SELECT " + filters.join() + " from wasm_executables;";
-    } else {
-        var sqlSelect = "SELECT * from wasm_executables;";
-    }
-    connection.query(sqlSelect, function(err, resultSelect) {
-        if (err) {
-            res.status(400).send("Perhaps a bad request, or database is not running");
+    var json_response = {};
+    if (req.query.filterBy != undefined) {
+        // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
+        var filters = JSON.parse(req.query.filterBy);
+        console.log(typeof filters);
+        console.log(filters);
+        if (filters.length >= 1) {
+            console.log("With filters");
+            if (filters.includes("wasm_as_hex")) {
+                filters = removeElementFromArray(filters, "wasm_as_hex");
+                var sqlSelect = "SELECT wasm_hex from wasm_executables;";
+                console.log(sqlSelect);
+                performSqlQuery(sqlSelect).then((result) => {
+                    json_response["wasm_as_hex"] = result.wasm_hex.toString('utf8');
+                    console.log(JSON.stringify("2" + JSON.stringify(json_response)));
+                    if (filters.length == 0) {
+                        res.send(JSON.stringify(json_response));
+                    }
+                });
+            }
+            if (filters.includes("wasm_as_buffer")) {
+                filters = removeElementFromArray(filters, "wasm_as_buffer");
+                var sqlSelect = "SELECT wasm_hex from wasm_executables;";
+                console.log(sqlSelect);
+                performSqlQuery(sqlSelect).then((result) => {
+                    json_response["wasm_as_buffer"] = result.wasm_hex.toJSON();
+                    console.log(JSON.stringify("3" + JSON.stringify(json_response)));
+                    if (filters.length == 0) {
+                        res.send(JSON.stringify(json_response));
+                    }
+                });
+            }
+            if (filters.length >= 1) {
+                var sqlSelect = "SELECT " + filters.join() + " from wasm_executables;";
+                console.log("SQL with filters.join()\n" + sqlSelect);
+                performSqlQuery(sqlSelect).then((result) => {
+                    json_response["wasm_id"] = result.wasm_id;
+                    json_response["wasm_description"] = result.wasm_description;
+                    console.log(JSON.stringify("4" + JSON.stringify(json_response)));
+                    filters = [];
+                    if (filters.length == 0) {
+                        res.send(JSON.stringify(json_response));
+                    }
+                });
+            }
         }
-        console.log(resultSelect);
-        res.send(JSON.stringify(resultSelect));
-    });
+
+    } else {
+        console.log("No filters");
+        var sqlSelect = "SELECT * from wasm_executables;";
+        console.log(sqlSelect);
+        performSqlQuery(sqlSelect).then((result) => {
+            json_response["wasm_id"] = result.wasm_id;
+            json_response["wasm_description"] = result.wasm_description;
+
+        });
+        var sqlSelect2 = "SELECT wasm_hex from wasm_executables;";
+        performSqlQuery(sqlSelect2).then((result2) => {
+            json_response["wasm_as_hex"] = result2.wasm_hex.toString('utf8');
+            json_response["wasm_as_buffer"] = result2.wasm_hex.toJSON();
+            res.send(JSON.stringify(json_response));
+        });
+
+    }
+
 });
 
 /*

@@ -114,6 +114,24 @@ curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executab
 ```
 {"wasm_id":14,"wasm_description":"Put here by the API","wasm_as_hex":"0x1234567890","wasm_as_buffer":{"type":"Buffer","data":[48,120,49,50,51,52,53,54,55,56,57,48]}}
 ```
+### Get a specific Wasm executable - with optional filtering
+The following query string syntax will filter the response to ONLY return the fields which are explicitly listed.
+For example the following syntax will only return the `wasm_id` field
+```
+https://rpc.ssvm.secondstate.io:3000/executables/14?filterBy=["wasm_id"]
+```
+Result
+```
+{"wasm_id":14}
+```
+The following syntax will only return `wasm_as_hex` and `wasm_description` 
+```
+https://rpc.ssvm.secondstate.io:3000/executables/14?filterBy=["wasm_as_hex", "wasm_description"]
+```
+Result
+```
+{"wasm_as_hex":"0x1234567890","wasm_description":"Put here by the API"}
+```
 
 ### Execute a Wasm function
 Execute a specific function which resides in a Wasm executable. The Wasm executable must have previously been set/updated into the wasm-joey system and will be identified by its `wasm_id`
