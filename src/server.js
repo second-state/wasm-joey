@@ -40,6 +40,14 @@ app.listen(port, process.env.host, () => {
 });
 /* End Startup*/
 
+/* Utils */
+function removeElementFromArray(arr, value) {
+    return arr.filter(function(ele) {
+        return ele != value;
+    });
+}
+/* Utils end */
+
 /* RESTful endpoints */
 app.get('/', (req, res) => {
     json_response = [{
@@ -72,19 +80,45 @@ app.post('/api/executables', (req, res) => {
 
 // Get a Wasm executable
 app.get('/api/executables/:wasm_id', (req, res) => {
+    var json_response = {};
+    // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
     filters = req.query;
-    console.log(filters);
-    var sqlSelect = "SELECT wasm_id, wasm_description from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
-    console.log(sqlSelect);
-    connection.query(sqlSelect, function(err, resultSelect) {
-        if (err) {
-            res.status(400).send("Perhaps a bad request, or database is not running");
+    if (filters.length >= 1) {
+        if (filters.includes("wasm_as_hex")) {
+            filters = removeElementFromArray(filters, "wasm_as_hex");
+            var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+            console.log(sqlSelect);
+            connection.query(sqlSelect, function(err, resultSelect) {
+                if (err) {
+                    res.status(400).send("Perhaps a bad request, or database is not running");
+                }
+                json_response["wasm_as_hex"] = resultSelect[0].wasm_hex.toString('utf8');
+            });
         }
-        var json_response = {
-            "wasm_id": resultSelect[0].wasm_id,
-            "wasm_description": resultSelect[0].wasm_description,
+        if (filters.includes("wasm_as_buffer")) {
+            filters = removeElementFromArray(filters, "wasm_as_buffer");
+            var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+            console.log(sqlSelect);
+            connection.query(sqlSelect, function(err, resultSelect) {
+                if (err) {
+                    res.status(400).send("Perhaps a bad request, or database is not running");
+                }
+                json_response["wasm_as_buffer"] = resultSelect2[0].wasm_hex.toJSON();
+            });
         }
-        console.log(JSON.stringify(json_response));
+        var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+    } else {
+        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+        console.log(sqlSelect);
+        connection.query(sqlSelect, function(err, resultSelect) {
+            if (err) {
+                res.status(400).send("Perhaps a bad request, or database is not running");
+            }
+            var json_response = {
+                "wasm_id": resultSelect[0].wasm_id,
+                "wasm_description": resultSelect[0].wasm_description,
+            }
+        });
         var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
         console.log(sqlSelect2);
         connection.query(sqlSelect2, function(err, resultSelect2) {
@@ -93,17 +127,22 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             }
             json_response["wasm_as_hex"] = resultSelect2[0].wasm_hex.toString('utf8');
             json_response["wasm_as_buffer"] = resultSelect2[0].wasm_hex.toJSON();
-            res.send(JSON.stringify(json_response));
+
         });
-    });
+    }
+    res.send(JSON.stringify(json_response));
 });
 
 
 
 // Get all wasm executables which are currently stored in wasm-joey
 app.get('/api/executables', (req, res) => {
-    var sqlSelect = "SELECT wasm_id, wasm_description from wasm_executables;";
-    console.log(sqlSelect);
+    filters = req.query;
+    if (filters.length >= 1) {
+        var sqlSelect = "SELECT " + filters.join() + " from wasm_executables;";
+    } else {
+        var sqlSelect = "SELECT * from wasm_executables;";
+    }
     connection.query(sqlSelect, function(err, resultSelect) {
         if (err) {
             res.status(400).send("Perhaps a bad request, or database is not running");
