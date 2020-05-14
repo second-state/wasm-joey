@@ -106,7 +106,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 if (err) {
                     res.status(400).send("Perhaps a bad request, or database is not running");
                 }
-                json_response["wasm_as_buffer"] = resultSelect2[0].wasm_hex.toJSON();
+                json_response["wasm_as_buffer"] = resultSelect[0].wasm_hex.toJSON();
             });
         }
         var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
@@ -119,6 +119,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             json_response["wasm_id"] = resultSelect[0].wasm_id;
             json_response["wasm_description"] = resultSelect[0].wasm_description;
         });
+        res.send(JSON.stringify(json_response));
     } else {
         console.log("No filters");
         var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
