@@ -142,8 +142,9 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             json_response["wasm_as_buffer"] = resultSelect2[0].wasm_hex.toJSON();
 
         });
+            res.send(JSON.stringify(json_response));
     }
-    res.send(JSON.stringify(json_response));
+
 });
 
 
