@@ -86,6 +86,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     console.log(typeof filters);
     console.log(filters);
     if (filters.length >= 1) {
+        console.log("With filters");
         if (filters.includes("wasm_as_hex")) {
             filters = removeElementFromArray(filters, "wasm_as_hex");
             var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
@@ -109,7 +110,10 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             });
         }
         var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
+        json_response["wasm_id"]=resultSelect[0].wasm_id;
+        json_response["wasm_description"]=resultSelect[0].wasm_description;
     } else {
+        console.log("No filters");
         var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "'";
         console.log(sqlSelect);
         connection.query(sqlSelect, function(err, resultSelect) {
