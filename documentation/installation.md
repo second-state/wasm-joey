@@ -185,10 +185,6 @@ Run the following command to enable sufficient permissions
 ```bash
 sudo chown $USER:$USER -R /etc/letsencrypt
 ```
-Set the firewall to redirect between port 80 and 3000
-```bash
-sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 3000
-```
 ### Serve
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
