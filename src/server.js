@@ -1,4 +1,6 @@
 // System
+//File system
+const fs = require('fs');
 // HTTPS
 const https = require('https');
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/privkey.pem', 'utf8');
