@@ -67,6 +67,7 @@ https://rpc.ssvm.secondstate.io:8081/api/executables
 No body required
 #### Browser example
 Please note, GET requests can be performed [in a browser](https://rpc.ssvm.secondstate.io:8081/api/executables) (without the need for REST/RPC client or command line code)
+
 ![get executables](../images/get_executables.png)
 #### Curl example
 ```
@@ -92,6 +93,9 @@ https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```
 #### Body
 No body required
+#### Browser example
+
+![get executables](../images/get_executable_1.png)
 #### Curl example
 ```
 curl --location --request GET 'https://rpc.ssvm.secondstate.io:8081/api/executables/1' \
@@ -117,6 +121,8 @@ The following syntax will only return `wasm_as_hex` and `wasm_description`
 https://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=["wasm_as_hex", "wasm_description"]
 ```
 Result
+
+![get executables](../images/get_executable_1_filter.png)
 ```
 {"wasm_as_hex":"0x1234567890","wasm_description":"Put here by the API"}
 ```
