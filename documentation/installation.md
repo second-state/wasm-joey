@@ -65,7 +65,7 @@ mkdir /media/nvme/node_rpc
 
 ## Install
 Fetch the application code
-```
+```bash
 cd /media/nvme/node_rpc
 git clone https://github.com/second-state/wasm-joey.git
 cd /media/nvme/node_rpc/wasm-joey/src
@@ -111,11 +111,11 @@ sudo apt-get install -y mysql-server
 
 ## MySQL data directory
 Create dir to house the database and update the default MySQL config
-```
+```bash
 mkdir /media/nvme/joey_database
 ```
 Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. Then Change the datadir line from the default to what is listed directly below this line
-```
+```bash
 datadir = /media/nvme/joey_database
 ```
 Configure Ubuntu to allow new MySQL directory
@@ -123,11 +123,11 @@ Configure Ubuntu to allow new MySQL directory
 sudo vi /etc/apparmor.d/tunables/alias
 ```
 Add the following line
-```
+```bash
 alias /var/lib/mysql/ -> /media/nvme/joey_database,
 ```
 Then restart AppArmor
-```
+```bash
 sudo systemctl restart apparmor
 ```
 ## MySQL Security
@@ -147,7 +147,7 @@ sudo mysql -u root -p
 ```
 
 Create new user and database for the application
-```bash
+```SQL
 CREATE DATABASE joeydb;
 CREATE USER 'joey'@'localhost' IDENTIFIED BY 'your_password_here';
 GRANT ALL PRIVILEGES ON joeydb . * TO 'joey'@'localhost';
@@ -155,7 +155,7 @@ FLUSH PRIVILEGES;
 ```
 
 Create blank tables for the application to use
-```
+```SQL
 CREATE TABLE wasm_executables(
     wasm_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_description CHAR(255) NOT NULL,
@@ -164,7 +164,7 @@ CREATE TABLE wasm_executables(
 );
 ```
 Create test data and insert into the table
-```
+```SQL
 INSERT INTO wasm_executables (wasm_description,wasm_hex)
 VALUES ('System generated entry for testing','0x1234567890');
 ```
@@ -182,14 +182,12 @@ sudo certbot certonly --manual
 ```
 Place the file locations of the above command in the server.js file
 Run the following command to enable sufficient permissions
-```
+```bash
 sudo chown $USER:$USER -R /etc/letsencrypt
 ```
-
-### Port
-Set which port you would like wasm-joey to be served on, using the following command
+Set the firewall to redirect between port 80 and 3000
 ```bash
-export PORT=443
+sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 3000
 ```
 ### Serve
 ```bash
