@@ -183,7 +183,7 @@ sudo certbot certonly --manual
 Place the file locations of the above command in the server.js file
 Run the following command to enable sufficient permissions
 ```
-sudo chmod 755 /etc/letsencrypt/live/
+sudo chown $USER:$USER -R /etc/letsencrypt
 ```
 
 ### Port

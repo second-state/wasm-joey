@@ -13,12 +13,12 @@ const credentials = {
     ca: ca
 };
 //Port
-const port = process.env.PORT || 443;
+const port = process.env.PORT || 3000;
 // Express
 const express = require('express');
 const app = express();
 app.use(helmet()); 
-https.createServer(credentials, app).listen(port);
+
 // Config
 require('dotenv').config();
 // Data ser/des
@@ -45,7 +45,7 @@ console.log("\n");
 
 /* Startup */
 // Serve
-app.listen(port, process.env.host, () => {
+https.createServer(credentials, app).listen(port, process.env.host, () => {
     console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + port);
     console.log("Reading database configuration, please wait ... ");
     console.log("Database host: " + process.env.db_host);
