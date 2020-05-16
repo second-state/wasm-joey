@@ -12,15 +12,14 @@ const credentials = {
     cert: certificate,
     ca: ca
 };
-//Port
-const port = process.env.port;
 // Express
 const express = require('express');
 const app = express();
 app.use(helmet()); 
-
 // Config
 require('dotenv').config();
+//Port
+const port = process.env.port;
 // Data ser/des
 app.use(express.json());
 app.use(express.urlencoded({
