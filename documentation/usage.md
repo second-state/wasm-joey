@@ -33,9 +33,10 @@ Content-Type
 Content-Type: application/json
 ```
 #### Body
-Wasm binary can be converted to hexadecimal string using the following command. Please ensure to add the `0x` to the start of the string as shown, in the request JSON, below.
+Wasm binary `.wasm` file can be converted to hexadecimal file using the following commands. The first command saves the wasm binary as hex. The second line adds a `0x` to the very start of the hex file.
 ```
- xxd -p wasm_file.wasm | tr -d $'\n'
+xxd -p wasm_file.wasm | tr -d $'\n' > wasm_file_as_hex.hex
+sed -i '1s/^/0x/' wasm_file_as_hex.hex
 ```
 The hexadecimal string can then be passed into wasm-joey for future execution
 ```
@@ -46,6 +47,15 @@ The hexadecimal string can then be passed into wasm-joey for future execution
 curl --location --request POST https://rpc.ssvm.secondstate.io:8081/api/executables' \
 --header 'Content-Type: application/json' \
 --data-raw '{"wasm_hex":"0x1234567890"}'
+```
+##### Large Files
+If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and load your `wasm` executable via curl by passing in a whole file as the data. 
+```bash
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header "Content-Type: application/json" --data @/media/nvme/hello/pkg/hello_lib_bg.hex
+```
+Where `@/media/nvme/hello/pkg/hello_lib_bg.hex` is actually a file on the file system which contains the body i.e.
+```
+{"wasm_description": "Hello example", "wasm_hex": "0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040300000606040 ... 29"}
 ```
 #### Response
 The above request will return a response in the following JSON format 

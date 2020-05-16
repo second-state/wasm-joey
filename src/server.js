@@ -42,6 +42,9 @@ connection.connect((err) => {
 });
 console.log("\n");
 
+// SSVM
+var ssvm = require('ssvm-napi');
+
 /* Startup */
 // Serve
 https.createServer(credentials, app).listen(port, process.env.host, () => {
@@ -223,3 +226,29 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
         res.send(JSON.stringify(json_response));
     });
 });
+
+/* Running Wasm Functions */
+//
+//
+// Run a function belonging to a Wasm executable
+app.get('/api/run/:wasm_id', (req, res) => {
+    var json_response = {};
+    var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+    console.log(sqlSelect);
+    performSqlQuery(sqlSelect).then((result) => {
+        let raw_data = result[0].wasm_hex.toJSON();
+        var wasm_bytecode = Uint8Array.from(raw_data.wasm_as_buffer.data);
+
+        /*Ability to pass in bytecode is coming in next ssvm-napi release*/
+        //let vm = new ssvm.VM(wasm_bytecode);
+
+        /* wasm-joey will need to structure how ssvm-napi wants to recieve the function name and its parameters */
+        //var return_value = vm.RunString("say", "world");
+
+        json_response["return_value"] = return_value;
+        res.send(JSON.stringify(json_response));
+    });
+});
+//
+//
+/* Running Wasm Functions */
