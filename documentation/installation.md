@@ -176,14 +176,20 @@ VALUES ('System generated entry for testing','0x1234567890');
 sudo add-apt-repository ppa:certbot/certbot
 sudo apt-get update
 sudo apt-get -y upgrade
+npm install helmet
 sudo apt-get install certbot
 sudo certbot certonly --manual
+```
+Place the file locations of the above command in the server.js file
+Run the following command to enable sufficient permissions
+```
+sudo chmod 755 /etc/letsencrypt/live/
 ```
 
 ### Port
 Set which port you would like wasm-joey to be served on, using the following command
 ```bash
-export PORT=3000 # or 5000 etc.
+export PORT=443
 ```
 ### Serve
 ```bash
