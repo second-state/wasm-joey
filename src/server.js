@@ -115,7 +115,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         var filters = JSON.parse(req.query.filterBy);
         if (filters.length >= 1) {
             for (var i = 0; i < filters.length; i++) {
-                if (!l.includes(filters[i])) {
+                if (!valid_filters.includes(filters[i])) {
                     console.log(filters[i] + " is NOT a valid filter ...");
                     request_validity = false;
                 } else {
