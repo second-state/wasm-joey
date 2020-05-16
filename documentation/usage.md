@@ -25,7 +25,7 @@ POST
 #### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables
+https://rpc.ssvm.secondstate.io:8081/api/executables
 ```
 #### Header
 Content-Type
@@ -43,7 +43,7 @@ The hexadecimal string can then be passed into wasm-joey for future execution
 ```
 #### Curl example
 ```
-curl --location --request POST https://rpc.ssvm.secondstate.io:3000/api/executables' \
+curl --location --request POST https://rpc.ssvm.secondstate.io:8081/api/executables' \
 --header 'Content-Type: application/json' \
 --data-raw '{"wasm_hex":"0x1234567890"}'
 ```
@@ -61,13 +61,13 @@ GET
 #### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables
+https://rpc.ssvm.secondstate.io:8081/api/executables
 ```
 #### Body
 No body required
 #### Curl example
 ```
-curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executables' \
+curl --location --request GET 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
 --header 'Content-Type: application/json' \
 --data-raw ''
 ```
@@ -85,13 +85,13 @@ GET
 #### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, `wasm_id`
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables/1
+https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```
 #### Body
 No body required
 #### Curl example
 ```
-curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
+curl --location --request GET 'https://rpc.ssvm.secondstate.io:8081/api/executables/1' \
 --header 'Content-Type: application/json' \
 --data-raw ''
 ```
@@ -103,7 +103,7 @@ curl --location --request GET 'https://rpc.ssvm.secondstate.io:3000/api/executab
 The following query string syntax will filter the response to ONLY return the fields which are explicitly listed.
 For example the following syntax will only return the `wasm_id` field
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables/1?filterBy=["wasm_id"]
+https://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=["wasm_id"]
 ```
 Result
 ```
@@ -111,7 +111,7 @@ Result
 ```
 The following syntax will only return `wasm_as_hex` and `wasm_description` 
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables/1?filterBy=["wasm_as_hex", "wasm_description"]
+https://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=["wasm_as_hex", "wasm_description"]
 ```
 Result
 ```
@@ -127,7 +127,7 @@ POST
 Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables/1
+https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```
 Header
 Content-Type
@@ -140,7 +140,7 @@ Body
 ```
 Curl example
 ```
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables/1' \
 --header 'Content-Type: application/json' \
 --data-raw '{"wasm_method":"add", "params":[1, 2]}'
 ```
@@ -153,7 +153,7 @@ PUT
 Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables/1
+https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```
 Header
 Content-Type
@@ -166,7 +166,7 @@ Body
 ```
 Curl example
 ```
-curl --location --request PUT 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
+curl --location --request PUT 'https://rpc.ssvm.secondstate.io:8081/api/executables/1' \
 --header 'Content-Type: application/json' \
 --data-raw '{"wasm_hex": "0x8888888"}'
 ```
@@ -182,11 +182,11 @@ DELETE
 Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
 ```
-https://rpc.ssvm.secondstate.io:3000/api/executables/1
+https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```
 Curl example 
 ```
-curl --location --request DELETE 'https://rpc.ssvm.secondstate.io:3000/api/executables/1' \
+curl --location --request DELETE 'https://rpc.ssvm.secondstate.io:8081/api/executables/1' \
 --header 'Content-Type: application/json' \
 --data-raw ''
 ```
