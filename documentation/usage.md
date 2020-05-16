@@ -67,7 +67,7 @@ https://rpc.ssvm.secondstate.io:8081/api/executables
 No body required
 #### Browser example
 Please note, GET requests can be performed [in a browser](https://rpc.ssvm.secondstate.io:8081/api/executables) (without the need for REST/RPC client or command line code)
-![get executables](./images/get_executables.png)
+![get executables](../images/get_executables.png)
 #### Curl example
 ```
 curl --location --request GET 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
