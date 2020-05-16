@@ -171,6 +171,15 @@ VALUES ('System generated entry for testing','0x1234567890');
 
 ## Deployment
 
+### SSL
+```bash
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt-get update
+sudo apt-get -y upgrade
+sudo apt-get install certbot
+sudo certbot certonly --manual
+```
+
 ### Port
 Set which port you would like wasm-joey to be served on, using the following command
 ```bash

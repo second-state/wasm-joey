@@ -1,7 +1,22 @@
 // System
+// HTTPS
+const https = require('https');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/fullchain.pem', 'utf8');
+const helmet = require("helmet");
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+    ca: ca
+};
+//Port
+const port = process.env.PORT || 443;
 // Express
 const express = require('express');
 const app = express();
+app.use(helmet()); 
+https.createServer(credentials, app).listen(port);
 // Config
 require('dotenv').config();
 // Data ser/des
@@ -9,8 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
-//Port
-const port = process.env.PORT || 3000;
+
 // Database
 // Database
 console.log("Connecting to database, please wait ... ");
