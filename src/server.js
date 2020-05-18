@@ -230,7 +230,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 /* Running Wasm Functions */
 //
 //
-// Run a function belonging to a Wasm executable
+// Run a function belonging to a Wasm executable -> returns a JSON string
 app.get('/api/run/:wasm_id', (req, res) => {
     var json_response = {};
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -238,13 +238,10 @@ app.get('/api/run/:wasm_id', (req, res) => {
     performSqlQuery(sqlSelect).then((result) => {
         let raw_data = result[0].wasm_hex.toJSON();
         var wasm_bytecode = Uint8Array.from(raw_data.wasm_as_buffer.data);
-
-        /*Ability to pass in bytecode is coming in next ssvm-napi release*/
-        //let vm = new ssvm.VM(wasm_bytecode);
-
-        /* wasm-joey will need to structure how ssvm-napi wants to recieve the function name and its parameters */
-        //var return_value = vm.RunString("say", "world");
-
+        let vm = new ssvm.VM(wasm_bytecode);
+        let function_name = req.body["function_name"];
+        let function_parameters = req.body["function_params"];
+        var return_value = vm.RunString(function_name, ...function_parameters); // This uses spread syntax which allows the array of arguments to be expanded in place
         json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
     });

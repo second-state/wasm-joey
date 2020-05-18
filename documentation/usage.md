@@ -154,14 +154,23 @@ Content-Type
 Content-Type: application/json
 ```
 Body
+The `function_name` must be a string and must match the actual function name exactly.
+The `function_params` must be in a JS array. These parameters have to be a) the right type and b) in the right order (which the function expects).
+This system currently accepts integer, string and array/list only.
+#### Examples
+For example, when calling a function (written in Rust and compiled to Wasm) such as this `pub extern fn triple(x: i32)` you would create a body like this `{"function_name":"triple", "function_params":[2]}` or when calling a function such as this `pub fn many_different_parameters(a: i32, b: &mut [i32], c: &str)` you would create a body like this 
 ```
-{"wasm_method":"add", "params":[1, 2]}
+{
+	"function_name": "many_different_parameters",
+	"function_params": [1, [1, 2], "string"]
+}
 ```
+
 Curl example
 ```
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables/1' \
 --header 'Content-Type: application/json' \
---data-raw '{"wasm_method":"add", "params":[1, 2]}'
+--data-raw '{"function_name":"add", "function_params":[1, 2]}'
 ```
 
 ### Update (Hot Swap) a Wasm executable
