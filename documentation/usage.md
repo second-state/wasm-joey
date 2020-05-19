@@ -14,7 +14,7 @@ wasm-joey (using MySQL) stores the actual executable Wasm binary code, as well a
 # Request / Response
 
 ## Request data specifications
-Please read the following request types (load, read, execute, update, delete) and take note of the data specifications. We provide examples for each.
+Please read the following request types (set, get, execute, update, delete) and take note of the data specifications. We provide examples for each.
 
 ### Set a Wasm executable in hex format
 Set a Wasm binary into the system and return a freshly minted `wasm_id` back to the calling code
@@ -49,7 +49,7 @@ curl --location --request POST https://rpc.ssvm.secondstate.io:8081/api/executab
 --data-raw '{"wasm_hex":"0x1234567890"}'
 ```
 ##### Large Files
-If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and load your `wasm` executable via curl by passing in a whole file as the data. 
+If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and set your `wasm` executable inside wasm-joey via curl by passing in a whole file as the data. 
 ```bash
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header "Content-Type: application/json" --data @/media/nvme/hello/pkg/hello_lib_bg.hex
 ```
