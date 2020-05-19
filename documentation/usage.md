@@ -23,7 +23,7 @@ Set a Wasm binary into the system and return a freshly minted `wasm_id` back to 
 POST
 ```
 #### Endpoint
-scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/executables`
 ```
 https://rpc.ssvm.secondstate.io:8081/api/executables
 ```
@@ -55,7 +55,7 @@ curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executa
 ```
 Where `@/media/nvme/hello/pkg/hello_lib_bg.hex` is actually a file on the file system which contains the body i.e.
 ```
-{"wasm_description": "Hello example", "wasm_hex": "0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040300000606040 ... 29"}
+{"wasm_description": "Hello example", "wasm_hex": "0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040808100606040 ... 29"}
 ```
 #### Response
 The above request will return a response in the following JSON format 
@@ -69,7 +69,7 @@ Get all Wasm executable `wasm_id`s The `wasm_id` is they key use to perform othe
 GET
 ```
 #### Endpoint
-scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/executables`
 ```
 https://rpc.ssvm.secondstate.io:8081/api/executables
 ```
@@ -97,7 +97,7 @@ Get a Wasm binary which has a certain `wasm_id` and return that specific Wasm ex
 GET
 ```
 #### Endpoint
-scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, `wasm_id`
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/executables`, `wasm_id`
 ```
 https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```
@@ -144,9 +144,9 @@ Request Type
 POST
 ```
 Endpoint
-scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/run`, wasm_id `1`, function_name `add`
 ```
-https://rpc.ssvm.secondstate.io:8081/api/executables/1
+https://rpc.ssvm.secondstate.io:8081/api/run/wasm_id/function_name
 ```
 Header
 Content-Type
@@ -154,15 +154,13 @@ Content-Type
 Content-Type: application/json
 ```
 Body
-The `function_name` must be a string and must match the actual function name exactly.
 The `function_params` must be in a JS array. These parameters have to be a) the right type and b) in the right order (which the function expects).
 This system currently accepts integer, string and array/list only.
 #### Examples
-For example, when calling a function (written in Rust and compiled to Wasm) such as this `pub extern fn triple(x: i32)` you would create a body like this `{"function_name":"triple", "function_params":[2]}` or when calling a function such as this `pub fn many_different_parameters(a: i32, b: &mut [i32], c: &str)` you would create a body like this 
+For example, when calling a function (written in Rust and compiled to Wasm) such as this `pub extern fn triple(x: i32)` you would create a body like this `{"function_params":[2]}` or when calling a function such as this `pub fn many_different_parameters(a: i32, b: &mut [i32], c: &str)` you would create a body like this 
 ```
 {
-	"function_name": "many_different_parameters",
-	"function_params": [1, [1, 2], "string"]
+	"function_params": [1, [1, 2], "string"] // integer, array, string
 }
 ```
 
@@ -179,7 +177,7 @@ Remove and replace an existing Wasm executable in hex format. Future execute cal
 PUT
 ```
 Endpoint
-scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/executables`, wasm_id `1`
 ```
 https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```
@@ -208,7 +206,7 @@ Delete an existing Wasm executable in hex format, from the system
 DELETE
 ```
 Endpoint
-scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `3000`, path `executables`, wasm_id `1`
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/executables`, wasm_id `1`
 ```
 https://rpc.ssvm.secondstate.io:8081/api/executables/1
 ```

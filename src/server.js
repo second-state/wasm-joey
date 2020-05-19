@@ -231,16 +231,18 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 //
 // Run a function belonging to a Wasm executable -> returns a JSON string
-app.get('/api/run/:wasm_id', (req, res) => {
+app.get('/api/run/:wasm_id/:function_name', (req, res) => {
     var json_response = {};
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     console.log(sqlSelect);
     performSqlQuery(sqlSelect).then((result) => {
-        let raw_data = result[0].wasm_hex.toJSON();
+        var raw_data = result[0].wasm_hex.toJSON();
         var wasm_bytecode = Uint8Array.from(raw_data.wasm_as_buffer.data);
-        let vm = new ssvm.VM(wasm_bytecode);
-        let function_name = req.body["function_name"];
-        let function_parameters = req.body["function_params"];
+        var vm = new ssvm.VM(wasm_bytecode);
+        var function_name = req.params.function_name;
+        console.log("Function name: " + function_name)
+        var function_parameters = req.body["function_params"];
+        console.log("Function parameters: " + function_parameters)
         var return_value = vm.RunString(function_name, ...function_parameters); // This uses spread syntax which allows the array of arguments to be expanded in place
         json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
