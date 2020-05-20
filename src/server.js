@@ -240,9 +240,10 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     performSqlQuery(sqlSelect).then((result) => {
         console.log(result);
         var raw_data = result[0].wasm_hex.toJSON();
-        var wasm_bytecode = Uint8Array.from(raw_data);
-        console.log(raw_data);
-        //var vm = new ssvm.VM(wasm_bytecode);
+        console.log("Raw data: " + raw_data);
+        var wasm_as_buffer = Uint8Array.from(raw_data.data);
+        console.log("Buffer: " + wasm_as_buffer);
+        //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
         console.log("Function name: " + function_name)
         var function_parameters = req.body["function_params"];
