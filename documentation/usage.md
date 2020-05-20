@@ -137,7 +137,7 @@ Result
 {"wasm_as_hex":"0x1234567890","wasm_description":"Put here by the API"}
 ```
 
-### Execute a Wasm function
+### Execute a Wasm function - JSON return type
 Execute a specific function which resides in a Wasm executable. The Wasm executable must have previously been set/updated into the wasm-joey system and will be identified by its `wasm_id`
 Request Type
 ```
@@ -149,7 +149,7 @@ scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/run`, w
 https://rpc.ssvm.secondstate.io:8081/api/run/wasm_id/function_name
 ```
 #### Header
-Content-Type or 
+Content-Type #TODO add the multipart content type documentation here because that will also return a JSON string (just allows the user to send in multi and mixed data)
 ```
 Content-Type: application/json
 ```
@@ -193,6 +193,64 @@ curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/p
 --header 'Content-Type: application/json' \
 --data-raw '{"function_params": {"param_one": 1,"param_two": "two"}}'
 ```
+
+### Execute a Wasm function - Uint8Array / Buffer return type
+Execute a specific function which resides in a Wasm executable. The Wasm executable must have previously been set/updated into the wasm-joey system and will be identified by its `wasm_id`
+Request Type
+```
+POST
+```
+#### Endpoint
+scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/run`, wasm_id `1`, function_name `add` and lastly the word `bytes`
+```
+https://rpc.ssvm.secondstate.io:8081/api/run/wasm_id/function_name/bytes
+```
+#### Header
+Content-Type  
+```
+Content-Type: application/octet-stream
+```
+#### Body
+If the Content-Type is set to `application/json` then the body of the post request (to execute a Rust/Wasm function) must be valid JSON. 
+
+#### Examples
+Depending on the particular Rust/Wasm function, the caller will be required to provide the valid JSON in the format that the Rust/Wasm can consume it. 
+
+#### Please note:
+The Rust/Wasm code could explicitly declare a Struct on which serde_json could use as the data type, when parsing. However, a struct is flat. What this means, is that if you are going to parse and traverse **nested** data, then Rust will require that you build and maintain multiple complex data structures (which mirror the JSON data). You may want to do this, which is great. However, in some cases this may be too hard to write and maintain and so here is a proposal for an easier solution.
+
+Instead of writing complex nested Structs you could use serde_json's generic `Value` type as demonstrated in the following code. This approach allows for maximum flexiblility.
+For example if the Rust/Wasm application looks like this
+```
+use serde_json;
+use serde_json::{Value};
+
+#[no_mangle]
+fn process(s: &str){
+    let json_as_object: Value = serde_json::from_str(s).unwrap();
+    println!("{:?}", json_as_object["function_params"]);
+    println!("{:?}", json_as_object["function_params"]["param_one"]);
+    println!("{:?}", json_as_object["function_params"]["param_two"]);
+}
+```
+Then the calling request would create a valid JSON object like the one below, in order to satisfy the Rust/Wasm's parsing of this data
+```
+{
+	"function_params": {
+		"param_one": 1,
+		"param_two": "two"
+	}
+}
+```
+
+#### Curl example
+The following example calls the function called `process` which resides in the wasm executable with the `wasm_id` of `1`.
+```
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/process' \
+--header 'Content-Type: application/json' \
+--data-raw '{"function_params": {"param_one": 1,"param_two": "two"}}'
+```
+
 
 ### Update (Hot Swap) a Wasm executable
 Remove and replace an existing Wasm executable in hex format. Future execute calls will of course run this new executable's logic

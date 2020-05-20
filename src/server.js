@@ -250,9 +250,10 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
             res.send(JSON.stringify(json_response));
         }
         var function_parameters_as_string = JSON.stringify(function_parameters);
+        copnsole.log(function_parameters_as_string);
         // This is the new way in which vm.RunString will be called i.e. passing in the entire body of parameters to ssvm, which hands it over the the Rust/Wasm function to deal parse/interpret 
-        var return_value = vm.RunString(function_name, function_parameters_as_string); 
-        json_response["return_value"] = return_value;
+        //var return_value = vm.RunString(function_name, function_parameters_as_string); 
+        //json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
     });
 });
@@ -269,8 +270,10 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
         var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
         var body_as_buffer = Uint8Array.from(req.body);
-        var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
-        res.send(new Buffer(return_value, 'binary'));
+        console.log(body_as_buffer);
+        //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
+        //res.send(new Buffer(return_value, 'binary'));
+        res.send(new Buffer(body_as_buffer, 'binary')); // Delete this line, it is just for testing whilst ssvm is being updated
     });
 });
 //
