@@ -27,7 +27,7 @@ app.use(express.urlencoded({
 }));
 // Body parser
 var bodyParser = require('body-parser');
-
+app.use(bodyParser.raw(options));
 // Database
 // Database
 console.log("Connecting to database, please wait ... ");
@@ -271,8 +271,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
         var wasm_as_buffer = Uint8Array.from(raw_data.data);
         //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
-        // Parse the body as raw
-        app.use(bodyParser.raw(options));
         var body_as_buffer = Uint8Array.from(req.body);
         console.log("Body as buffer: " + body_as_buffer);
         //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
