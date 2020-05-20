@@ -246,7 +246,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
         console.log("Function name: " + function_name)
-        var function_parameters = req.body["function_params"];
+        var function_parameters = req.body;
         console.log("Function parameters: " + function_parameters)
 
         // Testing different ways to pass in the JSON
@@ -260,7 +260,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         // Below is the original way which vm.RunString was called i.e. used spread syntax which allowed the array of arguments to be expanded in place and then ssvm would process each one individually
         //var return_value = vm.RunString(function_name, ...function_parameters);
         */
-        
+
         //json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
     });
