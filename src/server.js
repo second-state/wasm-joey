@@ -245,10 +245,15 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         console.log("Buffer: " + wasm_as_buffer);
         //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
-        console.log("Function name: " + function_name)
+        console.log("Function name: " + function_name);
+        try {
         var function_parameters = req.body;
-        console.log("Function parameters: " + function_parameters)
-
+        console.log("Function parameters: " + function_parameters);
+        }
+        catch(err) {
+            json_response["error"] = err;
+            res.send(JSON.stringify(json_response));
+        }
         // Testing different ways to pass in the JSON
         //var function_parameters_as_object = JSON.parse(function_parameters);
         var function_parameters_as_string = JSON.stringify(function_parameters);
