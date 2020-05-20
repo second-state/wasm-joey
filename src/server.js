@@ -264,13 +264,13 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
     console.log("Checking request Content-Type: " + req.is('application/octet-stream'));
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((result, error) => {
-        console.log(result);
+        console.log("Request body: " + req.body);
         var raw_data = result[0].wasm_hex.toJSON();
         var wasm_as_buffer = Uint8Array.from(raw_data.data);
         //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
         var body_as_buffer = Uint8Array.from(req.body);
-        console.log(body_as_buffer);
+        console.log("Body as buffer: " + body_as_buffer);
         //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
         //res.send(new Buffer(return_value, 'binary'));
         res.contentType('application/octet-stream');
