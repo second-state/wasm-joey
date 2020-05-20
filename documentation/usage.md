@@ -186,7 +186,8 @@ Then the calling request would create a valid JSON object like the one below, in
 }
 ```
 
-Curl example
+#### Curl example
+The following example calls the function called `process` which resides in the wasm executable with the `wasm_id` of `1`.
 ```
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/process' \
 --header 'Content-Type: application/json' \
