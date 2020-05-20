@@ -251,8 +251,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         //json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
     });
-    */
-    res.send(JSON.stringify(json_response));
 });
 //
 //
