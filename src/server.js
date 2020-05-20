@@ -238,6 +238,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     console.log(sqlSelect);
     performSqlQuery(sqlSelect).then((result) => {
+        console.log(result);
         var raw_data = result[0].wasm_hex.toJSON();
         var wasm_bytecode = Uint8Array.from(raw_data.wasm_as_buffer.data);
         var vm = new ssvm.VM(wasm_bytecode);
