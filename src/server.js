@@ -253,6 +253,7 @@ app.post('/api/executables2', (req, res) => {
         res.send(JSON.stringify(json_response));
     });
     */
+    res.send(JSON.stringify(json_response));
 });
 //
 //
