@@ -143,17 +143,17 @@ Request Type
 ```
 POST
 ```
-Endpoint
+#### Endpoint
 scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/run`, wasm_id `1`, function_name `add`
 ```
 https://rpc.ssvm.secondstate.io:8081/api/run/wasm_id/function_name
 ```
-Header
+#### Header
 Content-Type or 
 ```
 Content-Type: application/json
 ```
-Body
+#### Body
 If the Content-Type is set to `application/json` then the body of the post request (to execute a Rust/Wasm function) must be valid JSON. 
 
 #### Examples
