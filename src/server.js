@@ -27,7 +27,7 @@ app.use(express.urlencoded({
 }));
 // Body parser
 var bodyParser = require('body-parser');
-app.use(bodyParser.raw(options));
+app.use(bodyParser.raw());
 // Database
 // Database
 console.log("Connecting to database, please wait ... ");
