@@ -273,7 +273,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
         console.log(body_as_buffer);
         //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
         //res.send(new Buffer(return_value, 'binary'));
-        res.send(Buffer.from([1, 2, 3, 4, 5, 6], 'binary'); // Delete this line, it is just for testing whilst ssvm is being updated
+        res.send(Buffer.from([1, 2, 3, 4, 5, 6], 'binary')); // Delete this line, it is just for testing whilst ssvm is being updated
     });
 });
 //
