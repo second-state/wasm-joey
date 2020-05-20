@@ -231,7 +231,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 //
 // Run a function belonging to a Wasm executable -> returns a JSON string
-app.post('/api/run/:wasm_id/:function_name', (req, res) => {
+app.post('/api/run/:wasm_id', (req, res) => {
     var json_response = {};
     console.log("Checking request Content-Type: " + req.is('application/json'));
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -240,8 +240,8 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         var raw_data = result[0].wasm_hex.toJSON();
         var wasm_bytecode = Uint8Array.from(raw_data.wasm_as_buffer.data);
         var vm = new ssvm.VM(wasm_bytecode);
-        var function_name = req.params.function_name;
-        console.log("Function name: " + function_name)
+        //var function_name = req.params.function_name;
+        //console.log("Function name: " + function_name)
         var function_parameters = req.body["function_params"];
         console.log("Function parameters: " + function_parameters)
 
