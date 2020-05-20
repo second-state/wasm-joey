@@ -237,7 +237,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     console.log("Checking request Content-Type: " + req.is('application/json'));
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     console.log(sqlSelect);
-    performSqlQuery(sqlSelect).then((result) => {
+    performSqlQuery(sqlSelect).then((result, error) => {
         console.log(result);
         var raw_data = result[0].wasm_hex.toJSON();
         console.log("Raw data: " + raw_data);
@@ -268,6 +268,27 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 
         //json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
+    });
+});
+
+app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
+    var json_response = {};
+    console.log("Ok");
+    console.log("Checking request Content-Type: " + req.is('application/octet-stream'));
+    var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+    console.log(sqlSelect);
+    performSqlQuery(sqlSelect).then((result, error) => {
+        console.log(result);
+        var raw_data = result[0].wasm_hex.toJSON();
+        console.log("Raw data: " + raw_data);
+        var wasm_as_buffer = Uint8Array.from(raw_data.data);
+        console.log("Buffer: " + wasm_as_buffer);
+        var vm = new ssvm.VM(wasm_as_buffer);
+        var function_name = req.params.function_name;
+        console.log("Function name: " + function_name);
+        var body_as_buffer = Uint8Array.from(req.body);
+        var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
+        res.send(new Buffer(return_value, 'binary'));
     });
 });
 //
