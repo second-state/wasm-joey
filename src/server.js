@@ -231,7 +231,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 //
 // Run a function belonging to a Wasm executable -> returns a JSON string
-app.post('/api/run/:wasm_id', (req, res) => {
+app.post('/api/:wasm_id/run', (req, res) => {
     var json_response = {};
     console.log("Checking request Content-Type: " + req.is('application/json'));
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
