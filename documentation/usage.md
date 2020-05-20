@@ -149,26 +149,48 @@ scheme `https`, netloc `rpc.ssvm.secondstate.io`, port `8081`, path `api/run`, w
 https://rpc.ssvm.secondstate.io:8081/api/run/wasm_id/function_name
 ```
 Header
-Content-Type
+Content-Type or 
 ```
 Content-Type: application/json
 ```
 Body
-The `function_params` must be in a JS array. These parameters have to be a) the right type and b) in the right order (which the function expects).
-This system currently accepts integer, string and array/list only.
+If the Content-Type is set to `application/json` then the body of the post request (to execute a Rust/Wasm function) must be valid JSON. 
+
 #### Examples
-For example, when calling a function (written in Rust and compiled to Wasm) such as this `pub extern fn triple(x: i32)` you would create a body like this `{"function_params":[2]}` or when calling a function such as this `pub fn many_different_parameters(a: i32, b: &mut [i32], c: &str)` you would create a body like this 
+Depending on the particular Rust/Wasm function, the caller will be required to provide the valid JSON in the format that the Rust/Wasm can consume it. 
+
+#### Please note:
+The Rust/Wasm code could explicitly declare a Struct on which serde_json could use as the data type, when parsing. However, a struct is flat. What this means, is that if you are going to parse and traverse **nested** data, then Rust will require that you build and maintain multiple complex data structures (which mirror the JSON data). You may want to do this, which is great. However, in some cases this may be too hard to write and maintain and so here is a proposal for an easier solution.
+
+Instead of writing complex nested Structs you could use serde_json's generic `Value` type as demonstrated in the following code. This approach allows for maximum flexiblility.
+For example if the Rust/Wasm application looks like this
+```
+use serde_json;
+use serde_json::{Value};
+
+#[no_mangle]
+fn process(s: &str){
+    let json_as_object: Value = serde_json::from_str(s).unwrap();
+    println!("{:?}", json_as_object["function_params"]);
+    println!("{:?}", json_as_object["function_params"]["param_one"]);
+    println!("{:?}", json_as_object["function_params"]["param_two"]);
+}
+```
+Then the calling request would create a valid JSON object like the one below, in order to satisfy the Rust/Wasm's parsing of this data
 ```
 {
-	"function_params": [1, [1, 2], "string"] // integer, array, string
+	"function_params": {
+		"param_one": 1,
+		"param_two": "two"
+	}
 }
 ```
 
 Curl example
 ```
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables/1' \
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/process' \
 --header 'Content-Type: application/json' \
---data-raw '{"function_name":"add", "function_params":[1, 2]}'
+--data-raw '{"function_params": {"param_one": 1,"param_two": "two"}}'
 ```
 
 ### Update (Hot Swap) a Wasm executable
