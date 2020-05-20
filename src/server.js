@@ -231,7 +231,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 //
 // Run a function belonging to a Wasm executable -> returns a JSON string
-app.post('/api/executables', (req, res) => {
+app.post('/api/executables2', (req, res) => {
     var json_response = {};
     console.log("Ok");
     /*
