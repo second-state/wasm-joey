@@ -243,7 +243,9 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         console.log("Function name: " + function_name)
         var function_parameters = req.body["function_params"];
         console.log("Function parameters: " + function_parameters)
-        var return_value = vm.RunString(function_name, ...function_parameters); // This uses spread syntax which allows the array of arguments to be expanded in place
+
+        // Testing different ways to pass in the JSON
+        //var return_value = vm.RunString(function_name, ...function_parameters); // This uses spread syntax which allows the array of arguments to be expanded in place
         json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
     });
