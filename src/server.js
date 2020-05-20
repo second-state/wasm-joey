@@ -250,8 +250,8 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         console.log("Function parameters: " + function_parameters)
 
         // Testing different ways to pass in the JSON
-        var function_parameters_as_object = JSON.parse(function_parameters);
-        var function_parameters_as_string = JSON.stringify(function_parameters_as_object);
+        //var function_parameters_as_object = JSON.parse(function_parameters);
+        var function_parameters_as_string = JSON.stringify(function_parameters);
         console.log(function_parameters_as_string);
         // This is the new way in which vm.RunString will be called i.e. passing in the entire body of parameters to ssvm, which hands it over the the Rust/Wasm function to deal parse/interpret 
         //var return_value = vm.RunString(function_name, function_parameters_as_string); 
