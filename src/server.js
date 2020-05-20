@@ -233,44 +233,31 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     var json_response = {};
-    console.log("Ok");
+    // Need to qualify that this is the correct Content-Type and send an error message to the caller if they have it incorrect
     console.log("Checking request Content-Type: " + req.is('application/json'));
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    console.log(sqlSelect);
     performSqlQuery(sqlSelect).then((result, error) => {
-        console.log(result);
         var raw_data = result[0].wasm_hex.toJSON();
-        console.log("Raw data: " + raw_data);
         var wasm_as_buffer = Uint8Array.from(raw_data.data);
-        console.log("Buffer: " + wasm_as_buffer);
-        //var vm = new ssvm.VM(wasm_as_buffer);
+        var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
         console.log("Function name: " + function_name);
         try {
         var function_parameters = req.body;
-        console.log("Function parameters: " + function_parameters);
         }
         catch(err) {
             json_response["error"] = err;
             res.send(JSON.stringify(json_response));
         }
-        // Testing different ways to pass in the JSON
-        //var function_parameters_as_object = JSON.parse(function_parameters);
         var function_parameters_as_string = JSON.stringify(function_parameters);
-        console.log(function_parameters_as_string);
         // This is the new way in which vm.RunString will be called i.e. passing in the entire body of parameters to ssvm, which hands it over the the Rust/Wasm function to deal parse/interpret 
-        //var return_value = vm.RunString(function_name, function_parameters_as_string); 
-
-        /*
-        // Below is the original way which vm.RunString was called i.e. used spread syntax which allowed the array of arguments to be expanded in place and then ssvm would process each one individually
-        //var return_value = vm.RunString(function_name, ...function_parameters);
-        */
-
-        //json_response["return_value"] = return_value;
+        var return_value = vm.RunString(function_name, function_parameters_as_string); 
+        json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
     });
 });
 
+// Run a function belonging to a Wasm executable -> returns a Buffer
 app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
     // Need to qualify that this is the correct Content-Type and send an error message to the caller if they have it incorrect
     console.log("Checking request Content-Type: " + req.is('application/octet-stream'));
