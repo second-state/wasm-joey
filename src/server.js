@@ -239,7 +239,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     performSqlQuery(sqlSelect).then((result, error) => {
         var raw_data = result[0].wasm_hex.toJSON();
         var wasm_as_buffer = Uint8Array.from(raw_data.data);
-        var vm = new ssvm.VM(wasm_as_buffer);
+        //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
         console.log("Function name: " + function_name);
         try {
@@ -267,7 +267,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
         console.log(result);
         var raw_data = result[0].wasm_hex.toJSON();
         var wasm_as_buffer = Uint8Array.from(raw_data.data);
-        var vm = new ssvm.VM(wasm_as_buffer);
+        //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
         var body_as_buffer = Uint8Array.from(req.body);
         console.log(body_as_buffer);
