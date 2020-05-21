@@ -92,10 +92,14 @@ Dotenv
 cd /media/nvme/node_rpc/wasm-joey/src
 npm install dotenv
 ```
-Raptor
+Express
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
 npm install express
+```
+Formidable
+```
+npm install formidable
 ```
 MySQL driver
 ```bash
@@ -159,7 +163,8 @@ Create blank tables for the application to use
 CREATE TABLE wasm_executables(
     wasm_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_description CHAR(255) NOT NULL,
-    wasm_hex LONGBLOB NOT NULL,
+    wasm_hex LONGTEXT,
+    wasm_binary LONGBLOB,
     PRIMARY KEY(wasm_id)
 );
 ```

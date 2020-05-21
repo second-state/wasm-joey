@@ -98,7 +98,7 @@ app.post('/api/executables', (req, res) => {
     } else if (req.is('application/octet-stream' == 'application/octet-stream')) {
         console.log("Wasm is in binary/asm format");
         // work out if we want to convert to hex here
-        // var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + req.body["wasm_hex"] + "');";
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + req.body + "');";
     } else {
         json_response["error"] = "Wasm file must be hex (using xxd etc.) and have Content-Type in header set to text/plain 0x \n OR \n Wasm must be in binary format and have Content-Type in header set to application/octet-stream.";
     }
@@ -149,7 +149,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         console.log(sqlSelect);
                         performSqlQuery(sqlSelect).then((result) => {
                             console.log("Fetching wasm as hex from " + result[0].wasm_hex);
-                            json_response["wasm_as_hex"] = result[0].wasm_hex.toJSON()["data"].toString();
+                            json_response["wasm_as_hex"] = result[0].wasm_hex.toString('utf8');
                             console.log(JSON.stringify("2" + JSON.stringify(json_response)));
                             if (filters.length == 0) {
                                 res.send(JSON.stringify(json_response));
