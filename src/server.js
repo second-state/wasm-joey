@@ -16,6 +16,9 @@ const credentials = {
 const express = require('express');
 const app = express();
 app.use(helmet());
+// Body parser
+var bodyParser = require('body-parser');
+app.use(bodyParser.text());
 // Config
 require('dotenv').config();
 //Port
@@ -90,7 +93,7 @@ app.get('/', (req, res) => {
 });
 
 // Set a Wasm executable
-app.post('/api/executables', (req, res) => {
+app.post('/api/executables', bodyParser.text(), (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('text/plain') == 'text/plain') {
         console.log("Stringified body is: " + req.body);

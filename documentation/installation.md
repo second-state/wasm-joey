@@ -97,9 +97,9 @@ Express
 cd /media/nvme/node_rpc/wasm-joey/src
 npm install express
 ```
-Formidable
+Body parser
 ```
-npm install formidable
+npm install body-parser
 ```
 MySQL driver
 ```bash
