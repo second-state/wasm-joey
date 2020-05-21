@@ -18,7 +18,11 @@ const app = express();
 app.use(helmet());
 // Body parser
 var bodyParser = require('body-parser');
-app.use(bodyParser.text());
+app.use(bodyParser.text({type:"text/plain"}));
+app.use(bodyParser.json({type:"application/json"}));
+app.use(bodyParser.raw({type:"application/octet-stream"}));
+// app.use(bodyParser.text({type:"TODO multipart"}));
+
 // Config
 require('dotenv').config();
 //Port
