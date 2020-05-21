@@ -195,7 +195,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             json_response["wasm_as_hex"] = result[0].wasm_hex;
             console.log(result[0].wasm_id);
             console.log(result[0].wasm_description);
-            console.log(typeof result[0].wasm_hex);
+            console.log(result[0].wasm_hex);
             //console.log(result[0].wasm_hex).string();
         });
         /*var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
