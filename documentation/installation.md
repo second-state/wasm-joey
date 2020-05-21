@@ -106,6 +106,11 @@ MySQL driver
 cd /media/nvme/node_rpc/wasm-joey/src
 npm install mysql
 ```
+CORS
+```bash
+cd /media/nvme/node_rpc/wasm-joey/src
+npm install cors
+```
 
 # MySQL Server on the system
 Install MySQL on the system

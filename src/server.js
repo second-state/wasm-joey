@@ -25,10 +25,8 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
-// Body parser
-//var bodyParser = require('body-parser');
-//app.use(bodyParser.raw());
-// Database
+// CORS
+var cors = require('cors')
 // Database
 console.log("Connecting to database, please wait ... ");
 const mysql = require('mysql');
@@ -148,10 +146,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         console.log(sqlSelect);
                         performSqlQuery(sqlSelect).then((result) => {
-                            Object.keys(result).forEach(function(key) {
-                              var row = result[key];
-                              console.log("*" + row)
-                            });
                             console.log("Fetching wasm as hex from " + result);
                             json_response["wasm_as_hex"] = result[0].wasm_hex.toString('utf8');
                             console.log(JSON.stringify("2" + JSON.stringify(json_response)));
