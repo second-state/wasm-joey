@@ -145,7 +145,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 if (filters.length >= 1) {
                     if (filters.includes("wasm_as_hex")) {
                         filters = removeElementFromArray(filters, "wasm_as_hex");
-                        var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        var sqlSelect = "SELECT CONVERT(wasm_hex USING utf8) from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         console.log(sqlSelect);
                         performSqlQuery(sqlSelect).then((result) => {
                             console.log("Fetching wasm as hex from " + result[0]);
