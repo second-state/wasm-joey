@@ -30,7 +30,7 @@ https://rpc.ssvm.secondstate.io:8081/api/executables
 #### Header
 Content-Type
 ```
-Content-Type: application/json
+Content-Type: text/plain
 ```
 #### Body
 Wasm binary `.wasm` file can be converted to hexadecimal file using the following commands. The first command saves the wasm binary as hex. The second line adds a `0x` to the very start of the hex file.
@@ -40,14 +40,14 @@ sed -i '1s/^/0x/' wasm_file_as_hex.hex
 ```
 The hexadecimal string can then be passed into wasm-joey for future execution
 ```
-{"wasm_hex": "0x1234567890"}
+0x1234567890
 ```
 #### Curl example
 ```
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
 --header 'Content-Type: application/json' \
 --header 'SSVM-Description: Created on 20200517, this is a Wasm test for moving description to the headers' \
---data-raw '{"wasm_hex": "0x33333333"}'
+--data-raw '0x33333333'
 ```
 ##### Large Files
 If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and set your `wasm` executable inside wasm-joey via curl by passing in a whole file as the data. 
