@@ -93,7 +93,15 @@ app.get('/', (req, res) => {
 // Set a Wasm executable
 app.post('/api/executables', (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
-    var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.header('SSVM-Description') + "','" + req.body["wasm_hex"] + "');";
+    if (req.is('text/plain') == 'text/plain') {
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.header('SSVM-Description') + "','" + req.body["wasm_hex"] + "');";
+    } else if (req.is('application/octet-stream' == 'application/octet-stream')) {
+        console.log("Wasm is in binary/asm format");
+        // work out if we want to convert to hex here
+        // var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + req.body["wasm_hex"] + "');";
+    } else {
+        json_response["error"] = "Wasm file must be hex (using xxd etc.) and have Content-Type in header set to text/plain 0x \n OR \n Wasm must be in binary format and have Content-Type in header set to application/octet-stream.";
+    }
     console.log(sqlInsert);
     connection.query(sqlInsert, function(err, resultInsert) {
         if (err) {
@@ -245,9 +253,8 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
         var function_name = req.params.function_name;
         console.log("Function name: " + function_name);
         try {
-        var function_parameters = req.body;
-        }
-        catch(err) {
+            var function_parameters = req.body;
+        } catch (err) {
             json_response["error"] = err;
             res.send(JSON.stringify(json_response));
         }
