@@ -93,7 +93,6 @@ app.get('/', (req, res) => {
 // Set a Wasm executable
 app.post('/api/executables', (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
-    console.log("Description in header" + req.header('SSVM-Description'));
     var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.header('SSVM-Description') + "','" + req.body["wasm_hex"] + "');";
     console.log(sqlInsert);
     connection.query(sqlInsert, function(err, resultInsert) {

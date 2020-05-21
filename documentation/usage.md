@@ -44,9 +44,10 @@ The hexadecimal string can then be passed into wasm-joey for future execution
 ```
 #### Curl example
 ```
-curl --location --request POST https://rpc.ssvm.secondstate.io:8081/api/executables' \
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
 --header 'Content-Type: application/json' \
---data-raw '{"wasm_hex":"0x1234567890"}'
+--header 'SSVM-Description: Created on 20200517, this is a Wasm test for moving description to the headers' \
+--data-raw '{"wasm_hex": "0x33333333"}'
 ```
 ##### Large Files
 If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and set your `wasm` executable inside wasm-joey via curl by passing in a whole file as the data. 
@@ -55,7 +56,7 @@ curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executa
 ```
 Where `@/media/nvme/hello/pkg/hello_lib_bg.hex` is actually a file on the file system which contains the body i.e.
 ```
-{"wasm_description": "Hello example", "wasm_hex": "0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040808100606040 ... 29"}
+{"wasm_hex": "0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040808100606040 ... 29"}
 ```
 #### Response
 The above request will return a response in the following JSON format 
@@ -211,44 +212,14 @@ Content-Type
 Content-Type: application/octet-stream
 ```
 #### Body
-If the Content-Type is set to `application/json` then the body of the post request (to execute a Rust/Wasm function) must be valid JSON. 
-
-#### Examples
-Depending on the particular Rust/Wasm function, the caller will be required to provide the valid JSON in the format that the Rust/Wasm can consume it. 
-
-#### Please note:
-The Rust/Wasm code could explicitly declare a Struct on which serde_json could use as the data type, when parsing. However, a struct is flat. What this means, is that if you are going to parse and traverse **nested** data, then Rust will require that you build and maintain multiple complex data structures (which mirror the JSON data). You may want to do this, which is great. However, in some cases this may be too hard to write and maintain and so here is a proposal for an easier solution.
-
-Instead of writing complex nested Structs you could use serde_json's generic `Value` type as demonstrated in the following code. This approach allows for maximum flexiblility.
-For example if the Rust/Wasm application looks like this
-```
-use serde_json;
-use serde_json::{Value};
-
-#[no_mangle]
-fn process(s: &str){
-    let json_as_object: Value = serde_json::from_str(s).unwrap();
-    println!("{:?}", json_as_object["function_params"]);
-    println!("{:?}", json_as_object["function_params"]["param_one"]);
-    println!("{:?}", json_as_object["function_params"]["param_two"]);
-}
-```
-Then the calling request would create a valid JSON object like the one below, in order to satisfy the Rust/Wasm's parsing of this data
-```
-{
-	"function_params": {
-		"param_one": 1,
-		"param_two": "two"
-	}
-}
-```
+With this endpoint's Content-Type set to application/octet-stream we are expecting the body of the post request (to execute a Rust/Wasm function) to be a byte array. 
 
 #### Curl example
 The following example calls the function called `process` which resides in the wasm executable with the `wasm_id` of `1`.
 ```
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/process' \
---header 'Content-Type: application/json' \
---data-raw '{"function_params": {"param_one": 1,"param_two": "two"}}'
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/edit_image/bytes' \
+--header 'Content-Type: application/octet-stream' \
+--data-raw [1, 2, 3, 4, 5, 6]
 ```
 
 
