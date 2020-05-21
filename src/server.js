@@ -198,18 +198,10 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             json_response["wasm_id"] = result[0].wasm_id;
             json_response["wasm_description"] = result[0].wasm_description;
             json_response["wasm_as_hex"] = result[0].wasm_hex;
-            console.log(result[0].wasm_id);
-            console.log(result[0].wasm_description);
-            console.log(result[0].wasm_hex);
-            //console.log(result[0].wasm_hex).string();
-        });
-        /*var sqlSelect2 = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        performSqlQuery(sqlSelect2).then((result2) => {
-            json_response["wasm_as_hex"] = result2[0].wasm_hex.toString('utf8');
-            json_response["wasm_as_buffer"] = result2[0].wasm_hex.toJSON();
+            var new_buffer = Buffer.from(result[0].wasm_hex);
+            json_response["wasm_as_buffer"] = new_buffer;
             res.send(JSON.stringify(json_response));
         });
-       */
     }
 
 });
