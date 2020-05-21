@@ -44,8 +44,14 @@ connection.connect((err) => {
     if (err) throw err;
     console.log('Connection to database succeeded!');
 });
+// Filtering the content types which are allowed to access Joey
 console.log("\n");
-
+var RE_CONTYPE = /[^application\/(?:octet-stream|json)|^plain\/text])(?:[\s;]|$)/i;
+app.use(function(req, res, next) {
+  if (req.method === 'POST' && !RE_CONTYPE.test(req.headers['content-type']))
+    return res.send(406);
+  next();
+});
 // SSVM
 //var ssvm = require('ssvm-napi');
 
