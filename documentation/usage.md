@@ -45,18 +45,18 @@ The hexadecimal string can then be passed into wasm-joey for future execution
 #### Curl example
 ```
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
---header 'Content-Type: application/json' \
+--header 'Content-Type: text/plain' \
 --header 'SSVM-Description: Created on 20200517, this is a Wasm test for moving description to the headers' \
 --data-raw '0x33333333'
 ```
 ##### Large Files
 If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and set your `wasm` executable inside wasm-joey via curl by passing in a whole file as the data. 
 ```bash
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header "Content-Type: application/json" --data @/media/nvme/hello/pkg/hello_lib_bg.hex
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header "Content-Type: text/plain" --data @/media/nvme/hello/pkg/hello_lib_bg.hex
 ```
 Where `@/media/nvme/hello/pkg/hello_lib_bg.hex` is actually a file on the file system which contains the body i.e.
 ```
-{"wasm_hex": "0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040808100606040 ... 29"}
+0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040808100606040
 ```
 #### Response
 The above request will return a response in the following JSON format 
