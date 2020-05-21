@@ -45,11 +45,12 @@ connection.connect((err) => {
     console.log('Connection to database succeeded!');
 });
 // Filtering the content types which are allowed to access Joey
-console.log("\n");
-const regex = RegExp(/[^application\/(?:octet-stream|json)|^plain\/text])(?:[\s;]|$)/i);
 app.use(function(req, res, next) {
-  if (req.method === 'POST' && !regex.test(req.headers['content-type']))
-    return res.send(406);
+  if (req.method === 'POST'){
+    if (req.is('application/octet-stream' !== 'application/octet-stream')|| req.is('application/json' !== 'application/json') || req.is('text/plain' !== 'text/plain')){
+        return res.send(406);
+    }
+  } 
   next();
 });
 // SSVM
