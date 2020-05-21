@@ -193,6 +193,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             json_response["wasm_id"] = result[0].wasm_id;
             json_response["wasm_description"] = result[0].wasm_description;
             json_response["wasm_as_hex"] = result[0].wasm_hex;
+            console.log(result[0].wasm_id);
+            console.log(result[0].wasm_description);
             console.log(typeof result[0].wasm_hex);
             console.log(JSON.stringify(result[0].wasm_hex));
         });
