@@ -46,9 +46,9 @@ connection.connect((err) => {
 });
 // Filtering the content types which are allowed to access Joey
 console.log("\n");
-var RE_CONTYPE = /[^application\/(?:octet-stream|json)|^plain\/text])(?:[\s;]|$)/i;
+const regex = RegExp(/[^application\/(?:octet-stream|json)|^plain\/text])(?:[\s;]|$)/i);
 app.use(function(req, res, next) {
-  if (req.method === 'POST' && !RE_CONTYPE.test(req.headers['content-type']))
+  if (req.method === 'POST' && !regex.test(req.headers['content-type']))
     return res.send(406);
   next();
 });
