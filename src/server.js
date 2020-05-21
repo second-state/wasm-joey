@@ -93,7 +93,7 @@ app.get('/', (req, res) => {
 app.post('/api/executables', (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('text/plain') == 'text/plain') {
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.header('SSVM-Description') + "','" + req.body + "');";
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.header('SSVM-Description') + "','" + JSON.stringify(req.body) + "');";
     } else if (req.is('application/octet-stream' == 'application/octet-stream')) {
         console.log("Wasm is in binary/asm format");
         // work out if we want to convert to hex here
