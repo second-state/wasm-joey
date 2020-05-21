@@ -26,7 +26,8 @@ app.use(express.urlencoded({
     extended: true
 }));
 // CORS
-var cors = require('cors')
+var cors = require('cors');
+app.use(cors());
 // Database
 console.log("Connecting to database, please wait ... ");
 const mysql = require('mysql');
