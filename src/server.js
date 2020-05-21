@@ -150,7 +150,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         performSqlQuery(sqlSelect).then((result) => {
                             Object.keys(result).forEach(function(key) {
                               var row = result[key];
-                              console.log("*" + row.name)
+                              console.log("*" + row)
                             });
                             console.log("Fetching wasm as hex from " + result);
                             json_response["wasm_as_hex"] = result[0].wasm_hex.toString('utf8');
