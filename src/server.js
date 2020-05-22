@@ -297,8 +297,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
         });
     }
     else {
-        json_response["error"] = "Must be Content-Type: application/octet-stream"; 
-        res.send(json_response);
+        console.log("Must be application/octet-stream");
     }
 });
 //
