@@ -116,7 +116,7 @@ app.post('/api/executables', bodyParser.text(), (req, res) => {
         var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + req.body + "');";
     } else {
         json_response["error"] = "Wasm file must be hex (using xxd etc.) and have Content-Type in header set to text/plain 0x \n OR \n Wasm must be in binary format and have Content-Type in header set to application/octet-stream.";
-        res.send(JSON.stringify(json_response));
+        res.end(JSON.stringify(json_response));
     }
     console.log(sqlInsert);
     connection.query(sqlInsert, function(err, resultInsert) {
