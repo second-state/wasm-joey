@@ -124,9 +124,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
             res.status(400).send("Perhaps a bad request, or database is not running");
         }
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
-
         json_response["wasm_id"] = resultInsert.insertId;
-
         console.log(JSON.stringify(json_response));
         res.send(JSON.stringify(json_response));
     });
@@ -279,23 +277,24 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 });
 
 // Run a function belonging to a Wasm executable -> returns a Buffer
-app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
-    // Need to qualify that this is the correct Content-Type and send an error message to the caller if they have it incorrect
-    console.log("Checking request Content-Type: " + req.is('application/octet-stream'));
-    var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    performSqlQuery(sqlSelect).then((result, error) => {
-        console.log("Request body: " + req.body);
-        var raw_data = result[0].wasm_hex.toJSON();
-        var wasm_as_buffer = Uint8Array.from(raw_data.data);
-        //var vm = new ssvm.VM(wasm_as_buffer);
-        var function_name = req.params.function_name;
-        var body_as_buffer = Uint8Array.from(req.body);
-        console.log("Body as buffer: " + body_as_buffer);
-        //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
-        //res.send(new Buffer(return_value, 'binary'));
-        res.contentType('application/octet-stream');
-        res.send(Buffer.from([1, 2, 3, 4, 5, 6], 'binary')); // Delete this line, it is just for testing whilst ssvm is being updated
-    });
+app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
+    if (req.is('application/octet-stream' == 'application/octet-stream')) {
+        console.log("Wasm is in binary/asm format");
+        var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+        performSqlQuery(sqlSelect).then((result, error) => {
+            console.log("Request body: " + req.body);
+            var raw_data = result[0].wasm_hex.toJSON();
+            var wasm_as_buffer = Uint8Array.from(raw_data.data);
+            //var vm = new ssvm.VM(wasm_as_buffer);
+            var function_name = req.params.function_name;
+            var body_as_buffer = Uint8Array.from(req.body);
+            console.log("Body as buffer: " + body_as_buffer);
+            //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
+            //res.send(new Buffer(return_value, 'binary'));
+            res.contentType('application/octet-stream');
+            res.send(body_as_buffer); // Delete this line, it is just for testing whilst ssvm is being updated
+        });
+    }
 });
 //
 //
