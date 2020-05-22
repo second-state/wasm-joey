@@ -256,7 +256,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     console.log("Checking request Content-Type: " + req.is('application/json'));
     var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((result, error) => {
-        var raw_data = result[0].wasm_hex.toJSON();
+        var raw_data = result[0].wasm_hex;
         var wasm_as_buffer = Uint8Array.from(raw_data.data);
         //var vm = new ssvm.VM(wasm_as_buffer);
         var function_name = req.params.function_name;
@@ -284,7 +284,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
         var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
             console.log("Request body: " + req.body);
-            var raw_data = result[0].wasm_hex.toJSON();
+            var raw_data = result[0].wasm_hex;
             var wasm_as_buffer = Uint8Array.from(raw_data.data);
             //var vm = new ssvm.VM(wasm_as_buffer);
             var function_name = req.params.function_name;
@@ -295,6 +295,10 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             res.contentType('application/octet-stream');
             res.send(body_as_buffer); // Delete this line, it is just for testing whilst ssvm is being updated
         });
+    }
+    else {
+        json_response["error"] = "Must be Content-Type: application/octet-stream"; 
+        res.send(json_response);
     }
 });
 //
