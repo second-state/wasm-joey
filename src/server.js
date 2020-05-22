@@ -105,6 +105,7 @@ app.get('/', (req, res) => {
 
 // Set a Wasm executable
 app.post('/api/executables', bodyParser.text(), (req, res) => {
+    json_response = {};
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('text/plain') == 'text/plain') {
         console.log("Stringified body is: " + req.body);
@@ -115,6 +116,7 @@ app.post('/api/executables', bodyParser.text(), (req, res) => {
         var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + req.body + "');";
     } else {
         json_response["error"] = "Wasm file must be hex (using xxd etc.) and have Content-Type in header set to text/plain 0x \n OR \n Wasm must be in binary format and have Content-Type in header set to application/octet-stream.";
+        res.send(JSON.stringify(json_response));
     }
     console.log(sqlInsert);
     connection.query(sqlInsert, function(err, resultInsert) {
@@ -123,13 +125,11 @@ app.post('/api/executables', bodyParser.text(), (req, res) => {
         }
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
 
-        const json_response = {
-            "wasm_id": resultInsert.insertId
-        };
+        json_response["wasm_id"] = resultInsert.insertId;
+
         console.log(JSON.stringify(json_response));
         res.send(JSON.stringify(json_response));
     });
-
 });
 
 // Get a Wasm executable
