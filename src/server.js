@@ -104,7 +104,7 @@ app.get('/', (req, res) => {
 });
 
 // Set a Wasm executable
-app.post('/api/executables', bodyParser.text(), (req, res) => {
+app.post('/api/executables', bodyParser.raw(), (req, res) => {
     json_response = {};
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('text/plain') == 'text/plain') {
