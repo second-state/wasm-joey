@@ -278,6 +278,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 
 // Run a function belonging to a Wasm executable -> returns a Buffer
 app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
+    console.log("Checking content type ...");
     if (req.is('application/octet-stream' == 'application/octet-stream')) {
         console.log("Wasm is in binary/asm format");
         var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
