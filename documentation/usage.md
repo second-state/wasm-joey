@@ -38,26 +38,26 @@ Wasm binary `.wasm` file can be converted to hexadecimal file using the followin
 xxd -p wasm_file.wasm | tr -d $'\n' > wasm_file_as_hex.hex
 sed -i '1s/^/0x/' wasm_file_as_hex.hex
 ```
-The hexadecimal string can then be passed into wasm-joey for future execution
+The hexadecimal string can then be passed into wasm-joey for future execution.
 ```
 0x1234567890
 ```
 #### Curl example
 ```
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
---header 'Content-Type: text/plain' \
---header 'SSVM-Description: Created on 20200517, this is a Wasm test for moving description to the headers' \
---data-raw '0x33333333'
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/set_wasm_binary' --header "Content-Type: application/octet-stream" --header "SSVM-Description: Triple a number, created on 20200523 V2" --data @/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm
 ```
 ##### Large Files
-If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and set your `wasm` executable inside wasm-joey via curl by passing in a whole file as the data. 
+File sizes can be checked with the following command (returns the size in bytes).
+```
+wc -c < /Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm
+ ```
+The payload size limit (for `Content-Type:application/octet-stream`) is set statically in the server.js file i.e. `app.use(bodyParser.raw({type:"application/octet-stream", limit:100000000}));`
+If the Wasm file is too large you can increase this limit. Also consider using the following method to call wasm-joey and set your `wasm` executable inside wasm-joey via curl by passing in a whole file as the payload as shown above.
 ```bash
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/set_wasm_hex' --header "Content-Type: text/plain" --header "SSVM-Description: Triple a number, created on 20200523" --data @/Users/tpmccallum/wasm_file_as_hex.hex
+ --data @/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm
 ```
-Where `@/media/nvme/hello/pkg/hello_lib_bg.hex` is actually a file on the file system which contains the body i.e.
-```
-0x0061736d0100000001480c60027f7f017f60037f7f7f017f60027f7f0060017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f0060017f017e60000060057f7f7f7f7f017f60027e7f017f03302f050302010a00000002040b070204020704000001040808100606040
-```
+Where `@/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm` is actually a compiled `.wasm` file on the file system.
+
 #### Response
 The above request will return a response in the following JSON format 
 ```
