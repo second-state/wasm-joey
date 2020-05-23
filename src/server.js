@@ -104,26 +104,7 @@ app.get('/', (req, res) => {
 });
 
 // Set a Wasm executable
-app.post('/api/set_wasm_hex', bodyParser.text(), (req, res) => {
-    json_response = {};
-    console.log("Request to set a new wasm hex into the database ...");
-    if (req.is('text/plain') == 'text/plain') {
-        console.log("Stringified hex body is: " + req.body);
-        var wasm_as_buffer = Uint8Array.from(req.body);
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "');";
-        console.log(sqlInsert);
-        performSqlQuery(sqlInsert).then((resultInsert) => {
-        console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
-        json_response["wasm_id"] = resultInsert.insertId;
-        console.log(JSON.stringify(json_response));
-        
-    });
-    }
-    res.send(JSON.stringify(json_response));
-});
-
-// Set a Wasm executable
-app.post('/api/set_wasm_binary', bodyParser.raw(), (req, res) => {
+app.post('/api/executables', bodyParser.raw(), (req, res) => {
     json_response = {};
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
