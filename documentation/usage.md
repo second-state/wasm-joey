@@ -44,7 +44,7 @@ The hexadecimal string can then be passed into wasm-joey for future execution.
 ```
 #### Curl example
 ```
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/set_wasm_binary' --header "Content-Type: application/octet-stream" --header "SSVM-Description: Triple a number, created on 20200523 V2" --data @/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header "Content-Type: application/octet-stream" --header "SSVM-Description: Triple a number, created on 20200523 V2" --data @/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm
 ```
 ##### Large Files
 File sizes can be checked with the following command (returns the size in bytes).
