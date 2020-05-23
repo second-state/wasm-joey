@@ -19,6 +19,7 @@ paths:
 ## Individual paths (each to be used once under the main header)
 
 ### /api/executables
+Get the wasm_id of all the executables
 ```
 /api/executables:
 get:
@@ -33,4 +34,29 @@ get:
           examples: {}
   servers:
     - url: 'https://rpc.ssvm.secondstate.io:8081'
+```
+### /api/executables/:wasm_id
+Get a single wasm executable and filter so only wasm_id is returned
+```
+  /api/executables/1:
+    get:
+      description: Auto generated using Swagger Inspector
+      parameters:
+        - name: filterBy
+          in: query
+          schema:
+            type: string
+          example: '["wasm_id"]'
+      responses:
+        '200':
+          description: Get single executable (and filter by wasm_id)
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              examples: {}
+      servers:
+        - url: 'https://rpc.ssvm.secondstate.io:8081'
+    servers:
+      - url: 'https://rpc.ssvm.secondstate.io:8081'
 ```
