@@ -30,18 +30,11 @@ https://rpc.ssvm.secondstate.io:8081/api/executables
 #### Header
 Content-Type
 ```
-Content-Type: text/plain
+Content-Type: application/octet-stream
 ```
 #### Body
-Wasm binary `.wasm` file can be converted to hexadecimal file using the following commands. The first command saves the wasm binary as hex. The second line adds a `0x` to the very start of the hex file.
-```
-xxd -p wasm_file.wasm | tr -d $'\n' > wasm_file_as_hex.hex
-sed -i '1s/^/0x/' wasm_file_as_hex.hex
-```
-The hexadecimal string can then be passed into wasm-joey for future execution.
-```
-0x1234567890
-```
+The body will be a standard compiled wasm binary
+
 #### Curl example
 ```
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header "Content-Type: application/octet-stream" --header "SSVM-Description: Triple a number, created on 20200523 V2" --data @/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm
@@ -115,7 +108,7 @@ curl --location --request GET 'https://rpc.ssvm.secondstate.io:8081/api/executab
 ```
 #### Response
 ```
-{"wasm_id":1,"wasm_description":"Put here by the API","wasm_as_hex":"0x1234567890","wasm_as_buffer":{"type":"Buffer","data":[48,120,49,50,51,52,53,54,55,56,57,48]}}
+{"wasm_id":1,"wasm_description":"Put here by the API","wasm_as_buffer":{"type":"Buffer","data":[48,120,49,50,51,52,53,54,55,56,57,48]}}
 ```
 ### Get a specific Wasm executable - with optional filtering
 The following query string syntax will filter the response to ONLY return the fields which are explicitly listed.
@@ -127,15 +120,15 @@ Result
 ```
 {"wasm_id":1}
 ```
-The following syntax will only return `wasm_as_hex` and `wasm_description` 
+The following syntax will only return `wasm_description` 
 ```
-https://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=["wasm_as_hex", "wasm_description"]
+https://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=["wasm_description"]
 ```
 Result
 
 ![get executables](../images/get_executable_1_filter.png)
 ```
-{"wasm_as_hex":"0x1234567890","wasm_description":"Put here by the API"}
+{"wasm_description":"Put here by the API"}
 ```
 
 ### Execute a Wasm function - JSON return type
