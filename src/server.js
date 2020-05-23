@@ -18,9 +18,9 @@ const app = express();
 app.use(helmet());
 // Body parser
 var bodyParser = require('body-parser');
-app.use(bodyParser.text({type:"text/plain"}));
-app.use(bodyParser.json({type:"application/json"}));
-app.use(bodyParser.raw({type:"application/octet-stream"}));
+app.use(bodyParser.text({type:"text/plain", limit:100000000}));
+app.use(bodyParser.json({type:"application/json"}));           
+app.use(bodyParser.raw({type:"application/octet-stream", limit:100000000}));
 // app.use(bodyParser.text({type:"TODO multipart"}));
 
 // Config
@@ -98,36 +98,46 @@ app.get('/', (req, res) => {
     json_response = [{
         "application": "wasm_joey"
     }, {
-        "usage:": "https://github.com/second-state/wasm-joey/blob/master/documentation/usage.md"
+        "usage_documentation:": "https://github.com/second-state/wasm-joey/blob/master/documentation/usage.md"
     }];
     res.send(JSON.stringify(json_response));
 });
 
 // Set a Wasm executable
-app.post('/api/executables', bodyParser.raw(), (req, res) => {
+app.post('/api/set_wasm_hex', bodyParser.text(), (req, res) => {
     json_response = {};
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('text/plain') == 'text/plain') {
-        console.log("Stringified body is: " + req.body);
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_hex) VALUES ('" + req.header('SSVM-Description') + "','" + req.body + "');";
-    } else if (req.is('application/octet-stream' == 'application/octet-stream')) {
-        console.log("Wasm is in binary/asm format");
-        // work out if we want to convert to hex here
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + req.body + "');";
-    } else {
-        json_response["error"] = "Wasm file must be hex (using xxd etc.) and have Content-Type in header set to text/plain 0x \n OR \n Wasm must be in binary format and have Content-Type in header set to application/octet-stream.";
-        res.end(JSON.stringify(json_response));
-    }
-    console.log(sqlInsert);
-    connection.query(sqlInsert, function(err, resultInsert) {
-        if (err) {
-            res.status(400).send("Perhaps a bad request, or database is not running");
-        }
+        console.log("Stringified hex body is: " + req.body);
+        var wasm_as_buffer = Uint8Array.from(req.body);
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "');";
+        console.log(sqlInsert);
+        performSqlQuery(sqlInsert).then((resultInsert) => {
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
         json_response["wasm_id"] = resultInsert.insertId;
         console.log(JSON.stringify(json_response));
-        res.send(JSON.stringify(json_response));
+        
     });
+    }
+    res.send(JSON.stringify(json_response));
+});
+
+// Set a Wasm executable
+app.post('/api/set_wasm_binary', bodyParser.raw(), (req, res) => {
+    json_response = {};
+    console.log("Request to set a new wasm hex into the database ...");
+    if (req.is('application/octet-stream') == 'application/octet-stream') {
+        var wasm_as_buffer = Uint8Array.from(req.body);
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "');";
+    console.log(sqlInsert);
+    performSqlQuery(sqlInsert).then((resultInsert) => {
+        console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
+        json_response["wasm_id"] = resultInsert.insertId;
+        console.log(JSON.stringify(json_response));
+        
+    });
+    }
+    res.send(JSON.stringify(json_response));
 });
 
 // Get a Wasm executable
@@ -157,11 +167,10 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 if (filters.length >= 1) {
                     if (filters.includes("wasm_as_hex")) {
                         filters = removeElementFromArray(filters, "wasm_as_hex");
-                        var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         console.log(sqlSelect);
                         performSqlQuery(sqlSelect).then((result) => {
-                            json_response["wasm_as_hex"] = result[0].wasm_hex;
-                            console.log(JSON.stringify("2" + JSON.stringify(json_response)));
+                            json_response["wasm_as_hex"] = result[0].wasm_binary.toString("hex");
                             if (filters.length == 0) {
                                 res.send(JSON.stringify(json_response));
                             }
@@ -171,12 +180,10 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 if (filters.length >= 1) {
                     if (filters.includes("wasm_as_buffer")) {
                         filters = removeElementFromArray(filters, "wasm_as_buffer");
-                        var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         console.log(sqlSelect);
                         performSqlQuery(sqlSelect).then((result) => {
-                            var new_buffer = Buffer.from(result[0].wasm_hex);
-                            json_response["wasm_as_buffer"] = new_buffer;
-                            console.log(JSON.stringify("3" + JSON.stringify(json_response)));
+                            json_response["wasm_as_buffer"] = result[0].wasm_binary;
                             if (filters.length == 0) {
                                 res.send(JSON.stringify(json_response));
                             }
@@ -205,9 +212,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         performSqlQuery(sqlSelect).then((result) => {
             json_response["wasm_id"] = result[0].wasm_id;
             json_response["wasm_description"] = result[0].wasm_description;
-            json_response["wasm_as_hex"] = result[0].wasm_hex;
-            var new_buffer = Buffer.from(result[0].wasm_hex);
-            json_response["wasm_as_buffer"] = new_buffer;
+            json_response["wasm_as_hex"] = result[0].wasm_binary.toString("hex");
+            json_response["wasm_as_buffer"] = result[0].wasm_binary;
             res.send(JSON.stringify(json_response));
         });
     }
@@ -222,7 +228,19 @@ app.get('/api/executables', (req, res) => {
     });
 });
 
-app.put('/api/executables/:wasm_id', (req, res) => {
+app.put('/api/update_wasm_hex/:wasm_id', (req, res) => {
+    var sqlUpdate = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+    console.log(sqlUpdate);
+    performSqlQuery(sqlUpdate).then((result) => {
+        const json_response = {
+            "wasm_id": req.params.wasm_id
+        };
+        console.log(JSON.stringify(json_response));
+        res.send(JSON.stringify(json_response));
+    });
+});
+
+app.put('/api/update_wasm_binary/:wasm_id', (req, res) => {
     var sqlUpdate = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
     console.log(sqlUpdate);
     performSqlQuery(sqlUpdate).then((result) => {

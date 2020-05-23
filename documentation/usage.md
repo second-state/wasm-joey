@@ -52,7 +52,7 @@ curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executa
 ##### Large Files
 If the Wasm file is large (and subsequently the hex file is large), consider using the following method to call wasm-joey and set your `wasm` executable inside wasm-joey via curl by passing in a whole file as the data. 
 ```bash
-curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header "Content-Type: text/plain" --data @/media/nvme/hello/pkg/hello_lib_bg.hex
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/set_wasm_hex' --header "Content-Type: text/plain" --header "SSVM-Description: Triple a number, created on 20200523" --data @/Users/tpmccallum/wasm_file_as_hex.hex
 ```
 Where `@/media/nvme/hello/pkg/hello_lib_bg.hex` is actually a file on the file system which contains the body i.e.
 ```

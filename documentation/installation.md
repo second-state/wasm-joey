@@ -168,15 +168,9 @@ Create blank tables for the application to use
 CREATE TABLE wasm_executables(
     wasm_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_description CHAR(255) NOT NULL,
-    wasm_hex LONGTEXT,
-    wasm_binary LONGBLOB,
+    wasm_binary LONGBLOB NOT NULL,
     PRIMARY KEY(wasm_id)
 );
-```
-Create test data and insert into the table
-```SQL
-INSERT INTO wasm_executables (wasm_description,wasm_hex)
-VALUES ('System generated entry for testing','0x1234567890');
 ```
 
 ## Deployment
