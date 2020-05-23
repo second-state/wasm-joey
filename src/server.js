@@ -123,11 +123,10 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
 
 // Get a Wasm executable
 app.get('/api/executables/:wasm_id', (req, res) => {
-    var valid_filters = ["wasm_id", "wasm_description", "wasm_as_hex", "wasm_as_buffer"];
+    var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer"];
     var request_validity = true;
     var json_response = {};
     if (req.query.filterBy != undefined) {
-        // filters include wasm_id, wasm_description, wasm_as_hex, wasm_as_buffer
         var filters = JSON.parse(req.query.filterBy);
         if (filters.length >= 1) {
             for (var i = 0; i < filters.length; i++) {
@@ -145,19 +144,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                     "valid_filters_include": valid_filters
                 }]));
             } else {
-                if (filters.length >= 1) {
-                    if (filters.includes("wasm_as_hex")) {
-                        filters = removeElementFromArray(filters, "wasm_as_hex");
-                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                        console.log(sqlSelect);
-                        performSqlQuery(sqlSelect).then((result) => {
-                            json_response["wasm_as_hex"] = result[0].wasm_binary.toString("hex");
-                            if (filters.length == 0) {
-                                res.send(JSON.stringify(json_response));
-                            }
-                        });
-                    }
-                }
                 if (filters.length >= 1) {
                     if (filters.includes("wasm_as_buffer")) {
                         filters = removeElementFromArray(filters, "wasm_as_buffer");
@@ -193,7 +179,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         performSqlQuery(sqlSelect).then((result) => {
             json_response["wasm_id"] = result[0].wasm_id;
             json_response["wasm_description"] = result[0].wasm_description;
-            json_response["wasm_as_hex"] = result[0].wasm_binary.toString("hex");
             json_response["wasm_as_buffer"] = result[0].wasm_binary;
             res.send(JSON.stringify(json_response));
         });
