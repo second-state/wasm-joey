@@ -62,6 +62,7 @@ servers:
 ```
 
 ###  /api/executables/:wasm_id
+Get a single wasm executable and filter so only wasm_description is returned
 ```
 /api/executables/1
 get:
@@ -75,6 +76,32 @@ get:
   responses:
     '200':
       description: Get single executable (and filter by wasm_description)
+      content:
+        application/json; charset=utf-8:
+          schema:
+            type: string
+          examples: {}
+  servers:
+    - url: 'https://rpc.ssvm.secondstate.io:8081'
+servers:
+  - url: 'https://rpc.ssvm.secondstate.io:8081'
+```
+
+### /api/executables/:wasm_id
+Get a single wasm executable and filter so only wasm_as_buffer is returned
+```
+/api/executables/1:
+get:
+  description: Get single executable (and filter by wasm_as_buffer)
+  parameters:
+    - name: filterBy
+      in: query
+      schema:
+        type: string
+      example: '["wasm_as_buffer"]'
+  responses:
+    '200':
+      description: Filter by wasm_as_buffer
       content:
         application/json; charset=utf-8:
           schema:
