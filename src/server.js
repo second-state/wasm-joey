@@ -230,9 +230,9 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     console.log("Checking request Content-Type: " + req.is('application/json'));
     var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((result, error) => {
-        var raw_data = result[0].wasm_binary;
-        var wasm_as_buffer = Uint8Array.from(raw_data.data);
-        //var vm = new ssvm.VM(wasm_as_buffer);
+        console.log(result[0].wasm_binary.data);
+        //var raw_data = result[0].wasm_binary;
+        var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
         var function_name = req.params.function_name;
         console.log("Function name: " + function_name);
         try {
@@ -257,9 +257,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
         console.log("Wasm is in binary/asm format");
         var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
-            console.log("Request body: " + req.body);
-            var raw_data = result[0].wasm_binary;
-            var wasm_as_buffer = Uint8Array.from(raw_data.data);
+            var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
             //var vm = new ssvm.VM(wasm_as_buffer);
             var function_name = req.params.function_name;
             var body_as_buffer = Uint8Array.from(req.body);
