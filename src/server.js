@@ -115,10 +115,10 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
         json_response["wasm_id"] = resultInsert.insertId;
         console.log(JSON.stringify(json_response));
+        res.send(JSON.stringify(json_response));
         
     });
     }
-    res.send(JSON.stringify(json_response));
 });
 
 // Get a Wasm executable
@@ -194,28 +194,18 @@ app.get('/api/executables', (req, res) => {
     });
 });
 
-app.put('/api/update_wasm_hex/:wasm_id', (req, res) => {
-    var sqlUpdate = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
+    json_response = {};
+    if (req.is('application/octet-stream') == 'application/octet-stream') {
+        var wasm_as_buffer = Uint8Array.from(req.body);
+    var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
     console.log(sqlUpdate);
     performSqlQuery(sqlUpdate).then((result) => {
-        const json_response = {
-            "wasm_id": req.params.wasm_id
-        };
+        json_response["wasm_id"] = req.params.wasm_id;
         console.log(JSON.stringify(json_response));
         res.send(JSON.stringify(json_response));
     });
-});
-
-app.put('/api/update_wasm_binary/:wasm_id', (req, res) => {
-    var sqlUpdate = "UPDATE wasm_executables SET wasm_hex = '" + req.body["wasm_hex"] + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-    console.log(sqlUpdate);
-    performSqlQuery(sqlUpdate).then((result) => {
-        const json_response = {
-            "wasm_id": req.params.wasm_id
-        };
-        console.log(JSON.stringify(json_response));
-        res.send(JSON.stringify(json_response));
-    });
+}
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {

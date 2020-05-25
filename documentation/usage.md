@@ -7,6 +7,8 @@ Once deployed wasm-joey performs tasks which are all defined as service endpoint
 - Update Wasm executable
 - Remove Wasm executable
 
+# API documentation 
+wasm-joey's [API documentation is available](https://documenter.getpostman.com/view/4967217/SztA68nE?version=latest) in Postman documentation format.
 
 # Storage
 wasm-joey (using MySQL) stores the actual executable Wasm binary code, as well as all other information relating to execution (who, what, when etc.). This information can be used to generate usage reports, auditing and so forth.
