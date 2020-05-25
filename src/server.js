@@ -228,7 +228,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     var json_response = {};
     // Need to qualify that this is the correct Content-Type and send an error message to the caller if they have it incorrect
     console.log("Checking request Content-Type: " + req.is('application/json'));
-    var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+    var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((result, error) => {
         var raw_data = result[0].wasm_hex;
         var wasm_as_buffer = Uint8Array.from(raw_data.data);
@@ -255,7 +255,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
     console.log("Checking content type ...");
     if (req.is('application/octet-stream' == 'application/octet-stream')) {
         console.log("Wasm is in binary/asm format");
-        var sqlSelect = "SELECT wasm_hex from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
             console.log("Request body: " + req.body);
             var raw_data = result[0].wasm_hex;
