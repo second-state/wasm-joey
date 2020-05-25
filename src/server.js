@@ -262,10 +262,14 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             var function_name = req.params.function_name;
             var body_as_buffer = Uint8Array.from(req.body);
             console.log("Body as buffer: " + body_as_buffer);
+            // TODO remove this line when SSVM is ready
+            var a = req.body;
             //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
             //res.send(new Buffer(return_value, 'binary'));
-            res.contentType('application/octet-stream');
-            res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
+            res.encoding(null);
+            res.set('Content-Type', 'application/octet-stream');
+            // TODO remove this line when SSVM is ready
+            res.send(a); // Delete this line, it is just for testing whilst ssvm is being updated
         });
     }
     else {
