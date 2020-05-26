@@ -251,8 +251,9 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
 });
 
 // Run a function belonging to a Wasm executable -> returns a Buffer
-app.post('/api/run/:wasm_id/:function_name/array_of_bytes', bodyParser.json(), (req, res) => {
+app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
     console.log("Checking content type ...");
+    if (req.is('application/octet-stream') == 'application/octet-stream') {
         var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
             var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
@@ -265,6 +266,10 @@ app.post('/api/run/:wasm_id/:function_name/array_of_bytes', bodyParser.json(), (
             res.send(body_as_buffer); // Delete this line, it is just for testing whilst ssvm is being updated
             //res.send(new Buffer(return_value, 'binary'));
         });
+    } else {
+        console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+        res.end();
+    }
     });
 //
 //
