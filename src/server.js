@@ -256,6 +256,8 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
 // For this reason, this function will accept a Uint8Array from the caller (as the body). This makes the most sense because (sending receiving Uint8Array).
 app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
     console.log("Checking content type ...");
+    // Setting response type
+    res.set('Content-Type', 'application/octet-stream')
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
