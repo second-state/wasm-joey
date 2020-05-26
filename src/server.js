@@ -109,7 +109,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "');";
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', '{}');";
     console.log(sqlInsert);
     performSqlQuery(sqlInsert).then((resultInsert) => {
         console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
@@ -123,7 +123,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
 
 // Get a Wasm executable
 app.get('/api/executables/:wasm_id', (req, res) => {
-    var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer"];
+    var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
     var request_validity = true;
     var json_response = {};
     if (req.query.filterBy != undefined) {
@@ -163,6 +163,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                     performSqlQuery(sqlSelect).then((result) => {
                         json_response["wasm_id"] = result[0].wasm_id;
                         json_response["wasm_description"] = result[0].wasm_description;
+                        json_response["wasm_state"] = result[0].wasm_state;
                         console.log(JSON.stringify("4" + JSON.stringify(json_response)));
                         filters = [];
                         if (filters.length == 0) {
@@ -180,6 +181,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             json_response["wasm_id"] = result[0].wasm_id;
             json_response["wasm_description"] = result[0].wasm_description;
             json_response["wasm_as_buffer"] = result[0].wasm_binary;
+            json_response["wasm_state"] = result[0].wasm_state;
             res.send(JSON.stringify(json_response));
         });
     }
@@ -283,13 +285,21 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
 // 
 //
 //* Dynamic configuration for individual Wasm executables */
-// Get a Wasm executable's configuration key
-app.get('/api/config/:wasm_id', (req, res) => {
-    var json_response = {};
-        var sqlSelect = "SELECT wasm_config_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        console.log(sqlSelect);
-        performSqlQuery(sqlSelect).then((result) => {
-            json_response["wasm_config_key"] = result[0].wasm_id;
-            res.send(JSON.stringify(json_response));
-        });
+
+// Set any state information i.e. config that relates to this Wasm executable (must be valid JSON string)
+app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
+    json_response = {};
+    console.log("Request to update state into the database ...");
+    console.log(req.body);
+    console.log(JSON.stringify(req.body));
+    if (req.is('application/json') == 'application/json') {
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_state) VALUES ('" + JSON.stringify(req.body) + "');";
+    console.log(sqlInsert);
+    performSqlQuery(sqlInsert).then((resultInsert) => {
+        console.log("1 state object has been inserted at wasm_id: " + resultInsert.insertId);
+        json_response["wasm_id"] = resultInsert.insertId;
+        console.log(JSON.stringify(json_response));
+        res.send(JSON.stringify(json_response)); 
+    });
+    }
 });
