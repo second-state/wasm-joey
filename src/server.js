@@ -253,8 +253,6 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
 // Run a function belonging to a Wasm executable -> returns a Buffer
 app.post('/api/run/:wasm_id/:function_name/array_of_bytes', bodyParser.json(), (req, res) => {
     console.log("Checking content type ...");
-    if (req.is('application/json' == 'application/json')) {
-        console.log("Wasm is in application/json format");
         var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
             var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
@@ -271,7 +269,6 @@ app.post('/api/run/:wasm_id/:function_name/array_of_bytes', bodyParser.json(), (
     else {
         console.log("Must be application/json with the layout of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]");
         res.end();
-    }
 });
 //
 //
