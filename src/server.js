@@ -266,7 +266,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             console.log("Body as buffer: " + body_as_buffer);
             //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
             // TODO remove this line when SSVM is ready
-            res.send(Uint8Array.from([9, 8, 7, 6, 5, 4, 2, 2, 1]); // Delete this line, it is just for testing whilst ssvm is being updated
+            res.send(Uint8Array.from([9, 8, 7, 6, 5, 4, 2, 2, 1])); // Delete this line, it is just for testing whilst ssvm is being updated
             //res.send(new Buffer(return_value));
         });
     } else {
