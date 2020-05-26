@@ -224,7 +224,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 //
 // Run a function belonging to a Wasm executable -> returns a JSON string
-app.post('/api/run/:wasm_id/:function_name', (req, res) => {
+app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     var json_response = {};
     // Need to qualify that this is the correct Content-Type and send an error message to the caller if they have it incorrect
     console.log("Checking request Content-Type: " + req.is('application/json'));
@@ -251,10 +251,10 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 });
 
 // Run a function belonging to a Wasm executable -> returns a Buffer
-app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
+app.post('/api/run/:wasm_id/:function_name/array_of_bytes', bodyParser.json(), (req, res) => {
     console.log("Checking content type ...");
-    if (req.is('application/octet-stream' == 'application/octet-stream')) {
-        console.log("Wasm is in binary/asm format");
+    if (req.is('application/json' == 'application/json')) {
+        console.log("Wasm is in application/json format");
         var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
             var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
@@ -262,14 +262,10 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             var function_name = req.params.function_name;
             var body_as_buffer = Uint8Array.from(req.body);
             console.log("Body as buffer: " + body_as_buffer);
-            // TODO remove this line when SSVM is ready
-            var a = req.body;
             //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
-            //res.send(new Buffer(return_value, 'binary'));
-            res.encoding(null);
-            res.set('Content-Type', 'application/octet-stream');
             // TODO remove this line when SSVM is ready
-            res.send(a); // Delete this line, it is just for testing whilst ssvm is being updated
+            res.send(body_as_buffer); // Delete this line, it is just for testing whilst ssvm is being updated
+            //res.send(new Buffer(return_value, 'binary'));
         });
     }
     else {
