@@ -279,3 +279,17 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
 //
 //
 /* Running Wasm Functions */
+
+// 
+//
+//* Dynamic configuration for individual Wasm executables */
+// Get a Wasm executable's configuration key
+app.get('/api/config/:wasm_id', (req, res) => {
+    var json_response = {};
+        var sqlSelect = "SELECT wasm_config_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+        console.log(sqlSelect);
+        performSqlQuery(sqlSelect).then((result) => {
+            json_response["wasm_config_key"] = result[0].wasm_id;
+            res.send(JSON.stringify(json_response));
+        });
+});
