@@ -251,6 +251,9 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
 });
 
 // Run a function belonging to a Wasm executable -> returns a Buffer
+// This endpoint calls vm.RunUint8Array which returns a Uint8Array,
+// Each of these endpoints can only accept one type of data as the body i.e. the middleware can only parse raw OR json OR plain.,
+// For this reason, this function will accept a Uint8Array from the caller (as the body). This makes the most sense because (sending receiving Uint8Array).
 app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
     console.log("Checking content type ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
@@ -263,8 +266,8 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             console.log("Body as buffer: " + body_as_buffer);
             //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
             // TODO remove this line when SSVM is ready
-            res.send(body_as_buffer); // Delete this line, it is just for testing whilst ssvm is being updated
-            //res.send(new Buffer(return_value, 'binary'));
+            res.send(Uint8Array.from([9, 8, 7, 6, 5, 4, 2, 2, 1]); // Delete this line, it is just for testing whilst ssvm is being updated
+            //res.send(new Buffer(return_value));
         });
     } else {
         console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
