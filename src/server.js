@@ -265,11 +265,7 @@ app.post('/api/run/:wasm_id/:function_name/array_of_bytes', bodyParser.json(), (
             res.send(body_as_buffer); // Delete this line, it is just for testing whilst ssvm is being updated
             //res.send(new Buffer(return_value, 'binary'));
         });
-    }
-    else {
-        console.log("Must be application/json with the layout of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]");
-        res.end();
-});
+    });
 //
 //
 /* Running Wasm Functions */
