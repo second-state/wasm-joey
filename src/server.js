@@ -269,7 +269,8 @@ app.post('/api/run/:wasm_id/:function_name/array_of_bytes', bodyParser.json(), (
         });
     }
     else {
-        console.log("Must be application/octet-stream");
+        console.log("Must be application/json with the layout of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]");
+        res.end();
     }
 });
 //
