@@ -293,7 +293,7 @@ app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
     console.log(req.body);
     console.log(JSON.stringify(req.body));
     if (req.is('application/json') == 'application/json') {
-        var sqlInsert = "UPDATE wasm_executables SET wasm_state = ('" + JSON.stringify(req.body) + "');";
+        var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
     console.log(sqlInsert);
     performSqlQuery(sqlInsert).then((resultInsert) => {
         console.log("1 state object has been inserted at wasm_id: " + resultInsert.insertId);
