@@ -297,7 +297,7 @@ app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
     console.log(sqlInsert);
     performSqlQuery(sqlInsert).then((resultInsert) => {
         console.log("1 state object has been inserted at wasm_id: " + resultInsert.insertId);
-        json_response["wasm_id"] = resultInsert.insertId;
+        json_response["wasm_id"] = req.params.wasm_id;
         console.log(JSON.stringify(json_response));
         res.send(JSON.stringify(json_response)); 
     });
