@@ -18,9 +18,17 @@ const app = express();
 app.use(helmet());
 // Body parser
 var bodyParser = require('body-parser');
-app.use(bodyParser.text({type:"text/plain", limit:100000000}));
-app.use(bodyParser.json({type:"application/json"}));           
-app.use(bodyParser.raw({type:"application/octet-stream", limit:100000000}));
+app.use(bodyParser.text({
+    type: "text/plain",
+    limit: 100000000
+}));
+app.use(bodyParser.json({
+    type: "application/json"
+}));
+app.use(bodyParser.raw({
+    type: "application/octet-stream",
+    limit: 100000000
+}));
 // app.use(bodyParser.text({type:"TODO multipart"}));
 
 // Config
@@ -50,12 +58,12 @@ connection.connect((err) => {
 });
 // Filtering the content types which are allowed to access Joey
 app.use(function(req, res, next) {
-  if (req.method === 'POST'){
-    if (req.is('application/octet-stream' !== 'application/octet-stream')|| req.is('application/json' !== 'application/json') || req.is('text/plain' !== 'text/plain')){
-        return res.send(406);
+    if (req.method === 'POST') {
+        if (req.is('application/octet-stream' !== 'application/octet-stream') || req.is('application/json' !== 'application/json') || req.is('text/plain' !== 'text/plain')) {
+            return res.send(406);
+        }
     }
-  } 
-  next();
+    next();
 });
 // SSVM
 //var ssvm = require('ssvm-napi');
@@ -91,6 +99,18 @@ function performSqlQuery(string_query) {
         });
     });
 }
+
+function executableExists(wasm_id) {
+    return new Promise(function(resolve, reject) {
+        connection.query("select wasm_id from wasm_executables where wasm_id='" + wasm_id + "';", function(err, resultSelect) {
+            if (err) {
+                res.status(400).send("Perhaps a bad request, or database is not running");
+            }
+            console.log("Result of select: " + resultSelect.length);
+            resolve(resultSelect);
+        });
+    });
+}
 /* Utils end */
 
 /* RESTful endpoints */
@@ -110,14 +130,14 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
         var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', '{}');";
-    console.log(sqlInsert);
-    performSqlQuery(sqlInsert).then((resultInsert) => {
-        console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
-        json_response["wasm_id"] = resultInsert.insertId;
-        console.log(JSON.stringify(json_response));
-        res.send(JSON.stringify(json_response));
-        
-    });
+        console.log(sqlInsert);
+        performSqlQuery(sqlInsert).then((resultInsert) => {
+            console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
+            json_response["wasm_id"] = resultInsert.insertId;
+            console.log(JSON.stringify(json_response));
+            res.send(JSON.stringify(json_response));
+
+        });
     }
 });
 
@@ -200,14 +220,14 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
     json_response = {};
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
-    var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-    console.log(sqlUpdate);
-    performSqlQuery(sqlUpdate).then((result) => {
-        json_response["wasm_id"] = req.params.wasm_id;
-        console.log(JSON.stringify(json_response));
-        res.send(JSON.stringify(json_response));
-    });
-}
+        var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+        console.log(sqlUpdate);
+        performSqlQuery(sqlUpdate).then((result) => {
+            json_response["wasm_id"] = req.params.wasm_id;
+            console.log(JSON.stringify(json_response));
+            res.send(JSON.stringify(json_response));
+        });
+    }
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
@@ -277,7 +297,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
         console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
         res.end();
     }
-    });
+});
 //
 //
 /* Running Wasm Functions */
@@ -288,18 +308,21 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
 
 // Set any state information i.e. config that relates to this Wasm executable (must be valid JSON string)
 app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
-    json_response = {};
-    console.log("Request to update state into the database ...");
-    console.log(req.body);
-    console.log(JSON.stringify(req.body));
-    if (req.is('application/json') == 'application/json') {
-        var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-    console.log(sqlInsert);
-    performSqlQuery(sqlInsert).then((resultInsert) => {
-        console.log("1 state object has been inserted at wasm_id: " + resultInsert.insertId);
-        json_response["wasm_id"] = req.params.wasm_id;
-        console.log(JSON.stringify(json_response));
-        res.send(JSON.stringify(json_response)); 
-    });
-    }
-});
+            json_response = {};
+            console.log("Request to update state into the database ...");
+            console.log(req.body);
+            console.log(JSON.stringify(req.body));
+            executableExists(req.params.wasm_id).then((result, error) => {
+                console.log(result);
+                if (req.is('application/json') == 'application/json') {
+                    var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    console.log(sqlInsert);
+                    performSqlQuery(sqlInsert).then((resultInsert) => {
+                        console.log("1 state object has been inserted at wasm_id: " + resultInsert.insertId);
+                        json_response["wasm_id"] = req.params.wasm_id;
+                        console.log(JSON.stringify(json_response));
+                        res.send(JSON.stringify(json_response));
+                    });
+                }
+            });
