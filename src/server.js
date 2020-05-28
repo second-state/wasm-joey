@@ -107,7 +107,7 @@ function executableExists(wasm_id) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
             console.log("Result of select: " + resultSelect.length);
-            resolve(resultSelect);
+            resolve(resultSelect.length);
         });
     });
 }
@@ -313,18 +313,21 @@ app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
             console.log(req.body);
             console.log(JSON.stringify(req.body));
             executableExists(req.params.wasm_id).then((result, error) => {
-                console.log(result);
+                if (result == 1){
                 if (req.is('application/json') == 'application/json') {
                     var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                     console.log(sqlInsert);
                     performSqlQuery(sqlInsert).then((resultInsert) => {
-                        console.log("1 state object has been inserted at wasm_id: " + resultInsert.insertId);
+                        console.log("1 state object has been inserted at wasm_id: " + req.params.wasm_id);
                         json_response["wasm_id"] = req.params.wasm_id;
                         console.log(JSON.stringify(json_response));
                         res.send(JSON.stringify(json_response));
                     });
                 }
+            }else {
+                json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+            }
             });
 });
 
