@@ -328,6 +328,7 @@ app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
                 }
             } else {
                 json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+                res.send(JSON.stringify(json_response));
             }
             });
 });
