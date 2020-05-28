@@ -218,30 +218,45 @@ app.get('/api/executables', (req, res) => {
 
 app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
     json_response = {};
-    if (req.is('application/octet-stream') == 'application/octet-stream') {
-        var wasm_as_buffer = Uint8Array.from(req.body);
-        var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-        console.log(sqlUpdate);
-        performSqlQuery(sqlUpdate).then((result) => {
-            json_response["wasm_id"] = req.params.wasm_id;
-            console.log(JSON.stringify(json_response));
+    executableExists(req.params.wasm_id).then((result, error) => {
+        console.log("Result:" + result + ".");
+        if (result == 1) {
+            if (req.is('application/octet-stream') == 'application/octet-stream') {
+                var wasm_as_buffer = Uint8Array.from(req.body);
+                var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                console.log(sqlUpdate);
+                performSqlQuery(sqlUpdate).then((result) => {
+                    json_response["wasm_id"] = req.params.wasm_id;
+                    console.log(JSON.stringify(json_response));
+                    res.send(JSON.stringify(json_response));
+                });
+            }
+        } else {
+            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(json_response));
-        });
-    }
-});
-
-app.delete('/api/executables/:wasm_id', (req, res) => {
-    var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    console.log(sqlDelete);
-    performSqlQuery(sqlDelete).then((result) => {
-        const json_response = {
-            "wasm_id": req.params.wasm_id
-        };
-        console.log(JSON.stringify(json_response));
-        res.send(JSON.stringify(json_response));
+        }
     });
 });
 
+app.delete('/api/executables/:wasm_id', (req, res) => {
+    executableExists(req.params.wasm_id).then((result, error) => {
+        console.log("Result:" + result + ".");
+        if (result == 1) {
+            var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            console.log(sqlDelete);
+            performSqlQuery(sqlDelete).then((result) => {
+                const json_response = {
+                    "wasm_id": req.params.wasm_id
+                };
+                console.log(JSON.stringify(json_response));
+                res.send(JSON.stringify(json_response));
+            });
+        } else {
+            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+            res.send(JSON.stringify(json_response));
+        }
+    });
+});
 /* Running Wasm Functions */
 //
 //
@@ -308,28 +323,27 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
 
 // Set any state information i.e. config that relates to this Wasm executable (must be valid JSON string)
 app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
-            json_response = {};
-            console.log("Request to update state into the database ...");
-            console.log(req.body);
-            console.log(JSON.stringify(req.body));
-            executableExists(req.params.wasm_id).then((result, error) => {
-                console.log("Result:"+result+".");
-                if (result == 1){
-                if (req.is('application/json') == 'application/json') {
-                    var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    console.log(sqlInsert);
-                    performSqlQuery(sqlInsert).then((resultInsert) => {
-                        console.log("1 state object has been inserted at wasm_id: " + req.params.wasm_id);
-                        json_response["wasm_id"] = req.params.wasm_id;
-                        console.log(JSON.stringify(json_response));
-                        res.send(JSON.stringify(json_response));
-                    });
-                }
-            } else {
-                json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
-                res.send(JSON.stringify(json_response));
+    json_response = {};
+    console.log("Request to update state into the database ...");
+    console.log(req.body);
+    console.log(JSON.stringify(req.body));
+    executableExists(req.params.wasm_id).then((result, error) => {
+        console.log("Result:" + result + ".");
+        if (result == 1) {
+            if (req.is('application/json') == 'application/json') {
+                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                console.log(sqlInsert);
+                performSqlQuery(sqlInsert).then((resultInsert) => {
+                    console.log("1 state object has been inserted at wasm_id: " + req.params.wasm_id);
+                    json_response["wasm_id"] = req.params.wasm_id;
+                    console.log(JSON.stringify(json_response));
+                    res.send(JSON.stringify(json_response));
+                });
             }
-            });
+        } else {
+            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+            res.send(JSON.stringify(json_response));
+        }
+    });
 });
-
