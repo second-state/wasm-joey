@@ -313,6 +313,7 @@ app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
             console.log(req.body);
             console.log(JSON.stringify(req.body));
             executableExists(req.params.wasm_id).then((result, error) => {
+                console.log("Result:"+result+".");
                 if (result == 1){
                 if (req.is('application/json') == 'application/json') {
                     var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -325,7 +326,7 @@ app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
                         res.send(JSON.stringify(json_response));
                     });
                 }
-            }else {
+            } else {
                 json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             }
             });
