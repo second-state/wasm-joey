@@ -326,3 +326,5 @@ app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
                     });
                 }
             });
+});
+
