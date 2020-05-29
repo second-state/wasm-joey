@@ -1,0 +1,342 @@
+{
+	"info": {
+		"_postman_id": "84b93d68-2073-4f51-bde3-68f19de57c62",
+		"name": "wasm-joey API documentation",
+		"description": "# SecondState\n[SecondState](https://www.secondstate.io/) has developed a high performance [WebAssembly(Wasm) Virtual Machine called SSVM](https://github.com/second-state/SSVM). \n\nThis product, called [wasm-joey](https://github.com/second-state/wasm-joey) allows you to:\n- upload/store your WebAssembly executables (.wasm files) for later use\n- run a function of your wasm executable in the SSVM environment (via HTTP request/response)\n\nAdministration features of wasm-joey include:\n- getting a list of all .wasm files in the system\n- getting the details of a single .wasm file i.e. wasm_id, wasm_description, wasm_as_buffer etc.\n- hotswapping a .wasm executable at a particular wasm_id\n- adding additional contextual data to a particular wasm_id ()\n\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/1",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables/1",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables",
+						"1"
+					]
+				},
+				"description": "Path structure\n```\n/api/executables/:wasm_id\n```\nGet a single wasm executable (all fields returned by default)\n# Response\n```\n{\"wasm_id\":1,\"wasm_description\":\"Description goes here\",\"wasm_as_buffer\":{\"type\":\"Buffer\",\"data\":[49,49,44,53,44,49,44,52,44,53,44,49,44,49,49,50,44,49,44,49,54,44,49,54,44,53]}}\n```\n# Optional parameters\nPath structure (if using filters)\n```\n/api/executables/:wasm_id?filterBy=[\"wasm_id\"]\n/api/executables/:wasm_id?filterBy=[\"wasm_description\"]\n/api/executables/:wasm_id?filterBy=[\"wasm_as_buffer\"]\n```\n## filterBy\n### wasm_id\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_id\"]\n```\n{\"wasm_id\":1}\n```\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_description\"]\n```\n{\"wasm_description\":\"Description goes here\"}\n```\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_as_buffer\"]\n```\n{\"wasm_as_buffer\":{\"type\":\"Buffer\",\"data\":[49,49,44,53,44,49,44,52,44,53,44,49,44,49,49,50,44,49,44,49,54,44,49,54,44,53]}}\n```\n\n"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables",
+						""
+					]
+				},
+				"description": "Path structure\n```\n/api/executables\n```\nGet all wasm executables (provides wasm_id for each)\n\n# Response\n```\n[{\"wasm_id\":1}, {\"wasm_id\":2}, {\"wasm_id\":3}, {\"wasm_id\":4}]\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					},
+					{
+						"key": "SSVM-Description",
+						"value": "Description of wasm file",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm"
+					},
+					"options": {
+						"file": {}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables"
+					]
+				},
+				"description": "Path structure \n```\n/api/executables\n```\nSet a wasm binary file. You simply have to perform this POST request and add your .wasm executable as the payload, as shown in the example ->\n\n# Response\n```\n{\"wasm_id\":1}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm"
+					},
+					"options": {
+						"file": {}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/update_wasm_binary/3",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"update_wasm_binary",
+						"3"
+					]
+				},
+				"description": "Path structure\n```\n/api/update_wasm_binary/:wasm_id\n```\nHotswap Wasm binary (at specific wasm_id) with a different Wasm binary\n\n# Response\n```\n{\"wasm_id\":1}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/state/1",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"arbitrary_object\": {\"nested_object\": \"value\"}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/state/1",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"state",
+						"1"
+					]
+				},
+				"description": "Path structure\n```\n/api/state/:wasm_id\n```\nUpdate the state object for the wasm executable with `wasm_id` of 1\n# Response\nThe wasm_id of the executable which was just updated\n```\n{\"wasm_id\":\"1\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/run/1/my_function/bytes",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 0]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/run/1/my_function/bytes",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"run",
+						"1",
+						"my_function",
+						"bytes"
+					]
+				},
+				"description": "Execute a Wasm executable's function by passing in the payload as raw bytes (in the request's body)\n\nPath structure\n```\n/api/run/:wasm_id/:function_name/bytes\n```\n# Returns\nUint8Array\n```\n[255, 254, 1, 0]\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/1",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables/1",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables",
+						"1"
+					]
+				},
+				"description": "Delete a Wasm executable (and all related metadata) where `wasm_id` equals `1`\n\n# Returns\n```\n{\"wasm_id\":\"1\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/run/1/my_function",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"function_params\": {\n\t\t\"param_one\": 1,\n\t\t\"param_two\": \"two\"\n\t}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/run/1/my_function",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"run",
+						"1",
+						"my_function"
+					]
+				},
+				"description": "Execute a function that resides in your Wasm executable.\n\nDepending on the particular Rust/Wasm function, the caller will be required to provide the valid JSON in the format that the Rust/Wasm can consume it.\n\nPlease note:\nThe Rust/Wasm code could explicitly declare a Struct on which serde_json could use as the data type, when parsing. However, a struct is flat. What this means, is that if you are going to parse and traverse nested data, then Rust will require that you build and maintain multiple complex data structures (which mirror the JSON data). You may want to do this, which is great. However, in some cases this may be too hard to write and maintain and so here is a proposal for an easier solution.\n\nInstead of writing complex nested Structs you could use serde_json's generic Value type as demonstrated in the following code. This approach allows for maximum flexiblility. For example if the Rust/Wasm application looks like this\n```\nuse serde_json;\nuse serde_json::{Value};\n\n#[no_mangle]\nfn process(s: &str){\n    let json_as_object: Value = serde_json::from_str(s).unwrap();\n    println!(\"{:?}\", json_as_object[\"function_params\"]);\n    println!(\"{:?}\", json_as_object[\"function_params\"][\"param_one\"]);\n    println!(\"{:?}\", json_as_object[\"function_params\"][\"param_two\"]);\n}\n```\nThen the calling request would create a valid JSON object like the one below, in order to satisfy the Rust/Wasm's parsing of this data\n```\n{\n\t\"function_params\": {\n\t\t\"param_one\": 1,\n\t\t\"param_two\": \"two\"\n\t}\n}\n```\n"
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
