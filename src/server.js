@@ -146,74 +146,74 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     executableExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
         if (result == 1) {
-    var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
-    var request_validity = true;
-    if (req.query.filterBy != undefined) {
-        var filters = JSON.parse(req.query.filterBy);
-        if (filters.length == 1) {
-            for (var i = 0; i < filters.length; i++) {
-                if (!valid_filters.includes(filters[i])) {
-                    console.log(filters[i] + " is NOT a valid filter ...");
-                    request_validity = false;
-                } else {
-                    console.log(filters[i] + " is a valid filter ...");
-                }
-            }
-            if (request_validity == false) {
-                res.send(JSON.stringify([{
-                    "error_invalid_filter": JSON.stringify(filters)
-                }, {
-                    "valid_filters_include": valid_filters
-                }]));
-            } else {
-                if (filters.length >= 1) {
-                    if (filters.includes("wasm_as_buffer")) {
-                        filters = removeElementFromArray(filters, "wasm_as_buffer");
-                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                        console.log(sqlSelect);
-                        performSqlQuery(sqlSelect).then((result) => {
-                            json_response["wasm_as_buffer"] = result[0].wasm_binary;
-                            if (filters.length == 0) {
-                                res.send(JSON.stringify(json_response));
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
+            var request_validity = true;
+            if (req.query.filterBy != undefined) {
+                var filters = JSON.parse(req.query.filterBy);
+                if (filters.length == 1) {
+                    for (var i = 0; i < filters.length; i++) {
+                        if (!valid_filters.includes(filters[i])) {
+                            console.log(filters[i] + " is NOT a valid filter ...");
+                            request_validity = false;
+                        } else {
+                            console.log(filters[i] + " is a valid filter ...");
+                        }
+                    }
+                    if (request_validity == false) {
+                        res.send(JSON.stringify([{
+                            "error_invalid_filter": JSON.stringify(filters)
+                        }, {
+                            "valid_filters_include": valid_filters
+                        }]));
+                    } else {
+                        if (filters.length >= 1) {
+                            if (filters.includes("wasm_as_buffer")) {
+                                filters = removeElementFromArray(filters, "wasm_as_buffer");
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                console.log(sqlSelect);
+                                performSqlQuery(sqlSelect).then((result) => {
+                                    json_response["wasm_as_buffer"] = result[0].wasm_binary;
+                                    if (filters.length == 0) {
+                                        res.send(JSON.stringify(json_response));
+                                    }
+                                });
                             }
-                        });
+                        }
+                        if (filters.length >= 1) {
+                            var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            console.log("SQL with filters.join()\n" + sqlSelect);
+                            performSqlQuery(sqlSelect).then((result) => {
+                                json_response["wasm_id"] = result[0].wasm_id;
+                                json_response["wasm_description"] = result[0].wasm_description;
+                                json_response["wasm_state"] = result[0].wasm_state;
+                                console.log(JSON.stringify("4" + JSON.stringify(json_response)));
+                                filters = [];
+                                if (filters.length == 0) {
+                                    res.send(JSON.stringify(json_response));
+                                }
+                            });
+                        }
                     }
                 }
-                if (filters.length >= 1) {
-                    var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    console.log("SQL with filters.join()\n" + sqlSelect);
-                    performSqlQuery(sqlSelect).then((result) => {
-                        json_response["wasm_id"] = result[0].wasm_id;
-                        json_response["wasm_description"] = result[0].wasm_description;
-                        json_response["wasm_state"] = result[0].wasm_state;
-                        console.log(JSON.stringify("4" + JSON.stringify(json_response)));
-                        filters = [];
-                        if (filters.length == 0) {
-                            res.send(JSON.stringify(json_response));
-                        }
-                    });
-                }
+            } else {
+                console.log("No filters");
+                var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                console.log(sqlSelect);
+                performSqlQuery(sqlSelect).then((result) => {
+                    json_response["wasm_id"] = result[0].wasm_id;
+                    json_response["wasm_description"] = result[0].wasm_description;
+                    json_response["wasm_as_buffer"] = result[0].wasm_binary;
+                    json_response["wasm_state"] = result[0].wasm_state;
+                    res.send(JSON.stringify(json_response));
+                });
             }
-        }
-    } else {
-        console.log("No filters");
-        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        console.log(sqlSelect);
-        performSqlQuery(sqlSelect).then((result) => {
-            json_response["wasm_id"] = result[0].wasm_id;
-            json_response["wasm_description"] = result[0].wasm_description;
-            json_response["wasm_as_buffer"] = result[0].wasm_binary;
-            json_response["wasm_state"] = result[0].wasm_state;
-            res.send(JSON.stringify(json_response));
-        });
-    }
-} else {
+        } else {
             json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(json_response));
         }
 
-});
     });
+});
 
 // Get all Wasm executable
 app.get('/api/executables', (req, res) => {
@@ -246,13 +246,13 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
-    json_response   = {};
+    json_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
         if (result == 1) {
             var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             console.log(sqlDelete);
-            performSqlQuery(sqlDelete).then((result) => { 
+            performSqlQuery(sqlDelete).then((result) => {
                 json_response["wasm_id"] = req.params.wasm_id
                 console.log(JSON.stringify(json_response));
                 res.send(JSON.stringify(json_response));
@@ -269,35 +269,35 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     var json_response = {};
-        executableExists(req.params.wasm_id).then((result, error) => {
+    executableExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
         if (result == 1) {
-    console.log("Checking request Content-Type: " + req.is('application/json'));
-    var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    performSqlQuery(sqlSelect).then((result, error) => {
-        console.log(result[0].wasm_binary.data);
-        //var raw_data = result[0].wasm_binary;
-        var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
-        var function_name = req.params.function_name;
-        console.log("Function name: " + function_name);
-        try {
-            var function_parameters = req.body;
-        } catch (err) {
-            json_response["error"] = err;
-            res.send(JSON.stringify(json_response));
+            console.log("Checking request Content-Type: " + req.is('application/json'));
+            var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlSelect).then((result, error) => {
+                console.log(result[0].wasm_binary.data);
+                //var raw_data = result[0].wasm_binary;
+                var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
+                var function_name = req.params.function_name;
+                console.log("Function name: " + function_name);
+                try {
+                    var function_parameters = req.body;
+                } catch (err) {
+                    json_response["error"] = err;
+                    res.send(JSON.stringify(json_response));
+                }
+                var function_parameters_as_string = JSON.stringify(function_parameters);
+                console.log(function_parameters_as_string);
+                // This is the new way in which vm.RunString will be called i.e. passing in the entire body of parameters to ssvm, which hands it over the the Rust/Wasm function to deal parse/interpret 
+                //var return_value = vm.RunString(function_name, function_parameters_as_string); 
+                //json_response["return_value"] = return_value;
+                res.send(JSON.stringify(json_response));
+            });
+        } else {
+            console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+            res.end();
         }
-        var function_parameters_as_string = JSON.stringify(function_parameters);
-        console.log(function_parameters_as_string);
-        // This is the new way in which vm.RunString will be called i.e. passing in the entire body of parameters to ssvm, which hands it over the the Rust/Wasm function to deal parse/interpret 
-        //var return_value = vm.RunString(function_name, function_parameters_as_string); 
-        //json_response["return_value"] = return_value;
-        res.send(JSON.stringify(json_response));
     });
-} else {
-        console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
-        res.end();
-    }
-});
 });
 
 // Run a function belonging to a Wasm executable -> returns a Buffer
@@ -305,26 +305,35 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
 // Each of these endpoints can only accept one type of data as the body i.e. the middleware can only parse raw OR json OR plain.,
 // For this reason, this function will accept a Uint8Array from the caller (as the body). This makes the most sense because (sending receiving Uint8Array).
 app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
-    console.log("Checking content type ...");
-    // Setting response type
-    res.set('Content-Type', 'application/octet-stream')
-    if (req.is('application/octet-stream') == 'application/octet-stream') {
-        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        performSqlQuery(sqlSelect).then((result, error) => {
-            var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
-            //var vm = new ssvm.VM(wasm_as_buffer);
-            var function_name = req.params.function_name;
-            var body_as_buffer = Uint8Array.from(req.body);
-            console.log("Body as buffer: " + body_as_buffer);
-            //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
-            // TODO remove this line when SSVM is ready
-            res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
-            //res.send(new Buffer(return_value));
-        });
-    } else {
-        console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
-        res.end();
-    }
+    json_response = {};
+    executableExists(req.params.wasm_id).then((result, error) => {
+        console.log("Result:" + result + ".");
+        if (result == 1) {
+            console.log("Checking content type ...");
+            // Setting response type
+            res.set('Content-Type', 'application/octet-stream')
+            if (req.is('application/octet-stream') == 'application/octet-stream') {
+                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                performSqlQuery(sqlSelect).then((result, error) => {
+                    var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
+                    //var vm = new ssvm.VM(wasm_as_buffer);
+                    var function_name = req.params.function_name;
+                    var body_as_buffer = Uint8Array.from(req.body);
+                    console.log("Body as buffer: " + body_as_buffer);
+                    //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
+                    // TODO remove this line when SSVM is ready
+                    res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
+                    //res.send(new Buffer(return_value));
+                });
+            } else {
+                console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+                res.end();
+            }
+        } else {
+            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+            res.send(JSON.stringify(json_response));
+        }
+    });
 });
 //
 //
