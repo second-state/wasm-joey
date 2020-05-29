@@ -29,7 +29,6 @@ app.use(bodyParser.raw({
     type: "application/octet-stream",
     limit: 100000000
 }));
-// app.use(bodyParser.text({type:"TODO multipart"}));
 
 // Config
 require('dotenv').config();
@@ -143,12 +142,15 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
 
 // Get a Wasm executable
 app.get('/api/executables/:wasm_id', (req, res) => {
+    json_response = {};
+    executableExists(req.params.wasm_id).then((result, error) => {
+        console.log("Result:" + result + ".");
+        if (result == 1) {
     var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
     var request_validity = true;
-    var json_response = {};
     if (req.query.filterBy != undefined) {
         var filters = JSON.parse(req.query.filterBy);
-        if (filters.length >= 1) {
+        if (filters.length == 1) {
             for (var i = 0; i < filters.length; i++) {
                 if (!valid_filters.includes(filters[i])) {
                     console.log(filters[i] + " is NOT a valid filter ...");
@@ -205,8 +207,13 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             res.send(JSON.stringify(json_response));
         });
     }
+} else {
+            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+            res.send(JSON.stringify(json_response));
+        }
 
 });
+    });
 
 // Get all Wasm executable
 app.get('/api/executables', (req, res) => {
@@ -239,15 +246,14 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
+    json_response   = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
         if (result == 1) {
             var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             console.log(sqlDelete);
-            performSqlQuery(sqlDelete).then((result) => {
-                const json_response = {
-                    "wasm_id": req.params.wasm_id
-                };
+            performSqlQuery(sqlDelete).then((result) => { 
+                json_response["wasm_id"] = req.params.wasm_id
                 console.log(JSON.stringify(json_response));
                 res.send(JSON.stringify(json_response));
             });
@@ -263,7 +269,9 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     var json_response = {};
-    // Need to qualify that this is the correct Content-Type and send an error message to the caller if they have it incorrect
+        executableExists(req.params.wasm_id).then((result, error) => {
+        console.log("Result:" + result + ".");
+        if (result == 1) {
     console.log("Checking request Content-Type: " + req.is('application/json'));
     var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((result, error) => {
@@ -285,6 +293,11 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
         //json_response["return_value"] = return_value;
         res.send(JSON.stringify(json_response));
     });
+} else {
+        console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+        res.end();
+    }
+});
 });
 
 // Run a function belonging to a Wasm executable -> returns a Buffer
