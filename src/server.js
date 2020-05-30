@@ -134,7 +134,7 @@ function executeCallback(_request_options, _data_payload) {
 
 
 
-        }).req.on('error', (e) => {
+        }).on('error', (e) => {
             console.error(e);
         });
         req.write(data);
