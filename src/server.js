@@ -114,23 +114,33 @@ function executableExists(wasm_id) {
 function executeCallback(_request_options, _data_payload) {
     return new Promise(function(resolve, reject) {
         const data = JSON.stringify(_data_payload);
+        console.log(data);
         var https = require('follow-redirects').https;
         var options = _request_options;
+
+
         const req = https.request(options, (res) => {
+            let data = '';
             console.log('statusCode:', res.statusCode);
             console.log('headers:', res.headers);
 
-            res.on('data', (d) => {
-                resolve(d);
+            res.on('data', (chunk) => {
+                data += chunk;
             });
-        });
 
-        req.on('error', (e) => {
+            res.on('end', () => {
+                console.log('Body: ', JSON.parse(data));
+            });
+
+
+
+        }).req.on('error', (e) => {
             console.error(e);
         });
+        req.write(data);
         req.end();
     });
-};
+}
 /* Utils end */
 
 /* RESTful endpoints */
@@ -340,10 +350,13 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     if (return_value_as_object.hasOwnProperty('callback')) {
                         console.log("Processing callback");
                         var callback_object_for_processing = return_value_as_object["callback"];
+                        console.log(callback_object_for_processing);
                         delete return_value_as_object.callback;
                         //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
                         var new_return_value = executeCallback(callback_object_for_processing, return_value_as_object);
+                        console.log(new_return_value);
                         json_response["return_value"] = new_return_value
+                        console.log(json_response);
                         res.send(JSON.stringify(json_response));
                     } else {
                         // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim

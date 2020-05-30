@@ -115,6 +115,10 @@ HTTPS
 ```bash
 npm install https
 ```
+Follow redirects
+```bash
+npm install follow-redirects
+```
 
 # MySQL Server on the system
 Install MySQL on the system
