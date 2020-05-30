@@ -99,6 +99,8 @@ function performSqlQuery(string_query) {
     });
 }
 
+select unix_timestamp();
+
 function executableExists(wasm_id) {
     return new Promise(function(resolve, reject) {
         connection.query("select wasm_id from wasm_executables where wasm_id='" + wasm_id + "';", function(err, resultSelect) {
@@ -273,10 +275,11 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
         console.log("Result:" + result + ".");
         if (result == 1) {
             console.log("Checking request Content-Type: " + req.is('application/json'));
-            var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlSelect).then((result, error) => {
                 console.log(result[0].wasm_binary.data);
                 //var raw_data = result[0].wasm_binary;
+                var wasm_state_as_string = result[0].wasm_state;
                 var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
                 var function_name = req.params.function_name;
                 console.log("Function name: " + function_name);
@@ -288,8 +291,32 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                 }
                 var function_parameters_as_string = JSON.stringify(function_parameters);
                 console.log(function_parameters_as_string);
-                // This is the new way in which vm.RunString will be called i.e. passing in the entire body of parameters to ssvm, which hands it over the the Rust/Wasm function to deal parse/interpret 
-                //var return_value = vm.RunString(function_name, function_parameters_as_string); 
+                //var vm = new ssvm.VM(wasm_as_buffer);
+                //var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
+                /*
+                The Rust / Wasm application is allowed to optionally generate a callback object and merge the callback object into the response. 
+                Joey must check each response from the RunString execution and process a callback object if it is present.
+                The following is a temporary example, which will be commented out when SSVM is complete and able to send back JSON string
+                */
+                // Fictitious return value for development and testing purposes
+                return_value = `{
+                                "data_from_ssvm": {
+                                    "function": {
+                                        "name": "new template name"
+                                    },
+                                    "callback": {
+                                        "url": "https://api.sendgrid.com/v3/",
+                                        "method": "POST",
+                                        "headers": [{
+                                            "Content-Type": "application/json"
+                                        }, {
+                                            "Authorization": "Bearer key_goes_here"
+                                        }]
+                                    }
+                                }
+                            }`
+                var return_value_as_object = JSON.parse(return_value);
+                var request_data = return_value_as_object["data_from_ssvm"]["function"]
                 //json_response["return_value"] = return_value;
                 res.send(JSON.stringify(json_response));
             });
@@ -313,14 +340,15 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             // Setting response type
             res.set('Content-Type', 'application/octet-stream')
             if (req.is('application/octet-stream') == 'application/octet-stream') {
-                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                 performSqlQuery(sqlSelect).then((result, error) => {
+                    var wasm_state_as_string = result[0].wasm_state;
                     var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
                     //var vm = new ssvm.VM(wasm_as_buffer);
                     var function_name = req.params.function_name;
                     var body_as_buffer = Uint8Array.from(req.body);
                     console.log("Body as buffer: " + body_as_buffer);
-                    //var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
+                    //var return_value = vm.RunUint8Array(wasm_state_as_string, function_name, body_as_buffer); 
                     // TODO remove this line when SSVM is ready
                     res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
                     //res.send(new Buffer(return_value));
