@@ -125,16 +125,19 @@ function executeCallback(_request_options, _data_payload) {
             console.log('headers:', res.headers);
 
             res.on('data', (chunk) => {
+                console.log("Processing body ... ");
                 data += chunk;
             });
 
             res.on('end', () => {
                 console.log('Body: ', JSON.parse(data));
+                resolve(res);
             });
 
 
 
         }).on('error', (e) => {
+            console.error("Error: ");
             console.error(e);
         });
         req.write(data);
