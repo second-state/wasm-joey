@@ -111,6 +111,10 @@ CORS
 cd /media/nvme/node_rpc/wasm-joey/src
 npm install cors
 ```
+HTTPS
+```bash
+npm install https
+```
 
 # MySQL Server on the system
 Install MySQL on the system
@@ -169,7 +173,7 @@ CREATE TABLE wasm_executables(
     wasm_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_description CHAR(255) NOT NULL,
     wasm_binary LONGBLOB NOT NULL,
-    wasm_config LONGTEXT NOT NULL,
+    wasm_state LONGTEXT NOT NULL,
     PRIMARY KEY(wasm_id)
 );
 ```

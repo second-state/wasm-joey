@@ -113,48 +113,26 @@ function executableExists(wasm_id) {
     });
 }
 
-function executeCallback() {
-    var https = require('follow-redirects').https;
+function executeCallback(_request_options, _data_payload) {
+    return new Promise(function(resolve, reject) {
+        const data = JSON.stringify(_data_payload);
+        var https = require('follow-redirects').https;
+        var options = _request_options;
+        const req = https.request(options, (res) => {
+            console.log('statusCode:', res.statusCode);
+            console.log('headers:', res.headers);
 
-    var options = {
-        'method': 'POST',
-        'hostname': 'rpc.ssvm.secondstate.io',
-        'port': 8081,
-        'path': '/api/run/1/my_function',
-        'headers': {
-            'Content-Type': 'application/json'
-        },
-        'maxRedirects': 20
-    };
-
-    var req = https.request(options, function(res) {
-        var chunks = [];
-
-        res.on("data", function(chunk) {
-            chunks.push(chunk);
+            res.on('data', (d) => {
+                resolve(d);
+            });
         });
 
-        res.on("end", function(chunk) {
-            var body = Buffer.concat(chunks);
-            console.log(body.toString());
+        req.on('error', (e) => {
+            console.error(e);
         });
-
-        res.on("error", function(error) {
-            console.error(error);
-        });
+        req.end();
     });
-
-    var postData = JSON.stringify({
-        "function_params": {
-            "param_one": 1,
-            "param_two": "two"
-        }
-    });
-
-    req.write(postData);
-
-    req.end();
-}
+};
 /* Utils end */
 
 /* RESTful endpoints */
@@ -343,29 +321,30 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                 */
                 // Fictitious return value for development and testing purposes
                 return_value = `{
-                                "data_from_ssvm": {
-                                    "function": {
-                                        "name": "new template name"
+                                "function": {
+                                    "name": "new template name"
+                                },
+                                "callback": {
+                                    "method": "GET",
+                                    "hostname": "rpc.ssvm.secondstate.io",
+                                    "port": 8081,
+                                    "path": "/api/executables",
+                                    "headers": {
+                                        "Content-Type": "application/json"
                                     },
-                                    "callback": {
-                                        "url": "https://api.sendgrid.com/v3/",
-                                        "method": "POST",
-                                        "headers": [{
-                                            "Content-Type": "application/json"
-                                        }, {
-                                            "Authorization": "Bearer key_goes_here"
-                                        }]
-                                    }
+                                    "maxRedirects": 20
                                 }
                             }`
                 // Allow for the return value to just be a string and not valid JSON (strings are still acceptable for this vm.RunString endpoint)
                 try {
                     // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                     var return_value_as_object = JSON.parse(return_value);
-                    if (return_value_as_object.data_from_ssvm.hasOwnProperty('callback')) {
+                    if (return_value_as_object.hasOwnProperty('callback')) {
                         console.log("Processing callback");
+                        var callback_object_for_processing = return_value_as_object["callback"];
+                        delete return_value_as_object.callback;
                         //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
-                        var new_return_value = executeCallback();
+                        var new_return_value = executeCallback(callback_object_for_processing, return_value_as_object);
                         json_response["return_value"] = new_return_value
                         res.send(JSON.stringify(json_response));
                     } else {
