@@ -112,6 +112,44 @@ function executableExists(wasm_id) {
         });
     });
 }
+
+function executeCallback() {
+    var https = require('follow-redirects').https;
+
+var options = {
+  'method': 'POST',
+  'hostname': 'rpc.ssvm.secondstate.io',
+  'port': 8081,
+  'path': '/api/run/1/my_function',
+  'headers': {
+    'Content-Type': 'application/json'
+  },
+  'maxRedirects': 20
+};
+
+var req = https.request(options, function (res) {
+  var chunks = [];
+
+  res.on("data", function (chunk) {
+    chunks.push(chunk);
+  });
+
+  res.on("end", function (chunk) {
+    var body = Buffer.concat(chunks);
+    console.log(body.toString());
+  });
+
+  res.on("error", function (error) {
+    console.error(error);
+  });
+});
+
+var postData = JSON.stringify({"function_params":{"param_one":1,"param_two":"two"}});
+
+req.write(postData);
+
+req.end();
+}
 /* Utils end */
 
 /* RESTful endpoints */
@@ -130,7 +168,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', '{}');";
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', ' ');";
         console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
@@ -316,7 +354,14 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 }
                             }`
                 var return_value_as_object = JSON.parse(return_value);
-                var request_data = return_value_as_object["data_from_ssvm"]["function"]
+                if (return_value_as_object.data_from_ssvm.hasOwnProperty('callback')){
+                    console.log("Processing callback");
+                    } else {
+                    // This code will need to parse the actual return data once ssvm-napi is released
+                    json_response["return_value"] = return_value_as_object.data_from_ssvm.function;
+                    res.send(JSON.stringify(json_response));
+                    }
+                
                 //json_response["return_value"] = return_value;
                 res.send(JSON.stringify(json_response));
             });
