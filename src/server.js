@@ -358,14 +358,23 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                     }
                                 }
                             }`
-                // Allow for the return value to just be a string and not valid JSON
+                // Allow for the return value to just be a string and not valid JSON (strings are still acceptable for this vm.RunString endpoint)
                 try {
+                    // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                     var return_value_as_object = JSON.parse(return_value);
                     if (return_value_as_object.data_from_ssvm.hasOwnProperty('callback')) {
                         console.log("Processing callback");
+                        //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
+                        var new_return_value = executeCallback();
+                        json_response["return_value"] = new_return_value
+                        res.send(JSON.stringify(json_response));
+                    } else {
+                        // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
+                        json_response["return_value"] = return_value
+                        res.send(JSON.stringify(json_response));
                     }
-                    // This code will need to parse the actual return data once ssvm-napi is released
                 } catch {
+                    // The response was obviously not valid JSON string so we just want to pass this string back to the original caller verbatim
                     json_response["return_value"] = return_value
                     res.send(JSON.stringify(json_response));
                 }
