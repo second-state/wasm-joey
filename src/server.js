@@ -99,8 +99,6 @@ function performSqlQuery(string_query) {
     });
 }
 
-select unix_timestamp();
-
 function executableExists(wasm_id) {
     return new Promise(function(resolve, reject) {
         connection.query("select wasm_id from wasm_executables where wasm_id='" + wasm_id + "';", function(err, resultSelect) {
