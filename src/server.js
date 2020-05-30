@@ -353,7 +353,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     if (return_value_as_object.hasOwnProperty('callback')) {
                         console.log("Processing callback");
                         var callback_object_for_processing = return_value_as_object["callback"];
-                        console.log(callback_object_for_processing);
+                        console.log("*Callback Object: " + callback_object_for_processing);
                         delete return_value_as_object.callback;
                         //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
                         var new_return_value = executeCallback(callback_object_for_processing, return_value_as_object);
