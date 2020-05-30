@@ -357,11 +357,12 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         delete return_value_as_object.callback;
                         console.log("*Return value object: " + JSON.stringify(return_value_as_object));
                         //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
-                        var new_return_value = executeCallback(callback_object_for_processing, return_value_as_object);
-                        console.log("*New value" + new_return_value);
-                        json_response["return_value"] = new_return_value
+                        executeCallback(callback_object_for_processing, return_value_as_object).then((c_result, error) => {
+                        console.log("*New value" + c_result);
+                        json_response["return_value"] = c_result
                         console.log(json_response);
                         res.send(JSON.stringify(json_response));
+                    });
                     } else {
                         // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
                         json_response["return_value"] = return_value
