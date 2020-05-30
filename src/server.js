@@ -116,39 +116,44 @@ function executableExists(wasm_id) {
 function executeCallback() {
     var https = require('follow-redirects').https;
 
-var options = {
-  'method': 'POST',
-  'hostname': 'rpc.ssvm.secondstate.io',
-  'port': 8081,
-  'path': '/api/run/1/my_function',
-  'headers': {
-    'Content-Type': 'application/json'
-  },
-  'maxRedirects': 20
-};
+    var options = {
+        'method': 'POST',
+        'hostname': 'rpc.ssvm.secondstate.io',
+        'port': 8081,
+        'path': '/api/run/1/my_function',
+        'headers': {
+            'Content-Type': 'application/json'
+        },
+        'maxRedirects': 20
+    };
 
-var req = https.request(options, function (res) {
-  var chunks = [];
+    var req = https.request(options, function(res) {
+        var chunks = [];
 
-  res.on("data", function (chunk) {
-    chunks.push(chunk);
-  });
+        res.on("data", function(chunk) {
+            chunks.push(chunk);
+        });
 
-  res.on("end", function (chunk) {
-    var body = Buffer.concat(chunks);
-    console.log(body.toString());
-  });
+        res.on("end", function(chunk) {
+            var body = Buffer.concat(chunks);
+            console.log(body.toString());
+        });
 
-  res.on("error", function (error) {
-    console.error(error);
-  });
-});
+        res.on("error", function(error) {
+            console.error(error);
+        });
+    });
 
-var postData = JSON.stringify({"function_params":{"param_one":1,"param_two":"two"}});
+    var postData = JSON.stringify({
+        "function_params": {
+            "param_one": 1,
+            "param_two": "two"
+        }
+    });
 
-req.write(postData);
+    req.write(postData);
 
-req.end();
+    req.end();
 }
 /* Utils end */
 
@@ -353,17 +358,17 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                     }
                                 }
                             }`
-                var return_value_as_object = JSON.parse(return_value);
-                if (return_value_as_object.data_from_ssvm.hasOwnProperty('callback')){
-                    console.log("Processing callback");
-                    } else {
-                    // This code will need to parse the actual return data once ssvm-napi is released
-                    json_response["return_value"] = return_value_as_object.data_from_ssvm.function;
-                    res.send(JSON.stringify(json_response));
+                // Allow for the return value to just be a string and not valid JSON
+                try {
+                    var return_value_as_object = JSON.parse(return_value);
+                    if (return_value_as_object.data_from_ssvm.hasOwnProperty('callback')) {
+                        console.log("Processing callback");
                     }
-                
-                //json_response["return_value"] = return_value;
-                res.send(JSON.stringify(json_response));
+                    // This code will need to parse the actual return data once ssvm-napi is released
+                } catch {
+                    json_response["return_value"] = return_value
+                    res.send(JSON.stringify(json_response));
+                }
             });
         } else {
             console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
