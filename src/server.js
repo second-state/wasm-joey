@@ -55,6 +55,7 @@ connection.connect((err) => {
     if (err) throw err;
     console.log('Connection to database succeeded!');
 });
+
 // Filtering the content types which are allowed to access Joey
 app.use(function(req, res, next) {
     if (req.method === 'POST') {
@@ -114,7 +115,7 @@ function executableExists(wasm_id) {
 function executeCallback(_request_options, _data_payload) {
     return new Promise(function(resolve, reject) {
         const data = JSON.stringify(_data_payload);
-        console.log(data);
+        console.log("Data coming in: " + data);
         var https = require('follow-redirects').https;
         var options = _request_options;
 
@@ -130,8 +131,8 @@ function executeCallback(_request_options, _data_payload) {
             });
 
             res.on('end', () => {
-                console.log('Body: ', JSON.parse(data));
-                resolve(res);
+                console.log(res.data);
+                resolve(res.data);
             });
 
 
@@ -339,7 +340,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                     "method": "GET",
                                     "hostname": "rpc.ssvm.secondstate.io",
                                     "port": 8081,
-                                    "path": "/api/executables",
+                                    "path": "/api/run/2/my_other_function",
                                     "headers": {
                                         "Content-Type": "application/json"
                                     },
@@ -353,13 +354,13 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     if (return_value_as_object.hasOwnProperty('callback')) {
                         console.log("Processing callback");
                         var callback_object_for_processing = return_value_as_object["callback"];
-                        console.log("*Callback Object: " + JSON.stringify(callback_object_for_processing));
+                        //console.log("*Callback Object: " + JSON.stringify(callback_object_for_processing));
                         delete return_value_as_object.callback;
-                        console.log("*Return value object: " + JSON.stringify(return_value_as_object));
+                        //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
                         //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
                         executeCallback(callback_object_for_processing, return_value_as_object).then((c_result, error) => {
-                        console.log("*New value" + c_result);
-                        json_response["return_value"] = c_result
+                        //console.log("*New value" + c_result);
+                        json_response["return_value"] = c_result;
                         console.log(json_response);
                         res.send(JSON.stringify(json_response));
                     });
@@ -425,29 +426,23 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
 //
 //* Dynamic configuration for individual Wasm executables */
 
-// Set any state information i.e. config that relates to this Wasm executable (must be valid JSON string)
-app.put('/api/state/:wasm_id', bodyParser.json(), (req, res) => {
-    json_response = {};
+// Set any state information i.e. config that relates to this Wasm executable only accepts string format (text) the caller and the Rust Wasm must agree on how the text string is parsed and used
+app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     console.log("Request to update state into the database ...");
     console.log(req.body);
-    console.log(JSON.stringify(req.body));
     executableExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
         if (result == 1) {
-            if (req.is('application/json') == 'application/json') {
-                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+            if (req.is('text/plain') == 'text/plain') {
+                var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                 console.log(sqlInsert);
                 performSqlQuery(sqlInsert).then((resultInsert) => {
                     console.log("1 state object has been inserted at wasm_id: " + req.params.wasm_id);
-                    json_response["wasm_id"] = req.params.wasm_id;
-                    console.log(JSON.stringify(json_response));
-                    res.send(JSON.stringify(json_response));
+                    res.send(req.params.wasm_id);
                 });
             }
         } else {
-            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
-            res.send(JSON.stringify(json_response));
+            res.send(req.params.wasm_id + " does not exist");
         }
     });
 });
