@@ -560,7 +560,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
                             }
                         }
                         if (filters.length >= 1) {
-                            var sqlSelect = "SELECT " + filters.join() + " from wasm_execution_log WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            var sqlSelect = "SELECT " + filters.join() + " from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
                             console.log("SQL with filters.join()\n" + sqlSelect);
                             performSqlQuery(sqlSelect).then((result) => {
                                 if (filters.includes("log_id")) {
@@ -582,7 +582,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
                 }
             } else {
                 console.log("No filters");
-                var sqlSelect = "SELECT * from wasm_execution_log WHERE wasm_id = '" + req.params.wasm_id + "';";
+                var sqlSelect = "SELECT * from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
                 console.log(sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["log_id"] = result[0].log_id;
