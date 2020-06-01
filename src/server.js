@@ -328,6 +328,19 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
+    // Perform logging
+        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+        performSqlQuery(sqlSelect).then((stateResult) => {
+        console.log("Creating log object");
+        var logging_object = {};
+        logging_object["original_wasm_executables_id"] = req.params.wasm_id;
+        logging_object["data_payload"] = JSON.stringify(req.body); 
+        var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+        console.log("sqlInsert: " + sqlInsert);
+        performSqlQuery(sqlInsert).then((resultInsert) => {
+            console.log("Logging updated");
+            });
+        });
     var json_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
