@@ -112,6 +112,18 @@ function executableExists(wasm_id) {
     });
 }
 
+function executionLogExists(wasm_id) {
+    return new Promise(function(resolve, reject) {
+        connection.query("select log_id from wasm_execution_log where wasm_executable_id='" + wasm_id + "';", function(err, resultSelect) {
+            if (err) {
+                res.status(400).send("Perhaps a bad request, or database is not running");
+            }
+            console.log("Result of select: " + resultSelect.length);
+            resolve(resultSelect.length);
+        });
+    });
+}
+
 function executeCallback(_original_id, _request_options, _data_payload) {
     return new Promise(function(resolve, reject) {
         console.log("Updating execution log");
@@ -457,5 +469,80 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
         } else {
             res.send(req.params.wasm_id + " does not exist");
         }
+    });
+});
+
+// Get a Wasm executable
+app.get('/api/log/:wasm_id', (req, res) => {
+    json_response = {};
+    executableExists(req.params.wasm_id).then((result, error) => {
+        console.log("Result:" + result + ".");
+        if (result == 1) {
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
+            var request_validity = true;
+            if (req.query.filterBy != undefined) {
+                var filters = JSON.parse(req.query.filterBy);
+                if (filters.length == 1) {
+                    for (var i = 0; i < filters.length; i++) {
+                        if (!valid_filters.includes(filters[i])) {
+                            console.log(filters[i] + " is NOT a valid filter ...");
+                            request_validity = false;
+                        } else {
+                            console.log(filters[i] + " is a valid filter ...");
+                        }
+                    }
+                    if (request_validity == false) {
+                        res.send(JSON.stringify([{
+                            "error_invalid_filter": JSON.stringify(filters)
+                        }, {
+                            "valid_filters_include": valid_filters
+                        }]));
+                    } else {
+                        if (filters.length >= 1) {
+                            if (filters.includes("wasm_as_buffer")) {
+                                filters = removeElementFromArray(filters, "wasm_as_buffer");
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                console.log(sqlSelect);
+                                performSqlQuery(sqlSelect).then((result) => {
+                                    json_response["wasm_as_buffer"] = result[0].wasm_binary;
+                                    if (filters.length == 0) {
+                                        res.send(JSON.stringify(json_response));
+                                    }
+                                });
+                            }
+                        }
+                        if (filters.length >= 1) {
+                            var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            console.log("SQL with filters.join()\n" + sqlSelect);
+                            performSqlQuery(sqlSelect).then((result) => {
+                                json_response["wasm_id"] = result[0].wasm_id;
+                                json_response["wasm_description"] = result[0].wasm_description;
+                                json_response["wasm_state"] = result[0].wasm_state;
+                                console.log(JSON.stringify("4" + JSON.stringify(json_response)));
+                                filters = [];
+                                if (filters.length == 0) {
+                                    res.send(JSON.stringify(json_response));
+                                }
+                            });
+                        }
+                    }
+                }
+            } else {
+                console.log("No filters");
+                var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                console.log(sqlSelect);
+                performSqlQuery(sqlSelect).then((result) => {
+                    json_response["wasm_id"] = result[0].wasm_id;
+                    json_response["wasm_description"] = result[0].wasm_description;
+                    json_response["wasm_as_buffer"] = result[0].wasm_binary;
+                    json_response["wasm_state"] = result[0].wasm_state;
+                    res.send(JSON.stringify(json_response));
+                });
+            }
+        } else {
+            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+            res.send(JSON.stringify(json_response));
+        }
+
     });
 });
