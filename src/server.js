@@ -114,8 +114,10 @@ function executableExists(wasm_id) {
 
 function executeCallback(_original_id, _request_options, _data_payload) {
     return new Promise(function(resolve, reject) {
+        console.log("Updating execution log");
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
         performSqlQuery(sqlSelect).then((stateResult) => {
+        console.log("Creating log object");
         var logging_object = {};
         logging_object["original_wasm_executables_id"] = _original_id;
         logging_object["original_wasm_executables_state"] = stateResult[0].wasm_state;
