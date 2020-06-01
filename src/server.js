@@ -365,38 +365,37 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
         console.log("sqlInsert: " + sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("Logging updated");
-        });
-    });
-    var json_response = {};
-    executableExists(req.params.wasm_id).then((result, error) => {
-        console.log("Result:" + result + ".");
-        if (result == 1) {
-            console.log("Checking request Content-Type: " + req.is('application/json'));
-            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result, error) => {
-                console.log(result[0].wasm_binary.data);
-                //var raw_data = result[0].wasm_binary;
-                var wasm_state_as_string = result[0].wasm_state;
-                var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
-                var function_name = req.params.function_name;
-                console.log("Function name: " + function_name);
-                try {
-                    var function_parameters = req.body;
-                } catch (err) {
-                    json_response["error"] = err;
-                    res.send(JSON.stringify(json_response));
-                }
-                var function_parameters_as_string = JSON.stringify(function_parameters);
-                console.log(function_parameters_as_string);
-                //var vm = new ssvm.VM(wasm_as_buffer);
-                //var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
-                /*
-                The Rust / Wasm application is allowed to optionally generate a callback object and merge the callback object into the response. 
-                Joey must check each response from the RunString execution and process a callback object if it is present.
-                The following is a temporary example, which will be commented out when SSVM is complete and able to send back JSON string
-                */
-                // Fictitious return value for development and testing purposes
-                return_value = `{
+
+            var json_response = {};
+            executableExists(req.params.wasm_id).then((result, error) => {
+                console.log("Result:" + result + ".");
+                if (result == 1) {
+                    console.log("Checking request Content-Type: " + req.is('application/json'));
+                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlSelect).then((result, error) => {
+                        console.log(result[0].wasm_binary.data);
+                        //var raw_data = result[0].wasm_binary;
+                        var wasm_state_as_string = result[0].wasm_state;
+                        var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
+                        var function_name = req.params.function_name;
+                        console.log("Function name: " + function_name);
+                        try {
+                            var function_parameters = req.body;
+                        } catch (err) {
+                            json_response["error"] = err;
+                            res.send(JSON.stringify(json_response));
+                        }
+                        var function_parameters_as_string = JSON.stringify(function_parameters);
+                        console.log(function_parameters_as_string);
+                        //var vm = new ssvm.VM(wasm_as_buffer);
+                        //var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
+                        /*
+                        The Rust / Wasm application is allowed to optionally generate a callback object and merge the callback object into the response. 
+                        Joey must check each response from the RunString execution and process a callback object if it is present.
+                        The following is a temporary example, which will be commented out when SSVM is complete and able to send back JSON string
+                        */
+                        // Fictitious return value for development and testing purposes
+                        return_value = `{
                                 "function": {
                                     "name": "new template name"
                                 },
@@ -411,38 +410,40 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                     "maxRedirects": 20
                                 }
                             }`
-                // Allow for the return value to just be a string and not valid JSON (strings are still acceptable for this vm.RunString endpoint)
-                try {
-                    // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
-                    var return_value_as_object = JSON.parse(return_value);
-                    if (return_value_as_object.hasOwnProperty('callback')) {
-                        console.log("Processing callback");
-                        var callback_object_for_processing = return_value_as_object["callback"];
-                        //console.log("*Callback Object: " + JSON.stringify(callback_object_for_processing));
-                        delete return_value_as_object.callback;
-                        //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
-                        //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
-                        executeCallback(req.params.wasm_id, callback_object_for_processing, return_value_as_object).then((c_result, error) => {
-                            //console.log("*New value" + c_result);
-                            json_response["return_value"] = c_result;
-                            console.log(json_response);
+                        // Allow for the return value to just be a string and not valid JSON (strings are still acceptable for this vm.RunString endpoint)
+                        try {
+                            // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
+                            var return_value_as_object = JSON.parse(return_value);
+                            if (return_value_as_object.hasOwnProperty('callback')) {
+                                console.log("Processing callback");
+                                var callback_object_for_processing = return_value_as_object["callback"];
+                                //console.log("*Callback Object: " + JSON.stringify(callback_object_for_processing));
+                                delete return_value_as_object.callback;
+                                //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
+                                //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
+                                executeCallback(req.params.wasm_id, callback_object_for_processing, return_value_as_object).then((c_result, error) => {
+                                    //console.log("*New value" + c_result);
+                                    json_response["return_value"] = c_result;
+                                    console.log(json_response);
+                                    res.send(JSON.stringify(json_response));
+                                });
+                            } else {
+                                // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
+                                json_response["return_value"] = return_value
+                                res.send(JSON.stringify(json_response));
+                            }
+                        } catch {
+                            // The response was obviously not valid JSON string so we just want to pass this string back to the original caller verbatim
+                            json_response["return_value"] = return_value
                             res.send(JSON.stringify(json_response));
-                        });
-                    } else {
-                        // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                        json_response["return_value"] = return_value
-                        res.send(JSON.stringify(json_response));
-                    }
-                } catch {
-                    // The response was obviously not valid JSON string so we just want to pass this string back to the original caller verbatim
-                    json_response["return_value"] = return_value
-                    res.send(JSON.stringify(json_response));
+                        }
+                    });
+                } else {
+                    console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+                    res.end();
                 }
             });
-        } else {
-            console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
-            res.end();
-        }
+        });
     });
 });
 
