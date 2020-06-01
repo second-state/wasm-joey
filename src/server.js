@@ -129,15 +129,15 @@ function executeCallback(_original_id, _request_options, _data_payload) {
         console.log("Updating execution log");
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
         performSqlQuery(sqlSelect).then((stateResult) => {
-        console.log("Creating log object");
-        var logging_object = {};
-        logging_object["original_wasm_executables_id"] = _original_id;
-        logging_object["callback_request_options"] = _request_options;
-        logging_object["callback_data_payload"] = _data_payload; 
-        var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-        console.log("sqlInsert: " + sqlInsert);
-        performSqlQuery(sqlInsert).then((resultInsert) => {
-            console.log("Logging updated");
+            console.log("Creating log object");
+            var logging_object = {};
+            logging_object["original_wasm_executables_id"] = _original_id;
+            logging_object["callback_request_options"] = _request_options;
+            logging_object["callback_data_payload"] = _data_payload;
+            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+            console.log("sqlInsert: " + sqlInsert);
+            performSqlQuery(sqlInsert).then((resultInsert) => {
+                console.log("Logging updated");
             });
         });
 
@@ -226,6 +226,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                             "valid_filters_include": valid_filters
                         }]));
                     } else {
+                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
                         if (filters.length >= 1) {
                             if (filters.includes("wasm_as_buffer")) {
                                 filters = removeElementFromArray(filters, "wasm_as_buffer");
@@ -239,14 +240,31 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 });
                             }
                         }
+                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
+                        if (filters.length >= 1) {
+                            if (filters.includes("wasm_state")) {
+                                filters = removeElementFromArray(filters, "wasm_state");
+                                var sqlSelect = "SELECT wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                console.log(sqlSelect);
+                                performSqlQuery(sqlSelect).then((result) => {
+                                    json_response["wasm_state"] = result[0].wasm_state;
+                                    if (filters.length == 0) {
+                                        res.send(JSON.stringify(json_response));
+                                    }
+                                });
+                            }
+                        }
+                        // We can join the simple objects i.e. char and just perform one select query for these
                         if (filters.length >= 1) {
                             var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                             console.log("SQL with filters.join()\n" + sqlSelect);
                             performSqlQuery(sqlSelect).then((result) => {
-                                json_response["wasm_id"] = result[0].wasm_id;
-                                json_response["wasm_description"] = result[0].wasm_description;
-                                json_response["wasm_state"] = result[0].wasm_state;
-                                console.log(JSON.stringify("4" + JSON.stringify(json_response)));
+                                if (filters.includes("wasm_id")) {
+                                    json_response["wasm_id"] = result[0].wasm_id;
+                                }
+                                if (filters.includes("wasm_description")) {
+                                    json_response["wasm_description"] = result[0].wasm_description;
+                                }
                                 filters = [];
                                 if (filters.length == 0) {
                                     res.send(JSON.stringify(json_response));
@@ -329,18 +347,18 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     // Perform logging
-        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        performSqlQuery(sqlSelect).then((stateResult) => {
+    var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+    performSqlQuery(sqlSelect).then((stateResult) => {
         console.log("Creating log object");
         var logging_object = {};
         logging_object["original_wasm_executables_id"] = req.params.wasm_id;
-        logging_object["data_payload"] = JSON.stringify(req.body); 
+        logging_object["data_payload"] = JSON.stringify(req.body);
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
         console.log("sqlInsert: " + sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("Logging updated");
-            });
         });
+    });
     var json_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
@@ -397,11 +415,11 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
                         //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
                         executeCallback(req.params.wasm_id, callback_object_for_processing, return_value_as_object).then((c_result, error) => {
-                        //console.log("*New value" + c_result);
-                        json_response["return_value"] = c_result;
-                        console.log(json_response);
-                        res.send(JSON.stringify(json_response));
-                    });
+                            //console.log("*New value" + c_result);
+                            json_response["return_value"] = c_result;
+                            console.log(json_response);
+                            res.send(JSON.stringify(json_response));
+                        });
                     } else {
                         // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
                         json_response["return_value"] = return_value
