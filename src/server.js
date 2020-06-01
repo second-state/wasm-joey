@@ -214,6 +214,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 } catch {
                     json_response["error"] = "Please check your filterBy parameters. Not valid string array!";
                     res.send(JSON.stringify(json_response));
+                    res.end();
                 }
                 console.log(filters);
                 if (filters.length >= 1) {
@@ -524,6 +525,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
                 } catch {
                     json_response["error"] = "Please check your filterBy parameters. Not valid string array!";
                     res.send(JSON.stringify(json_response));
+                    res.end();
                 }
                 if (filters.length >= 1) {
                     for (var i = 0; i < filters.length; i++) {
