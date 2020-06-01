@@ -186,7 +186,8 @@ Create a blank table which will store the logs for particular wasm_id
 CREATE TABLE wasm_execution_log(
     log_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_executable_id INT(6) NOT NULL,
-    execution LONGTEXT NOT NULL,
+    execution_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    execution_object JSON NOT NULL,
     INDEX we_index (wasm_executable_id),
     PRIMARY KEY(log_id),
     FOREIGN KEY (wasm_executable_id) REFERENCES wasm_executables(wasm_id) ON DELETE CASCADE
