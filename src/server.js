@@ -211,7 +211,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             if (req.query.filterBy != undefined) {
                 var filters = JSON.parse(req.query.filterBy);
                 console.log(filters);
-                if (filters.length == 1) {
+                if (filters.length >= 1) {
                     for (var i = 0; i < filters.length; i++) {
                         if (!valid_filters.includes(filters[i])) {
                             console.log(filters[i] + " is NOT a valid filter ...");
@@ -515,7 +515,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 var filters = JSON.parse(req.query.filterBy);
-                if (filters.length == 1) {
+                if (filters.length >= 1) {
                     for (var i = 0; i < filters.length; i++) {
                         if (!valid_filters.includes(filters[i])) {
                             console.log(filters[i] + " is NOT a valid filter ...");
