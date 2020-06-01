@@ -472,13 +472,13 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     });
 });
 
-// Get a Wasm executable
+// Get a set of records in relation to execution of callbacks for a particular wasm_id
 app.get('/api/log/:wasm_id', (req, res) => {
     json_response = {};
-    executableExists(req.params.wasm_id).then((result, error) => {
+    executionLogExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
         if (result == 1) {
-            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
+            var valid_filters = ["wasm_executable_id", "wasm_executable_state", "execution_timestamp", "execution_object"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 var filters = JSON.parse(req.query.filterBy);
@@ -499,12 +499,12 @@ app.get('/api/log/:wasm_id', (req, res) => {
                         }]));
                     } else {
                         if (filters.length >= 1) {
-                            if (filters.includes("wasm_as_buffer")) {
-                                filters = removeElementFromArray(filters, "wasm_as_buffer");
-                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            if (filters.includes("wasm_executable_state")) {
+                                filters = removeElementFromArray(filters, "wasm_executable_state");
+                                var sqlSelect = "SELECT wasm_executable_state from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
                                 console.log(sqlSelect);
                                 performSqlQuery(sqlSelect).then((result) => {
-                                    json_response["wasm_as_buffer"] = result[0].wasm_binary;
+                                    json_response["wasm_executable_state"] = result[0].wasm_executable_state;
                                     if (filters.length == 0) {
                                         res.send(JSON.stringify(json_response));
                                     }
