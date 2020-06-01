@@ -210,6 +210,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 var filters = JSON.parse(req.query.filterBy);
+                console.log(filters);
                 if (filters.length == 1) {
                     for (var i = 0; i < filters.length; i++) {
                         if (!valid_filters.includes(filters[i])) {
@@ -256,6 +257,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         }
                         // We can join the simple objects i.e. char and just perform one select query for these
                         if (filters.length >= 1) {
+                            console.log("Select by joining the following filters: " + filters.join());
                             var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                             console.log("SQL with filters.join()\n" + sqlSelect);
                             performSqlQuery(sqlSelect).then((result) => {
