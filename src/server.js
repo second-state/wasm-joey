@@ -477,7 +477,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
     json_response = {};
     executionLogExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
-        if (result == 1) {
+        if (result >= 1) {
             var valid_filters = ["wasm_executable_id", "wasm_executable_state", "execution_timestamp", "execution_object"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
