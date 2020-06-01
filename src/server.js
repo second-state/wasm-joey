@@ -124,6 +124,7 @@ function executeCallback(_original_id, _request_options, _data_payload) {
         logging_object["callback_request_options"] = _request_options;
         logging_object["callback_data_payload"] = _data_payload; 
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, execution_timestamp, execution_object) VALUES ('" + _original_id + "','" + JSON.stringify(logging_object) + "');";
+        console.log("sqlInsert: " + sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("Logging updated");
             });
