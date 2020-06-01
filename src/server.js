@@ -509,7 +509,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
     executionLogExists(req.params.wasm_id).then((result, error) => {
         console.log("Result:" + result + ".");
         if (result >= 1) {
-            var valid_filters = ["wasm_executable_id", "wasm_executable_state", "execution_timestamp", "execution_object"];
+            var valid_filters = ["log_id", "wasm_executable_id", "wasm_executable_state", "execution_timestamp", "execution_object"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 var filters = JSON.parse(req.query.filterBy);
@@ -529,6 +529,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
                             "valid_filters_include": valid_filters
                         }]));
                     } else {
+                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
                         if (filters.length >= 1) {
                             if (filters.includes("wasm_executable_state")) {
                                 filters = removeElementFromArray(filters, "wasm_executable_state");
@@ -542,14 +543,33 @@ app.get('/api/log/:wasm_id', (req, res) => {
                                 });
                             }
                         }
+                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
+                        if (filters.length >= 1) {
+                            if (filters.includes("execution_object")) {
+                                filters = removeElementFromArray(filters, "execution_object");
+                                var sqlSelect = "SELECT execution_object from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
+                                console.log(sqlSelect);
+                                performSqlQuery(sqlSelect).then((result) => {
+                                    json_response["execution_object"] = result[0].execution_object;
+                                    if (filters.length == 0) {
+                                        res.send(JSON.stringify(json_response));
+                                    }
+                                });
+                            }
+                        }
                         if (filters.length >= 1) {
                             var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                             console.log("SQL with filters.join()\n" + sqlSelect);
                             performSqlQuery(sqlSelect).then((result) => {
-                                json_response["wasm_id"] = result[0].wasm_id;
-                                json_response["wasm_description"] = result[0].wasm_description;
-                                json_response["wasm_state"] = result[0].wasm_state;
-                                console.log(JSON.stringify("4" + JSON.stringify(json_response)));
+                                if (filters.includes("log_id")) {
+                                    json_response["log_id"] = result[0].log_id;
+                                }
+                                if (filters.includes("wasm_executable_id")) {
+                                    json_response["wasm_executable_id"] = result[0].wasm_executable_id;
+                                }
+                                if (filters.includes("execution_timestamp")) {
+                                    json_response["execution_timestamp"] = result[0].execution_timestamp;
+                                }
                                 filters = [];
                                 if (filters.length == 0) {
                                     res.send(JSON.stringify(json_response));
@@ -563,10 +583,11 @@ app.get('/api/log/:wasm_id', (req, res) => {
                 var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                 console.log(sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
-                    json_response["wasm_id"] = result[0].wasm_id;
-                    json_response["wasm_description"] = result[0].wasm_description;
-                    json_response["wasm_as_buffer"] = result[0].wasm_binary;
-                    json_response["wasm_state"] = result[0].wasm_state;
+                    json_response["log_id"] = result[0].log_id;
+                    json_response["wasm_executable_id"] = result[0].wasm_executable_id;
+                    json_response["wasm_executable_state"] = result[0].wasm_executable_state;
+                    json_response["execution_timestamp"] = result[0].execution_timestamp;
+                    json_response["execution_object"] = result[0].execution_object;
                     res.send(JSON.stringify(json_response));
                 });
             }
