@@ -209,7 +209,12 @@ app.get('/api/executables/:wasm_id', (req, res) => {
             var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
-                var filters = JSON.parse(req.query.filterBy);
+                try {
+                    var filters = JSON.parse(req.query.filterBy);
+                } catch {
+                    json_response["error"] = "Please check your filterBy parameters. Not valid string array!";
+                    res.send(JSON.stringify(json_response));
+                }
                 console.log(filters);
                 if (filters.length >= 1) {
                     for (var i = 0; i < filters.length; i++) {
@@ -514,7 +519,12 @@ app.get('/api/log/:wasm_id', (req, res) => {
             var valid_filters = ["log_id", "wasm_executable_id", "wasm_executable_state", "execution_timestamp", "execution_object"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
-                var filters = JSON.parse(req.query.filterBy);
+                try {
+                    var filters = JSON.parse(req.query.filterBy);
+                } catch {
+                    json_response["error"] = "Please check your filterBy parameters. Not valid string array!";
+                    res.send(JSON.stringify(json_response));
+                }
                 if (filters.length >= 1) {
                     for (var i = 0; i < filters.length; i++) {
                         if (!valid_filters.includes(filters[i])) {
