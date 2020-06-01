@@ -181,6 +181,17 @@ CREATE TABLE wasm_executables(
     PRIMARY KEY(wasm_id)
 );
 ```
+Create a blank table which will store the logs for particular wasm_id
+```SQL
+CREATE TABLE wasm_execution_log(
+    log_id INT(6) NOT NULL AUTO_INCREMENT,
+    wasm_executable_id INT(6) NOT NULL,
+    execution LONGTEXT NOT NULL,
+    INDEX we_index (wasm_executable_id),
+    PRIMARY KEY(log_id),
+    FOREIGN KEY (wasm_executable_id) REFERENCES wasm_executables(wasm_id) ON DELETE CASCADE
+);
+```
 
 ## Deployment
 

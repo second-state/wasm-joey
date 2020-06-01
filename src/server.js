@@ -112,10 +112,21 @@ function executableExists(wasm_id) {
     });
 }
 
-function executeCallback(_request_options, _data_payload) {
+function executeCallback(_original_id, _request_options, _data_payload) {
     return new Promise(function(resolve, reject) {
-        const data = JSON.stringify(_data_payload);
-        console.log("Data coming in: " + data);
+        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
+        performSqlQuery(sqlSelect).then((stateResult) => {
+        var logging_object = {};
+        logging_object["original_wasm_executables_id"] = _original_id;
+        logging_object["original_wasm_executables_state"] = stateResult[0].wasm_state;
+        logging_object["callback_request_options"] = _request_options;
+        logging_object["callback_data_payload"] = _data_payload; 
+        var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, execution_timestamp, execution_object) VALUES ('" + _original_id + "','" + JSON.stringify(logging_object) + "');";
+        performSqlQuery(sqlInsert).then((resultInsert) => {
+            console.log("Logging updated");
+            });
+        });
+
         var https = require('follow-redirects').https;
         var options = _request_options;
 
@@ -358,7 +369,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         delete return_value_as_object.callback;
                         //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
                         //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
-                        executeCallback(callback_object_for_processing, return_value_as_object).then((c_result, error) => {
+                        executeCallback(req.params.wasm_id, callback_object_for_processing, return_value_as_object).then((c_result, error) => {
                         //console.log("*New value" + c_result);
                         json_response["return_value"] = c_result;
                         console.log(json_response);
