@@ -154,7 +154,7 @@ function executeCallback(_original_id, _request_options, _data_payload) {
             console.error("Error: ");
             console.error(e);
         });
-        req.write(data);
+        //req.write(data);
         req.end();
     });
 }
