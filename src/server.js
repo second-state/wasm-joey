@@ -164,7 +164,7 @@ function executeCallback(_original_id, _request_options, _data_payload) {
         req.on('error', (e) => {
             console.error(`problem with request: ${e.message}`);
         });
-        req.write(_data_payload);
+        req.write(JSON.stringify(_data_payload));
         req.end();
     });
 }
