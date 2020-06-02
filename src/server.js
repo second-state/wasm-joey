@@ -171,6 +171,30 @@ function executeCallback(_original_id, _request_options, _data_payload) {
         req.end();
     });
 }
+
+function fetchUsingGet(_url) {
+    return new Promise(function(resolve, reject) {
+        https.get(_url, (res) => {
+            let body = "";
+
+            res.on("data", (chunk) => {
+                body += chunk;
+            });
+
+            res.on("end", () => {
+                try {
+                    resolve(body);
+                } catch (error) {
+                    console.error(error.message);
+                };
+            });
+
+        }).on("error", (error) => {
+            console.error(error.message);
+        });
+    });
+
+}
 /* Utils end */
 
 /* RESTful endpoints */
@@ -372,16 +396,30 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                     const form = formidable({
                         multiples: true
                     });
-                    form.parse(req, (err, fields, files) => {
-                        if (err) {
-                            next(err);
-                            return;
-                        }
-                        res.json({
-                            fields,
-                            files
+                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlSelect).then((result2, error2) => {
+                        console.log(result2[0].wasm_binary.data);
+                        var wasm_state_as_string = result2[0].wasm_state;
+                        var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
+                        var function_name = req.params.function_name;
+                        form.parse(req, (err, fields, files) => {
+                            if (err) {
+                                next(err);
+                                return;
+                            }
+                            if (fields.hasOwnProperty("joey_remote_data_url")) {
+                                fetchUsingGet(fields["joey_remote_data_url"]).then((fetchedData) => {
+                                    console.log("Fetched data" + fetchedData);
+                                });
+                            }
+                            res.json({
+                                fields,
+                                files
+                            });
                         });
+
                     });
+
                 }
             });
         });
