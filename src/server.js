@@ -157,7 +157,7 @@ function executeCallback(_original_id, _request_options, _data_payload) {
 
             res.on('end', () => {
                 console.log(res.data);
-                resolve(res.data);
+                resolve(data);
             });
 
 
