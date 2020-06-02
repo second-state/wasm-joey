@@ -401,7 +401,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                     "name": "new template name"
                                 },
                                 "callback": {
-                                    "method": "GET",
+                                    "method": "POST",
                                     "hostname": "rpc.ssvm.secondstate.io",
                                     "port": 8081,
                                     "path": "/api/run/2/my_other_function",
