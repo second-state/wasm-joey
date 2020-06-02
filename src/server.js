@@ -313,15 +313,15 @@ app.get('/api/executables', (req, res) => {
 app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
     json_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
-        console.log("Result:" + result + ".");
+        //console.log("Result:" + result + ".");
         if (result == 1) {
             if (req.is('application/octet-stream') == 'application/octet-stream') {
                 var wasm_as_buffer = Uint8Array.from(req.body);
                 var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                console.log(sqlUpdate);
+                //console.log(sqlUpdate);
                 performSqlQuery(sqlUpdate).then((result) => {
                     json_response["wasm_id"] = req.params.wasm_id;
-                    console.log(JSON.stringify(json_response));
+                    //console.log(JSON.stringify(json_response));
                     res.send(JSON.stringify(json_response));
                 });
             }
@@ -335,10 +335,10 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
 app.delete('/api/executables/:wasm_id', (req, res) => {
     json_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
-        console.log("Result:" + result + ".");
+        //console.log("Result:" + result + ".");
         if (result == 1) {
             var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            console.log(sqlDelete);
+            //console.log(sqlDelete);
             performSqlQuery(sqlDelete).then((result) => {
                 json_response["wasm_id"] = req.params.wasm_id
                 console.log(JSON.stringify(json_response));
@@ -363,13 +363,13 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
         logging_object["original_wasm_executables_id"] = req.params.wasm_id;
         logging_object["data_payload"] = req.body;
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-        console.log("sqlInsert: " + sqlInsert);
+        //console.log("sqlInsert: " + sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("Logging updated");
 
             var json_response = {};
             executableExists(req.params.wasm_id).then((result, error) => {
-                console.log("Result:" + result + ".");
+                //console.log("Result:" + result + ".");
                 if (result == 1) {
                     console.log("Checking request Content-Type: " + req.is('application/json'));
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -469,7 +469,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
         logging_object["original_wasm_executables_id"] = req.params.wasm_id;
         logging_object["data_payload"] = req.body;
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-        console.log("sqlInsert: " + sqlInsert);
+        //console.log("sqlInsert: " + sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("Logging updated");
 
@@ -516,15 +516,15 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
 // Set any state information i.e. config that relates to this Wasm executable only accepts string format (text) the caller and the Rust Wasm must agree on how the text string is parsed and used
 app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     console.log("Request to update state into the database ...");
-    console.log(req.body);
+    //console.log(req.body);
     executableExists(req.params.wasm_id).then((result, error) => {
-        console.log("Result:" + result + ".");
+        //console.log("Result:" + result + ".");
         if (result == 1) {
             if (req.is('text/plain') == 'text/plain') {
                 var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                console.log(sqlInsert);
+                //console.log(sqlInsert);
                 performSqlQuery(sqlInsert).then((resultInsert) => {
-                    console.log("1 state object has been inserted at wasm_id: " + req.params.wasm_id);
+                    //console.log("1 state object has been inserted at wasm_id: " + req.params.wasm_id);
                     res.send(req.params.wasm_id);
                 });
             }
@@ -538,7 +538,7 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
 app.get('/api/log/:wasm_id', (req, res) => {
     json_response = {};
     executionLogExists(req.params.wasm_id).then((result, error) => {
-        console.log("Result:" + result + ".");
+        //console.log("Result:" + result + ".");
         if (result >= 1) {
             var valid_filters = ["log_id", "wasm_executable_id", "wasm_executable_state", "execution_timestamp", "execution_object"];
             var request_validity = true;
@@ -571,7 +571,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
                             if (filters.includes("wasm_executable_state")) {
                                 filters = removeElementFromArray(filters, "wasm_executable_state");
                                 var sqlSelect = "SELECT wasm_executable_state from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
-                                console.log(sqlSelect);
+                                //console.log(sqlSelect);
                                 performSqlQuery(sqlSelect).then((result) => {
                                     json_response["wasm_executable_state"] = result[0].wasm_executable_state;
                                     if (filters.length == 0) {
@@ -585,7 +585,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
                             if (filters.includes("execution_object")) {
                                 filters = removeElementFromArray(filters, "execution_object");
                                 var sqlSelect = "SELECT execution_object from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
-                                console.log(sqlSelect);
+                                //console.log(sqlSelect);
                                 performSqlQuery(sqlSelect).then((result) => {
                                     json_response["execution_object"] = result[0].execution_object;
                                     if (filters.length == 0) {
@@ -596,7 +596,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
                         }
                         if (filters.length >= 1) {
                             var sqlSelect = "SELECT " + filters.join() + " from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
-                            console.log("SQL with filters.join()\n" + sqlSelect);
+                            //console.log("SQL with filters.join()\n" + sqlSelect);
                             performSqlQuery(sqlSelect).then((result) => {
                                 if (filters.includes("log_id")) {
                                     json_response["log_id"] = result[0].log_id;
@@ -618,7 +618,7 @@ app.get('/api/log/:wasm_id', (req, res) => {
             } else {
                 console.log("No filters");
                 var sqlSelect = "SELECT * from wasm_execution_log WHERE wasm_executable_id = '" + req.params.wasm_id + "';";
-                console.log(sqlSelect);
+                //console.log(sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["log_id"] = result[0].log_id;
                     json_response["wasm_executable_id"] = result[0].wasm_executable_id;
