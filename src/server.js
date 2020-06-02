@@ -150,20 +150,24 @@ function executeCallback(_original_id, _request_options, _data_payload) {
             console.log('statusCode:', res.statusCode);
             console.log('headers:', res.headers);
 
-            res.on("data", (data)=> {
+            res.on("data", (data) => {
                 responseString += data;
                 // save all the data from response
             });
 
-            res.on("end", () =>{
+            res.on("end", () => {
                 console.log(responseString);
                 resolve(responseString);
                 // print to console when response ends
             });
-
         });
+        req.on('error', (e) => {
+            console.error(`problem with request: ${e.message}`);
+        });
+        req.write(_data_payload);
+        req.end();
     });
-};
+}
 /* Utils end */
 
 /* RESTful endpoints */
