@@ -401,9 +401,9 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                     "name": "new template name"
                                 },
                                 "callback": {
-                                    "method": "POST",
-                                    "hostname": "devchain.ss.search.secondstate.io",
-                                    "path": "/api/es_get_contract_count",
+                                    "method": "GET",
+                                    "hostname": "jsonplaceholder.typicode.com",
+                                    "path": "/posts/1",
                                     "headers": {
                                         "Content-Type": "application/json"
                                     },
