@@ -145,17 +145,17 @@ function executeCallback(_original_id, _request_options, _data_payload) {
         var options = _request_options;
 
 
-        var req = https.request(options, function(res) => {
+        var req = https.request(options, (res) => {
             var responseString = "";
             console.log('statusCode:', res.statusCode);
             console.log('headers:', res.headers);
 
-            res.on("data", function(data) {
+            res.on("data", (data)=> {
                 responseString += data;
                 // save all the data from response
             });
 
-            res.on("end", function() {
+            res.on("end", () =>{
                 console.log(responseString);
                 resolve(responseString);
                 // print to console when response ends
