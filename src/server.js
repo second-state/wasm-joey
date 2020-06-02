@@ -402,9 +402,8 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 },
                                 "callback": {
                                     "method": "POST",
-                                    "hostname": "rpc.ssvm.secondstate.io",
-                                    "port": 8081,
-                                    "path": "/api/run/2/my_other_function",
+                                    "hostname": "devchain.ss.search.secondstate.io/",
+                                    "path": "/api/es_get_contract_count",
                                     "headers": {
                                         "Content-Type": "application/json"
                                     },
