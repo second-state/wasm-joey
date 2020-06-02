@@ -394,7 +394,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         Joey must check each response from the RunString execution and process a callback object if it is present.
                         The following is a temporary example, which will be commented out when SSVM is complete and able to send back JSON string
                         */
-                        /*
+                        
                         // Fictitious return value for development and testing purposes
                         return_value = `{
                                 "function": {
@@ -411,13 +411,15 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                     "maxRedirects": 20
                                 }
                             }`
-                            */
+                            
+                            /*
                         // Another fictitious return value to test the non callback version
                         return_value = `{
                                 "function": {
                                     "name": "new template name"
                                 }
                             }`
+                            */
                         // Allow for the return value to just be a string and not valid JSON (strings are still acceptable for this vm.RunString endpoint)
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
