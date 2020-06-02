@@ -65,6 +65,11 @@ app.use(function(req, res, next) {
     }
     next();
 });
+
+// Multipart form data
+const formidable = require('formidable');
+
+
 // SSVM
 //var ssvm = require('ssvm-napi');
 
@@ -457,35 +462,48 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
 // Each of these endpoints can only accept one type of data as the body i.e. the middleware can only parse raw OR json OR plain.,
 // For this reason, this function will accept a Uint8Array from the caller (as the body). This makes the most sense because (sending receiving Uint8Array).
 app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) => {
-    json_response = {};
-    executableExists(req.params.wasm_id).then((result, error) => {
-        console.log("Result:" + result + ".");
-        if (result == 1) {
-            console.log("Checking content type ...");
-            // Setting response type
-            res.set('Content-Type', 'application/octet-stream')
-            if (req.is('application/octet-stream') == 'application/octet-stream') {
-                var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                performSqlQuery(sqlSelect).then((result, error) => {
-                    var wasm_state_as_string = result[0].wasm_state;
-                    var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
-                    //var vm = new ssvm.VM(wasm_as_buffer);
-                    var function_name = req.params.function_name;
-                    var body_as_buffer = Uint8Array.from(req.body);
-                    console.log("Body as buffer: " + body_as_buffer);
-                    //var return_value = vm.RunUint8Array(wasm_state_as_string, function_name, body_as_buffer); 
-                    // TODO remove this line when SSVM is ready
-                    res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
-                    //res.send(new Buffer(return_value));
-                });
-            } else {
-                console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
-                res.end();
-            }
-        } else {
-            json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
-            res.send(JSON.stringify(json_response));
-        }
+    var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+    performSqlQuery(sqlSelect).then((stateResult) => {
+        console.log("Creating log object");
+        var logging_object = {};
+        logging_object["original_wasm_executables_id"] = req.params.wasm_id;
+        logging_object["data_payload"] = req.body;
+        var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+        console.log("sqlInsert: " + sqlInsert);
+        performSqlQuery(sqlInsert).then((resultInsert) => {
+            console.log("Logging updated");
+
+            json_response = {};
+            executableExists(req.params.wasm_id).then((result, error) => {
+                console.log("Result:" + result + ".");
+                if (result == 1) {
+                    console.log("Checking content type ...");
+                    // Setting response type
+                    res.set('Content-Type', 'application/octet-stream')
+                    if (req.is('application/octet-stream') == 'application/octet-stream') {
+                        var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        performSqlQuery(sqlSelect).then((result, error) => {
+                            var wasm_state_as_string = result[0].wasm_state;
+                            var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
+                            //var vm = new ssvm.VM(wasm_as_buffer);
+                            var function_name = req.params.function_name;
+                            var body_as_buffer = Uint8Array.from(req.body);
+                            console.log("Body as buffer: " + body_as_buffer);
+                            //var return_value = vm.RunUint8Array(wasm_state_as_string, function_name, body_as_buffer); 
+                            // TODO remove this line when SSVM is ready
+                            res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
+                            //res.send(new Buffer(return_value));
+                        });
+                    } else {
+                        console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+                        res.end();
+                    }
+                } else {
+                    json_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
+                    res.send(JSON.stringify(json_response));
+                }
+            });
+        });
     });
 });
 //
