@@ -140,19 +140,17 @@ function executeCallback(_original_id, _request_options, _data_payload) {
                 console.log("Logging updated");
             });
         });
-
+        console.log("Performing callback via https ...");
         var https = require('follow-redirects').https;
         var options = _request_options;
-
-
         var req = https.request(options, (res) => {
             var responseString = "";
             console.log('statusCode:', res.statusCode);
             console.log('headers:', res.headers);
 
             res.on("data", (data) => {
+                console.log("Creating response string ...");
                 responseString += data;
-                // save all the data from response
             });
 
             res.on("end", () => {
