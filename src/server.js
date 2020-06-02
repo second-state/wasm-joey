@@ -488,7 +488,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             //var vm = new ssvm.VM(wasm_as_buffer);
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
-                            console.log("Body as buffer: " + body_as_buffer);
                             //var return_value = vm.RunUint8Array(wasm_state_as_string, function_name, body_as_buffer); 
                             // TODO remove this line when SSVM is ready
                             res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
