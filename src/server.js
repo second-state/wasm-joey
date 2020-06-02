@@ -410,6 +410,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             if (fields.hasOwnProperty("joey_remote_data_url")) {
                                 fetchUsingGet(fields["joey_remote_data_url"]).then((fetchedData) => {
                                     console.log("Fetched data" + fetchedData);
+                                    var vm = new ssvm.VM(wasm_as_buffer);
+                                    var return_value = vm.RunString(wasm_state_as_string, function_name, fetchedData);
                                 });
                             }
                             res.json({
