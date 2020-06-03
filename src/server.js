@@ -424,9 +424,19 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 console.log("Procesing single file: " + file);
                                 var new_file_data = {};
                                 var label = file[0];
-                                new_file_data[label] = readTheFile(file[1]["path"]);
-                                console.log(new_file_data);
+                                console.log("File label is: " + label);
+                                var fetched_file_data = readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
+                                    if (!file_read_error) {
+                                        new_file_data[label] = file_read_result;
+                                        console.log(new_file_data);
+                                    } else {
+                                        console.log(file_read_error);
+                                    }
+                                });
                             }
+
+                            // We may use a static naming convention as per below, the above code is just fetching all files and all URLs by default (and then converting them to data)
+                            /*
                             if (fields.hasOwnProperty("joey_remote_data_url")) {
                                 fetchUsingGet(fields["joey_remote_data_url"]).then((fetchedData) => {
                                     console.log("Fetched data" + fetchedData);
@@ -434,6 +444,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                     //var return_value = vm.RunString(wasm_state_as_string, function_name, fetchedData);
                                 });
                             }
+                            */
                             res.json({
                                 fields,
                                 files
