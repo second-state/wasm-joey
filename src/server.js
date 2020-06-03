@@ -419,21 +419,24 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 next(err);
                                 return;
                             }
+                            var new_file_data = {};
+                            var new_file_data_inner = {};
                             console.log("Procesing files: " + files);
-                            for (const file of Object.entries(files)) {
+                            for (var file of Object.entries(files)) {
                                 console.log("Procesing single file: " + file);
-                                var new_file_data = {};
                                 var label = file[0];
                                 console.log("File label is: " + label);
                                 var fetched_file_data = readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                                     if (!file_read_error) {
-                                        new_file_data[label] = file_read_result;
+                                        new_file_data_inner[label] = file_read_result;
                                         console.log(new_file_data);
                                     } else {
                                         console.log(file_read_error);
                                     }
                                 });
                             }
+                            new_file_data["data"] = new_file_data_inner;
+                            console.log(new_file_data);
 
                             // We may use a static naming convention as per below, the above code is just fetching all files and all URLs by default (and then converting them to data)
                             /*
@@ -447,7 +450,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             */
                             res.json({
                                 fields,
-                                files
+                                files,
+                                new_file_data
                             });
                         });
 
