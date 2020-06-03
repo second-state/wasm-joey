@@ -195,7 +195,7 @@ function fetchUsingGet(_url) {
     });
 }
 
-function readFile(_file_path) {
+function readTheFile(_file_path) {
     return new Promise(function(resolve, reject) {
         fs.readFile(_file_path, (err, data) => {
             if (err) {
@@ -204,7 +204,7 @@ function readFile(_file_path) {
                 resolve(data);
             }
         });
-    }):
+    });
 }
 /* Utils end */
 
