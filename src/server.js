@@ -424,7 +424,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 console.log("Procesing single file: " + file);
                                 var new_file_data = {};
                                 var label = file[0];
-                                new_file_data[label] = readFile(file[1]["path"]);
+                                new_file_data[label] = readTheFile(file[1]["path"]);
                                 console.log(new_file_data);
                             }
                             if (fields.hasOwnProperty("joey_remote_data_url")) {
