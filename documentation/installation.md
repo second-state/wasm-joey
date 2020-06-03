@@ -119,6 +119,10 @@ Follow redirects
 ```bash
 npm install follow-redirects
 ```
+Formidable
+```bash
+npm install formidable
+```
 
 # MySQL Server on the system
 Install MySQL on the system
@@ -186,6 +190,7 @@ Create a blank table which will store the logs for particular wasm_id
 CREATE TABLE wasm_execution_log(
     log_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_executable_id INT(6) NOT NULL,
+    wasm_executable_state LONGTEXT NOT NULL,
     execution_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     execution_object JSON NOT NULL,
     INDEX we_index (wasm_executable_id),

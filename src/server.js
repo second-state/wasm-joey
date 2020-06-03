@@ -195,6 +195,19 @@ function fetchUsingGet(_url) {
     });
 
 }
+
+function readFile(_file_path){
+    return new Promise(function(resolve, reject) {
+    fs.readFile(_file_path, (err, data) => {
+            if (err) {
+              console.log("err ocurred", err);
+              }
+            else {
+              resolve(data);
+            }
+            });
+}):
+}
 /* Utils end */
 
 /* RESTful endpoints */
@@ -402,16 +415,25 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         var wasm_state_as_string = result2[0].wasm_state;
                         var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
                         var function_name = req.params.function_name;
+                        var raw_data = {};
                         form.parse(req, (err, fields, files) => {
                             if (err) {
                                 next(err);
                                 return;
                             }
+                            console.log("Procesing files: " + files);
+                            for (const file of Object.entries(files["files"])) {
+                                console.log("Procesing single file: " + file);
+                                var new_file_data = {};
+                                var label = file[0];
+                                new_file_data[label] = readFile(file[1]["path"]);
+                                console.log(new_file_data);
+                            }
                             if (fields.hasOwnProperty("joey_remote_data_url")) {
                                 fetchUsingGet(fields["joey_remote_data_url"]).then((fetchedData) => {
                                     console.log("Fetched data" + fetchedData);
-                                    var vm = new ssvm.VM(wasm_as_buffer);
-                                    var return_value = vm.RunString(wasm_state_as_string, function_name, fetchedData);
+                                    //var vm = new ssvm.VM(wasm_as_buffer);
+                                    //var return_value = vm.RunString(wasm_state_as_string, function_name, fetchedData);
                                 });
                             }
                             res.json({
