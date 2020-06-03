@@ -193,20 +193,18 @@ function fetchUsingGet(_url) {
             console.error(error.message);
         });
     });
-
 }
 
-function readFile(_file_path){
+function readFile(_file_path) {
     return new Promise(function(resolve, reject) {
-    fs.readFile(_file_path, (err, data) => {
+        fs.readFile(_file_path, (err, data) => {
             if (err) {
-              console.log("err ocurred", err);
-              }
-            else {
-              resolve(data);
+                console.log("err ocurred", err);
+            } else {
+                resolve(data);
             }
-            });
-}):
+        });
+    }):
 }
 /* Utils end */
 
