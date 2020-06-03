@@ -420,7 +420,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 return;
                             }
                             console.log("Procesing files: " + files);
-                            for (const file of Object.entries(files["files"])) {
+                            for (const file of Object.entries(files)) {
                                 console.log("Procesing single file: " + file);
                                 var new_file_data = {};
                                 var label = file[0];
