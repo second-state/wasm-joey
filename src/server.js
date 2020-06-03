@@ -426,8 +426,9 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 console.log("Procesing single file: " + file);
                                 var label = file[0];
                                 console.log("File label is: " + label);
-                                var fetched_file_data = readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
+                                readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                                     if (!file_read_error) {
+                                        console.log("Adding new label, + " label + " and file read results, " + file_read_result);
                                         new_file_data_inner[label] = file_read_result;
                                         console.log(new_file_data_inner);
                                     } else {
@@ -449,7 +450,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 });
                             }
                             */
-                          
+
                             res.json({
                                 fields,
                                 files,
