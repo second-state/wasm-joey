@@ -428,7 +428,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 console.log("File label is: " + label);
                                 readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                                     if (!file_read_error) {
-                                        console.log("Adding new label, + " label + " and file read results, " + file_read_result);
+                                        console.log("Adding new label, " +  label + " and file read results, " + file_read_result);
                                         new_file_data_inner[label] = file_read_result;
                                         console.log(new_file_data_inner);
                                     } else {
