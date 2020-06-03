@@ -439,6 +439,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             console.log(new_file_data);
 
                             // We may use a static naming convention as per below, the above code is just fetching all files and all URLs by default (and then converting them to data)
+                            // Not 100% sure what the best use case is here as far as caller's requirements goes. Put this question to Slack so we take best approach.
                             /*
                             if (fields.hasOwnProperty("joey_remote_data_url")) {
                                 fetchUsingGet(fields["joey_remote_data_url"]).then((fetchedData) => {
