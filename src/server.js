@@ -71,7 +71,7 @@ const formidable = require('formidable');
 
 
 // SSVM
-//var ssvm = require('ssvm-napi');
+var ssvm = require('ssvm');
 
 /* Startup */
 // Serve
@@ -502,8 +502,10 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         }
                         var function_parameters_as_string = JSON.stringify(function_parameters);
                         console.log(function_parameters_as_string);
-                        //var vm = new ssvm.VM(wasm_as_buffer);
-                        //var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
+                        var vm = new ssvm.VM(wasm_as_buffer);
+                        console.log("New VM instance at: " + vm);
+                        var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
+                        console.log("Return value: " + return_value);
                         /*
                         The Rust / Wasm application is allowed to optionally generate a callback object and merge the callback object into the response. 
                         Joey must check each response from the RunString execution and process a callback object if it is present.
@@ -511,6 +513,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         */
 
                         // Fictitious return value for development and testing purposes
+                        /*
                         return_value = `{
                                 "function": {
                                     "name": "new template name"
