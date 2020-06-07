@@ -420,6 +420,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         form.parse(req, (err, fields, files) => {
                             if (err) {
                                 next(err);
+                                json_response["return_value"] = "Error reading multipart fields and/or files";
+                                res.send(JSON.stringify(json_response));
                                 return;
                             }
 
@@ -445,35 +447,46 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 var _string_position = field[0].lastIndexOf("_");
                                 var index_key = field[0].slice(_string_position + 1, field[0].length)
                                 if (field[0].startsWith("fetch")) {
-                                    var executeCallback(req.params.wasm_id, field[1], {}).then((fetched_result, error) => {
+                                    if field[1].startsWith("http"){
+                                        fetchUsingGet(field[1]).then((fetched_result, error) => {
                                             overarching_container[index_key] = fetched_result;
-
-                                        } else {
-                                            overarching_container[index_key] = field[1];
                                         }
+                                    }
+                                    else { executeCallback(req.params.wasm_id, field[1], {}).then((fetched_result2, error) => {
+                                        overarching_container[index_key] = fetched_result2;
                                     });
+                                }
+
+                                } else {
+                                    overarching_container[index_key] = field[1];
+                                }
                             }
 
-                            const ordered_overarching_container = {};
-                            Object.keys(overarching_container).sort().forEach(function(key) {
-                                ordered_overarching_container[key] = overarching_container[key];
-                            });
-                            const array_of_parameters = [];
-                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                array_of_parameters.push(`${value}`);
-                            }
-                            var vm = new ssvm.VM(wasm_as_buffer);
-                            var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
-                            json_response["return_value"] = return_value;
-                            res.send(JSON.stringify(json_response));
                         });
 
-                    });
+                        const ordered_overarching_container = {};
+                        Object.keys(overarching_container).sort().forEach(function(key) {
+                            ordered_overarching_container[key] = overarching_container[key];
+                        });
+                        const array_of_parameters = [];
+                        for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                            array_of_parameters.push(`${value}`);
+                        }
+                        var vm = new ssvm.VM(wasm_as_buffer);
+                        var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
+                        json_response["return_value"] = return_value;
+                        res.send(JSON.stringify(json_response));
 
+
+                    });
                 }
+
             });
         });
+
+        //
     });
+
 });
 
 //
