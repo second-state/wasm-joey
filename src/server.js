@@ -175,6 +175,9 @@ function executeCallback(_original_id, _request_options, _data_payload) {
 function fetchUsingGet(_url) {
     return new Promise(function(resolve, reject) {
         https.get(_url, (res) => {
+            if (res.headers["content-type"].includes("text")) {
+                console.log("URL has content type text");
+            }
             let body = "";
 
             res.on("data", (chunk) => {
@@ -419,44 +422,51 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 next(err);
                                 return;
                             }
-                            var new_file_data = {};
-                            var new_file_data_inner = {};
-                            console.log("Procesing files: " + files);
+
+                            // New method of parsing these entries
+                            // Read all files from local file system, process all requests where key starts with fetch
+                            // Arrange in an overarching container (using index number has key)
+                            // Finally, order sequentially by key and then expand whilst calling SSVM
+                            var overarching_container = {};
                             for (var file of Object.entries(files)) {
-                                console.log("Procesing single file: " + file);
-                                var label = file[0];
-                                console.log("File label is: " + label);
+                                var _string_position = file[0].lastIndexOf("_");
+                                var index_key = file[0].slice(_string_position + 1, file[0].length)
                                 readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                                     if (!file_read_error) {
-                                        console.log("Adding new label, " +  label + " and file read results, " + file_read_result);
-                                        new_file_data_inner[label] = file_read_result;
-                                        console.log(new_file_data_inner);
+                                        overarching_container[index_key] = file_read_result
                                     } else {
                                         console.log(file_read_error);
                                     }
                                 });
-                            }
-                            new_file_data["data"] = new_file_data_inner;
-                            console.log(new_file_data);
 
-                            // We may use a static naming convention as per below, the above code is just fetching all files and all URLs by default (and then converting them to data)
-                            // Not 100% sure what the best use case is here as far as caller's requirements goes. Put this question to Slack so we take best approach.
-                            /*
-                            if (fields.hasOwnProperty("joey_remote_data_url")) {
-                                fetchUsingGet(fields["joey_remote_data_url"]).then((fetchedData) => {
-                                    console.log("Fetched data" + fetchedData);
-                                    //var vm = new ssvm.VM(wasm_as_buffer);
-                                    //var return_value = vm.RunString(wasm_state_as_string, function_name, fetchedData);
-                                });
-                            }
-                            */
 
-                            res.json({
-                                fields,
-                                files,
-                                new_file_data
+                            }
+                            for (var field of Object.entries(fields)) {
+                                var _string_position = field[0].lastIndexOf("_");
+                                var index_key = field[0].slice(_string_position + 1, field[0].length)
+                                if (field[0].startsWith("fetch")) {
+                                    var executeCallback(req.params.wasm_id, field[1], {}).then((fetched_result, error) => {
+                                            overarching_container[index_key] = fetched_result;
+
+                                        } else {
+                                            overarching_container[index_key] = field[1];
+                                        }
+                                    });
+                            }
+
+                            const ordered_overarching_container = {};
+                            Object.keys(overarching_container).sort().forEach(function(key) {
+                                ordered_overarching_container[key] = overarching_container[key];
                             });
-                          });
+                            const array_of_parameters = [];
+                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                                array_of_parameters.push(`${value}`);
+                            }
+                            var vm = new ssvm.VM(wasm_as_buffer);
+                            var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
+                            json_response["return_value"] = return_value;
+                            res.send(JSON.stringify(json_response));
+                        });
 
                     });
 
