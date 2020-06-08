@@ -147,21 +147,21 @@ function executeRequest(_original_id, _request_options) {
         console.log("Performing callback via https ...");
         //var https = require('follow-redirects').https;
         var options = JSON.parse(_request_options);
-        console.log("Options:\n" + options);
-        console.log("Method:\n" + options["method"]);
-        console.log("Body:\n" + options["body"]);
+        //console.log("Options:\n" + options);
+        //console.log("Method:\n" + options["method"]);
+        //console.log("Body:\n" + options["body"]);
         var req = https.request(options, (res) => {
             var responseString = "";
-            console.log('statusCode:', res.statusCode);
-            console.log('headers:', res.headers);
+            //console.log('statusCode:', res.statusCode);
+            //console.log('headers:', res.headers);
 
             res.on("data", (data) => {
-                console.log("Creating response string ...");
+                //console.log("Creating response string ...");
                 responseString += data;
             });
 
             res.on("end", () => {
-                console.log(responseString);
+                //console.log(responseString);
                 resolve(responseString);
                 // print to console when response ends
             });
@@ -177,6 +177,7 @@ function executeRequest(_original_id, _request_options) {
 function fetchUsingGet(_url) {
     return new Promise(function(resolve, reject) {
         https.get(_url, (res) => {
+            console.log("fetchUsingGet() is being executed ...");
             if (res.headers["content-type"].includes("text")) {
                 console.log("URL has content type text");
             }
@@ -208,6 +209,56 @@ function readTheFile(_file_path) {
             } else {
                 resolve(data);
             }
+        });
+    });
+}
+
+function parseMultipart(_form) {
+    return new Promise(function(resolve, reject) {
+        var overarching_container = {};
+        _form.parse(req, (err, fields, files) => {
+            if (err) {
+                next(err);
+                json_response["return_value"] = "Error reading multipart fields and/or files";
+                res.send(JSON.stringify(json_response));
+                return;
+            }
+
+            // New method of parsing these entries
+            // Read all files from local file system, process all requests where key starts with fetch
+            // Arrange in an overarching container (using index number has key)
+            // Finally, order sequentially by key and then expand whilst calling SSVM
+
+            for (var file of Object.entries(files)) {
+                var _string_position = file[0].lastIndexOf("_");
+                var index_key = file[0].slice(_string_position + 1, file[0].length)
+                readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
+                    if (!file_read_error) {
+                        overarching_container[index_key] = file_read_result
+                    } else {
+                        console.log(file_read_error);
+                    }
+                });
+            }
+            for (var field of Object.entries(fields)) {
+                var _string_position = field[0].lastIndexOf("_");
+                var index_key = field[0].slice(_string_position + 1, field[0].length)
+                if (field[0].startsWith("fetch")) {
+                    if (field[1].startsWith("http")) {
+                        fetchUsingGet(field[1]).then((fetched_result, error) => {
+                            overarching_container[index_key] = fetched_result;
+                        });
+                    } else {
+                        executeRequest(req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                            overarching_container[index_key] = fetched_result2;
+                        });
+                    }
+
+                } else {
+                    overarching_container[index_key] = field[1];
+                }
+            }
+            resolve(overarching_container);
         });
     });
 }
@@ -420,55 +471,12 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
                         var function_name = req.params.function_name;
                         var raw_data = {};
-                        form.parse(req, (err, fields, files) => {
-                            if (err) {
-                                next(err);
-                                json_response["return_value"] = "Error reading multipart fields and/or files";
-                                res.send(JSON.stringify(json_response));
-                                return;
-                            }
-
-                            // New method of parsing these entries
-                            // Read all files from local file system, process all requests where key starts with fetch
-                            // Arrange in an overarching container (using index number has key)
-                            // Finally, order sequentially by key and then expand whilst calling SSVM
-
-                            for (var file of Object.entries(files)) {
-                                var _string_position = file[0].lastIndexOf("_");
-                                var index_key = file[0].slice(_string_position + 1, file[0].length)
-                                readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
-                                    if (!file_read_error) {
-                                        overarching_container[index_key] = file_read_result
-                                    } else {
-                                        console.log(file_read_error);
-                                    }
-                                });
-
-
-                            }
-                            for (var field of Object.entries(fields)) {
-                                var _string_position = field[0].lastIndexOf("_");
-                                var index_key = field[0].slice(_string_position + 1, field[0].length)
-                                if (field[0].startsWith("fetch")) {
-                                    if (field[1].startsWith("http")) {
-                                        fetchUsingGet(field[1]).then((fetched_result, error) => {
-                                            overarching_container[index_key] = fetched_result;
-                                        });
-                                    } else {
-                                        executeRequest(req.params.wasm_id, field[1]).then((fetched_result2, error) => {
-                                            overarching_container[index_key] = fetched_result2;
-                                        });
-                                    }
-
-                                } else {
-                                    overarching_container[index_key] = field[1];
-                                }
-                            }
-                            const ordered_overarching_container = {};
+                        parseMultipart(form).then((result3, error3) => {
+                            var ordered_overarching_container = {};
                             Object.keys(overarching_container).sort().forEach(function(key) {
                                 ordered_overarching_container[key] = overarching_container[key];
                             });
-                            const array_of_parameters = [];
+                            var array_of_parameters = [];
                             for (let [key, value] of Object.entries(ordered_overarching_container)) {
                                 array_of_parameters.push(`${value}`);
                             }
@@ -482,14 +490,11 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
                         });
 
-
                     });
                 }
 
             });
         });
-
-        //
     });
 
 });
