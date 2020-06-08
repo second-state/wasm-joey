@@ -447,15 +447,15 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 var _string_position = field[0].lastIndexOf("_");
                                 var index_key = field[0].slice(_string_position + 1, field[0].length)
                                 if (field[0].startsWith("fetch")) {
-                                    if (field[1].startsWith("http")){
+                                    if (field[1].startsWith("http")) {
                                         fetchUsingGet(field[1]).then((fetched_result, error) => {
                                             overarching_container[index_key] = fetched_result;
-                                        }
+                                        });
+                                    } else {
+                                        executeCallback(req.params.wasm_id, field[1], {}).then((fetched_result2, error) => {
+                                            overarching_container[index_key] = fetched_result2;
+                                        });
                                     }
-                                    else { executeCallback(req.params.wasm_id, field[1], {}).then((fetched_result2, error) => {
-                                        overarching_container[index_key] = fetched_result2;
-                                    });
-                                }
 
                                 } else {
                                     overarching_container[index_key] = field[1];
