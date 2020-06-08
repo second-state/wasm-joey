@@ -226,7 +226,7 @@ function parseMultipart(_form, _req) {
                 res.send(JSON.stringify(json_response));
                 return;
             }
-            console.log("There are " + Object.keys(files.Data).length + " files to process");
+            console.log("There are " + Object.keys(files).length + " files to process");
             for (var file of Object.entries(files)) {
                 var _string_position = file[0].lastIndexOf("_");
                 var index_key = file[0].slice(_string_position + 1, file[0].length)
@@ -239,7 +239,7 @@ function parseMultipart(_form, _req) {
                     }
                 });
             }
-            console.log("There are " + Object.keys(fields.Data).length + " fields to process");
+            console.log("There are " + Object.keys(fields).length + " fields to process");
             for (var field of Object.entries(fields)) {
                 var _string_position = field[0].lastIndexOf("_");
                 var index_key = field[0].slice(_string_position + 1, field[0].length)
