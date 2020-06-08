@@ -124,6 +124,16 @@ Formidable
 npm install formidable
 ```
 
+# System timezone
+```bash
+timedatectl set-timezone Australia/Brisbane
+```
+You can find your own timezone using the following command
+```bash
+timedatectl list-timezones | grep Los_Angeles
+# returns America/Los_Angeles
+```
+
 # MySQL Server on the system
 Install MySQL on the system
 ```bash
@@ -197,6 +207,29 @@ CREATE TABLE wasm_execution_log(
     PRIMARY KEY(log_id),
     FOREIGN KEY (wasm_executable_id) REFERENCES wasm_executables(wasm_id) ON DELETE CASCADE
 );
+```
+
+## MySQL backup and restore
+Install automysqlbackup
+```bash
+sudo apt-get install automysqlbackup
+```
+Start backup
+```bash
+sudo automysqlbackup
+```
+Backed up files are stored at
+```bash
+/var/lib/automysqlbackup
+```
+To restore, use the following to decompress the database backup
+```bash
+gzip -d /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql.gz
+# creates /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql
+```
+The run the following command to restore MySQL to this particular database backup
+```bash
+mysql -u joey -p joeydb < /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql
 ```
 
 ## Deployment
