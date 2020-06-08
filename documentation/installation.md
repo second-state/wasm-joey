@@ -115,10 +115,6 @@ HTTPS
 ```bash
 npm install https
 ```
-Follow redirects
-```bash
-npm install follow-redirects
-```
 Formidable
 ```bash
 npm install formidable
@@ -251,7 +247,7 @@ sudo chown $USER:$USER -R /etc/letsencrypt
 ### Serve
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
-node server.js
+nodejs server.js
 ```
 
 
