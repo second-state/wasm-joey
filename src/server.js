@@ -145,7 +145,7 @@ function executeRequest(_original_id, _request_options) {
             });
         });
         console.log("Performing callback via https ...");
-        var https = require('follow-redirects').https;
+        //var https = require('follow-redirects').https;
         var options = _request_options;
         var req = https.request(options, (res) => {
             var responseString = "";
