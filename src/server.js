@@ -217,6 +217,7 @@ function readTheFile(_file_path) {
 
 function parseMultipart(_form, _req) {
     return new Promise(function(resolve, reject) {
+        console.log("parseMultipart function is being executed ...");
         var overarching_container = {};
         _form.parse(_req, (err, fields, files) => {
             if (err) {
@@ -265,6 +266,7 @@ function parseMultipart(_form, _req) {
                     overarching_container[index_key] = field[1];
                 }
             }
+            console.log("parseMultipart function complete!");
             resolve(overarching_container);
         });
     });
@@ -496,8 +498,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             res.send(JSON.stringify(json_response));
 
                         });
-                        console.log("******Array of parameters2:\n" + JSON.stringify(array_of_parameters));
-
                     });
                 }
 
