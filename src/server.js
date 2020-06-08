@@ -391,6 +391,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 // Run a function by calling with multi part form data
 app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
+    var overarching_container = {};
     // Perform logging
     var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((stateResult) => {
