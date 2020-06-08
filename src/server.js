@@ -146,7 +146,7 @@ function executeRequest(_original_id, _request_options) {
         });
         console.log("Performing callback via https ...");
         //var https = require('follow-redirects').https;
-        var options = _request_options;
+        var options = JSON.parse(_request_options);
         console.log("Options:\n" + options);
         console.log("Body:\n" + options["body"]);
         var req = https.request(options, (res) => {
@@ -168,7 +168,7 @@ function executeRequest(_original_id, _request_options) {
         req.on('error', (e) => {
             console.error(`problem with request: ${e.message}`);
         });
-        req.write(JSON.stringify(_request_options["body"]));
+        req.write(JSON.stringify(options["body"]));
         req.end();
     });
 }
