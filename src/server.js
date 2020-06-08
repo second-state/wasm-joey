@@ -246,6 +246,8 @@ function parseMultipart(_form, _req) {
                 if (field[0].startsWith("fetch")) {
                     if (field[1].startsWith("http")) {
                         fetchUsingGet(field[1]).then((fetched_result, error) => {
+                            console.log("fetchUsingGet complete!");
+                            console.log(fetched_result);
                             overarching_container[index_key] = fetched_result;
                         });
                     } else {
