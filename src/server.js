@@ -148,7 +148,7 @@ function executeRequest(_original_id, _request_options) {
         //var https = require('follow-redirects').https;
         var options = _request_options;
         console.log("Options:\n" + options);
-        console.log("Body:\n" + _request_options["body"]);
+        console.log("Body:\n" + options["body"]);
         var req = https.request(options, (res) => {
             var responseString = "";
             console.log('statusCode:', res.statusCode);
