@@ -151,18 +151,19 @@ function executeRequest(_original_id, _request_options) {
         //console.log("Method:\n" + options["method"]);
         //console.log("Body:\n" + options["body"]);
         var req = https.request(options, (res) => {
-            var responseString = "";
+            console.log("executeRequest() is being executed ...");
+            var req_response = "";
             //console.log('statusCode:', res.statusCode);
             //console.log('headers:', res.headers);
 
             res.on("data", (data) => {
                 //console.log("Creating response string ...");
-                responseString += data;
+                req_response += data;
             });
 
             res.on("end", () => {
-                //console.log(responseString);
-                resolve(responseString);
+                //console.log(req_response);
+                resolve(req_response);
                 // print to console when response ends
             });
         });
@@ -204,6 +205,7 @@ function fetchUsingGet(_url) {
 function readTheFile(_file_path) {
     return new Promise(function(resolve, reject) {
         fs.readFile(_file_path, (err, data) => {
+            console.log("readTheFile() is being executed ...");
             if (err) {
                 console.log("err ocurred", err);
             } else {
@@ -234,6 +236,7 @@ function parseMultipart(_form, _req) {
                 var index_key = file[0].slice(_string_position + 1, file[0].length)
                 readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                     if (!file_read_error) {
+                        console.log("readTheFile complete!");
                         overarching_container[index_key] = file_read_result
                     } else {
                         console.log(file_read_error);
@@ -252,6 +255,8 @@ function parseMultipart(_form, _req) {
                         });
                     } else {
                         executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                            console.log("executeRequest complete!");
+                            console.log(fetched_result2);
                             overarching_container[index_key] = fetched_result2;
                         });
                     }
