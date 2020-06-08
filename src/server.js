@@ -226,24 +226,20 @@ function parseMultipart(_form, _req) {
                 res.send(JSON.stringify(json_response));
                 return;
             }
-
-            // New method of parsing these entries
-            // Read all files from local file system, process all requests where key starts with fetch
-            // Arrange in an overarching container (using index number has key)
-            // Finally, order sequentially by key and then expand whilst calling SSVM
-
+            console.log("There are " + Object.keys(files.Data).length + " files to process");
             for (var file of Object.entries(files)) {
                 var _string_position = file[0].lastIndexOf("_");
                 var index_key = file[0].slice(_string_position + 1, file[0].length)
                 readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                     if (!file_read_error) {
                         console.log("readTheFile complete!");
-                        overarching_container[index_key] = file_read_result
+                        overarching_container[index_key] = file_read_result;
                     } else {
                         console.log(file_read_error);
                     }
                 });
             }
+            console.log("There are " + Object.keys(fields.Data).length + " fields to process");
             for (var field of Object.entries(fields)) {
                 var _string_position = field[0].lastIndexOf("_");
                 var index_key = field[0].slice(_string_position + 1, field[0].length)
