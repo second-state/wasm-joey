@@ -480,7 +480,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
                         json_response["return_value"] = return_value;
                         */
-                        console.log(array_of_parameters);
+                        console.log("Array of parameters:\n" + array_of_parameters);
                         res.send(JSON.stringify(json_response));
 
 
