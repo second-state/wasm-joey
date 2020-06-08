@@ -202,7 +202,7 @@ CREATE TABLE wasm_execution_log(
     wasm_executable_id INT(6) NOT NULL,
     wasm_executable_state LONGTEXT NOT NULL,
     execution_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    execution_object JSON NOT NULL,
+    execution_object LONGTEXT NOT NULL,
     INDEX we_index (wasm_executable_id),
     PRIMARY KEY(log_id),
     FOREIGN KEY (wasm_executable_id) REFERENCES wasm_executables(wasm_id) ON DELETE CASCADE
