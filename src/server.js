@@ -129,7 +129,7 @@ function executionLogExists(wasm_id) {
     });
 }
 
-function executeCallback(_original_id, _request_options, _data_payload) {
+function executeRequest(_original_id, _request_options) {
     return new Promise(function(resolve, reject) {
         console.log("Updating execution log");
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
@@ -138,7 +138,6 @@ function executeCallback(_original_id, _request_options, _data_payload) {
             var logging_object = {};
             logging_object["original_wasm_executables_id"] = _original_id;
             logging_object["callback_request_options"] = _request_options;
-            logging_object["callback_data_payload"] = _data_payload;
             var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
             console.log("sqlInsert: " + sqlInsert);
             performSqlQuery(sqlInsert).then((resultInsert) => {
@@ -167,7 +166,7 @@ function executeCallback(_original_id, _request_options, _data_payload) {
         req.on('error', (e) => {
             console.error(`problem with request: ${e.message}`);
         });
-        req.write(JSON.stringify(_data_payload));
+        req.write(JSON.stringify(_request_options["body"]));
         req.end();
     });
 }
@@ -398,7 +397,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
         console.log("Creating log object");
         var logging_object = {};
         logging_object["original_wasm_executables_id"] = req.params.wasm_id;
-        console.log("******************\nRequest Body\n" + req.body);
         logging_object["data_payload"] = req.body;
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
         //console.log("sqlInsert: " + sqlInsert);
@@ -430,7 +428,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             // Read all files from local file system, process all requests where key starts with fetch
                             // Arrange in an overarching container (using index number has key)
                             // Finally, order sequentially by key and then expand whilst calling SSVM
-                            var overarching_container = {};
+                            
                             for (var file of Object.entries(files)) {
                                 var _string_position = file[0].lastIndexOf("_");
                                 var index_key = file[0].slice(_string_position + 1, file[0].length)
@@ -453,7 +451,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             overarching_container[index_key] = fetched_result;
                                         });
                                     } else {
-                                        executeCallback(req.params.wasm_id, field[1], {}).then((fetched_result2, error) => {
+                                        executeRequest(req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                                             overarching_container[index_key] = fetched_result2;
                                         });
                                     }
@@ -571,11 +569,13 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             if (return_value_as_object.hasOwnProperty('callback')) {
                                 console.log("Processing callback");
                                 var callback_object_for_processing = return_value_as_object["callback"];
-                                //console.log("*Callback Object: " + JSON.stringify(callback_object_for_processing));
+                                // Delete the callback section from the return value
                                 delete return_value_as_object.callback;
+                                // Add the left over return value to inside the callback object as the body
+                                callback_object_for_processing["body"] = return_value_as_object;
                                 //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
                                 //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
-                                executeCallback(req.params.wasm_id, callback_object_for_processing, return_value_as_object).then((c_result, error) => {
+                                executeRequest(req.params.wasm_id, callback_object_for_processing).then((c_result, error) => {
                                     //console.log("*New value" + c_result);
                                     json_response["return_value"] = c_result;
                                     console.log(json_response);
