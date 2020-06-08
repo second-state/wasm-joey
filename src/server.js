@@ -133,14 +133,14 @@ function executeRequest(_original_id, _request_options) {
     return new Promise(function(resolve, reject) {
         console.log("Updating execution log");
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
-        performSqlQuery(sqlSelect).then((stateResult) => {
+        await performSqlQuery(sqlSelect).then((stateResult) => {
             console.log("Creating log object");
             var logging_object = {};
             logging_object["original_wasm_executables_id"] = _original_id;
             logging_object["callback_request_options"] = _request_options;
             var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
             console.log("sqlInsert: " + sqlInsert);
-            performSqlQuery(sqlInsert).then((resultInsert) => {
+            await performSqlQuery(sqlInsert).then((resultInsert) => {
                 console.log("Logging updated");
             });
         });
@@ -230,7 +230,7 @@ function parseMultipart(_form, _req) {
             for (var file of Object.entries(files)) {
                 var _string_position = file[0].lastIndexOf("_");
                 var index_key = file[0].slice(_string_position + 1, file[0].length)
-                readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
+                await readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                     if (!file_read_error) {
                         console.log("readTheFile complete!");
                         overarching_container[index_key] = file_read_result;
@@ -245,13 +245,13 @@ function parseMultipart(_form, _req) {
                 var index_key = field[0].slice(_string_position + 1, field[0].length)
                 if (field[0].startsWith("fetch")) {
                     if (field[1].startsWith("http")) {
-                        fetchUsingGet(field[1]).then((fetched_result, error) => {
+                        await fetchUsingGet(field[1]).then((fetched_result, error) => {
                             console.log("fetchUsingGet complete!");
                             console.log(fetched_result);
                             overarching_container[index_key] = fetched_result;
                         });
                     } else {
-                        executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                        await executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                             console.log("executeRequest complete!");
                             console.log(fetched_result2);
                             overarching_container[index_key] = fetched_result2;
@@ -266,6 +266,12 @@ function parseMultipart(_form, _req) {
             resolve(overarching_container);
         });
     });
+}
+
+class Ready {
+    constructor(_items) {
+        this.value = _items;
+    }
 }
 /* Utils end */
 
@@ -453,30 +459,30 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
     var array_of_parameters = [];
     // Perform logging
     var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    performSqlQuery(sqlSelect).then((stateResult) => {
+    await performSqlQuery(sqlSelect).then((stateResult) => {
         console.log("Creating log object");
         var logging_object = {};
         logging_object["original_wasm_executables_id"] = req.params.wasm_id;
         logging_object["data_payload"] = req.body;
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
         //console.log("sqlInsert: " + sqlInsert);
-        performSqlQuery(sqlInsert).then((resultInsert) => {
+        await performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("Logging updated");
             var json_response = {};
-            executableExists(req.params.wasm_id).then((result, error) => {
+            await executableExists(req.params.wasm_id).then((result, error) => {
                 //console.log("Result:" + result + ".");
                 if (result == 1) {
                     const form = formidable({
                         multiples: true
                     });
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    performSqlQuery(sqlSelect).then((result2, error2) => {
+                    await performSqlQuery(sqlSelect).then((result2, error2) => {
                         console.log(result2[0].wasm_binary.data);
                         var wasm_state_as_string = result2[0].wasm_state;
                         var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
                         var function_name = req.params.function_name;
                         var raw_data = {};
-                        parseMultipart(form, req).then((result3, error3) => {
+                        await parseMultipart(form, req).then((result3, error3) => {
                             var ordered_overarching_container = {};
                             Object.keys(result3).sort().forEach(function(key) {
                                 ordered_overarching_container[key] = result3[key];
