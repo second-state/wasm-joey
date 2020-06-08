@@ -452,6 +452,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 //
 // Run a function by calling with multi part form data
 app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
+    var array_of_parameters = [];
     // Perform logging
     var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((stateResult) => {
@@ -482,7 +483,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             Object.keys(result3).sort().forEach(function(key) {
                                 ordered_overarching_container[key] = result3[key];
                             });
-                            var array_of_parameters = [];
+                            
                             for (let [key, value] of Object.entries(ordered_overarching_container)) {
                                 array_of_parameters.push(`${value}`);
                             }
@@ -495,7 +496,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             res.send(JSON.stringify(json_response));
 
                         });
-                        console.log("Array of parameters2:\n" + JSON.stringify(array_of_parameters));
+                        console.log("******Array of parameters2:\n" + JSON.stringify(array_of_parameters));
 
                     });
                 }
