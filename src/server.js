@@ -495,6 +495,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             res.send(JSON.stringify(json_response));
 
                         });
+                        console.log("Array of parameters2:\n" + JSON.stringify(array_of_parameters));
 
                     });
                 }
