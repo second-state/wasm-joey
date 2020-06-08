@@ -213,10 +213,10 @@ function readTheFile(_file_path) {
     });
 }
 
-function parseMultipart(_form) {
+function parseMultipart(_form, _req) {
     return new Promise(function(resolve, reject) {
         var overarching_container = {};
-        _form.parse(req, (err, fields, files) => {
+        _form.parse(_req, (err, fields, files) => {
             if (err) {
                 next(err);
                 json_response["return_value"] = "Error reading multipart fields and/or files";
@@ -249,7 +249,7 @@ function parseMultipart(_form) {
                             overarching_container[index_key] = fetched_result;
                         });
                     } else {
-                        executeRequest(req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                        executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                             overarching_container[index_key] = fetched_result2;
                         });
                     }
@@ -470,7 +470,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
                         var function_name = req.params.function_name;
                         var raw_data = {};
-                        parseMultipart(form).then((result3, error3) => {
+                        parseMultipart(form, req).then((result3, error3) => {
                             var ordered_overarching_container = {};
                             Object.keys(result3).sort().forEach(function(key) {
                                 ordered_overarching_container[key] = result3[key];
