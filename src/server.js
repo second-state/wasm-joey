@@ -502,8 +502,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 if (readyAtZero.isReady() == true) {
                                     console.log("Ready? " + readyAtZero.isReady());
                                     var ordered_overarching_container = {};
-                                    Object.keys(result3).sort().forEach(function(key) {
-                                        ordered_overarching_container[key] = result3[key];
+                                    Object.keys(overarching_container).sort().forEach(function(key) {
+                                        ordered_overarching_container[key] = overarching_container[key];
                                     });
                                     for (let [key, value] of Object.entries(ordered_overarching_container)) {
                                         array_of_parameters.push(`${value}`);
