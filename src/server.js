@@ -260,14 +260,18 @@ function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _
 class ReadyAtZero {
     constructor(_items) {
         this.value = _items;
+        console.log(this.value);
     }
     decrease(){
         this.value = this.value - 1;
+        console.log(this.value);
     }
     increase(){
         this.value = this.value + 1;
+        console.log(this.value);
     }
     isReady(){
+        console.log(this.value);
         if (this.value == 0){
             return true;
         } else {
