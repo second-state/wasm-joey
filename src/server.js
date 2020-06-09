@@ -499,8 +499,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             var overarching_container = {};
                             parseMultipart(overarching_container, readyAtZero, files, fields, req)
                             while (true){
-                                if (readyAtZero.isReady == true) {
-                                    console.log("Ready? " + readyAtZero.isReady);
+                                if (readyAtZero.isReady() == true) {
+                                    console.log("Ready? " + readyAtZero.isReady());
                                     var ordered_overarching_container = {};
                                     Object.keys(result3).sort().forEach(function(key) {
                                         ordered_overarching_container[key] = result3[key];
