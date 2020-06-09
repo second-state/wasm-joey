@@ -215,7 +215,7 @@ function readTheFile(_file_path) {
     });
 }
 
-function parseMultipart(_form, _req) {
+function parseMultipart(_readyAtZero, _form, _req) {
     return new Promise(function(resolve, reject) {
         console.log("parseMultipart function is being executed ...");
         var overarching_container = {};
@@ -238,6 +238,7 @@ function parseMultipart(_form, _req) {
                         console.log(file_read_error);
                     }
                 });
+                _readyAtZero.decrease();
             }
             console.log("There are " + Object.keys(fields).length + " fields to process");
             for (var field of Object.entries(fields)) {
@@ -261,6 +262,7 @@ function parseMultipart(_form, _req) {
                 } else {
                     overarching_container[index_key] = field[1];
                 }
+                _readyAtZero.decrease();
             }
             console.log("parseMultipart function complete!");
             resolve(overarching_container);
@@ -268,9 +270,22 @@ function parseMultipart(_form, _req) {
     });
 }
 
-class Ready {
+class ReadyAtZero {
     constructor(_items) {
         this.value = _items;
+    }
+    decrease(){
+        this.value = this.value - 1;
+    }
+    increase(){
+        this.value = this.value + 1;
+    }
+    isReady(){
+        if (this.value == 0){
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 /* Utils end */
@@ -482,23 +497,28 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
                         var function_name = req.params.function_name;
                         var raw_data = {};
-                        parseMultipart(form, req).then((result3, error3) => {
-
-                            var ordered_overarching_container = {};
-                            Object.keys(result3).sort().forEach(function(key) {
-                                ordered_overarching_container[key] = result3[key];
-                            });
-                            
-                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                array_of_parameters.push(`${value}`);
+                        // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
+                        var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
+                        parseMultipart(readyAtZero, form, req).then((result3, error3) => {
+                        while (true){
+                            if (readyAtZero.isReady == true) {
+                                var ordered_overarching_container = {};
+                                Object.keys(result3).sort().forEach(function(key) {
+                                    ordered_overarching_container[key] = result3[key];
+                                });
+                                for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                                    array_of_parameters.push(`${value}`);
+                                }
+                                /*
+                                var vm = new ssvm.VM(wasm_as_buffer);
+                                var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
+                                json_response["return_value"] = return_value;
+                                */
+                                console.log("Array of parameters:\n" + JSON.stringify(array_of_parameters));
+                                res.send(JSON.stringify(json_response));
+                                break;
                             }
-                            /*
-                            var vm = new ssvm.VM(wasm_as_buffer);
-                            var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
-                            json_response["return_value"] = return_value;
-                            */
-                            console.log("Array of parameters:\n" + JSON.stringify(array_of_parameters));
-                            res.send(JSON.stringify(json_response));
+                        }
 
                         });
                     });
