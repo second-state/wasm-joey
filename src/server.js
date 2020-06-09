@@ -219,7 +219,7 @@ function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _
         console.log("parseMultipart function is being executed ...");
             console.log("There are " + Object.keys(_files).length + " files to process");
             for (var file of Object.entries(_files)) {
-                console.log("Processing file: " + field[0]);
+                console.log("Processing file: " + file[0]);
                 var _string_position = file[0].lastIndexOf("_");
                 var index_key = file[0].slice(_string_position + 1, file[0].length)
                 readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
