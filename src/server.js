@@ -163,14 +163,14 @@ function executeRequest(_original_id, _request_options) {
 
             res.on("end", () => {
                 //console.log(req_response);
-                resolve(req_response);
+                resolve(res);
                 // print to console when response ends
             });
         });
         req.on('error', (e) => {
             console.error(`problem with request: ${e.message}`);
         });
-        req.write(req_response);
+        req.write(options["body"]);
         req.end();
     });
 }
@@ -236,6 +236,7 @@ function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _
             console.log("There are " + Object.keys(_fields).length + " fields to process");
             for (var field of Object.entries(_fields)) {
                 console.log("Processing field: " + field[0]);
+                console.log("Value of field is: " + field[1]);
                 var _string_position = field[0].lastIndexOf("_");
                 var index_key = field[0].slice(_string_position + 1, field[0].length)
                 if (field[0].startsWith("fetch")) {
