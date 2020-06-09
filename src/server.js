@@ -215,11 +215,8 @@ function readTheFile(_file_path) {
     });
 }
 
-function parseMultipart(_readyAtZero, _files, _fields, _req) {
-    return new Promise(function(resolve, reject) {
+function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _req) {
         console.log("parseMultipart function is being executed ...");
-        var overarching_container = {};
-
             console.log("There are " + Object.keys(_files).length + " files to process");
             for (var file of Object.entries(_files)) {
                 var _string_position = file[0].lastIndexOf("_");
@@ -227,7 +224,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                     if (!file_read_error) {
                         console.log("readTheFile complete!");
-                        overarching_container[index_key] = file_read_result;
+                        _overarching_container[index_key] = file_read_result;
                     } else {
                         console.log(file_read_error);
                     }
@@ -243,24 +240,21 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         fetchUsingGet(field[1]).then((fetched_result, error) => {
                             console.log("fetchUsingGet complete!");
                             console.log(fetched_result);
-                            overarching_container[index_key] = fetched_result;
+                            _overarching_container[index_key] = fetched_result;
                         });
                     } else {
                         executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                             console.log("executeRequest complete!");
                             console.log(fetched_result2);
-                            overarching_container[index_key] = fetched_result2;
+                            _overarching_container[index_key] = fetched_result2;
                         });
                     }
 
                 } else {
-                    overarching_container[index_key] = field[1];
+                    _overarching_container[index_key] = field[1];
                 }
                 _readyAtZero.decrease();
             }
-            console.log("parseMultipart function complete!");
-            resolve(overarching_container);
-        });
 }
 
 class ReadyAtZero {
@@ -498,7 +492,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             }
                             // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
                             var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                            parseMultipart(readyAtZero, files, fields, req).then((result3, error3) => {
+                            var overarching_container = {};
+                            parseMultipart(overarching_container, readyAtZero, files, fields, req)
                             while (true){
                                 if (readyAtZero.isReady == true) {
                                     var ordered_overarching_container = {};
@@ -516,10 +511,10 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                     console.log("Array of parameters:\n" + JSON.stringify(array_of_parameters));
                                     res.send(JSON.stringify(json_response));
                                     break;
+                                } else {
+                                    console.log("...");
                                 }
                             }
-
-                            });
                         });
                     });
                 }
