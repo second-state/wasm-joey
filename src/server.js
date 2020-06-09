@@ -170,7 +170,7 @@ function executeRequest(_original_id, _request_options) {
         req.on('error', (e) => {
             console.error(`problem with request: ${e.message}`);
         });
-        req.write(options["body"]);
+        req.write(JSON.stringify(options["body"]));
         req.end();
     });
 }
