@@ -154,28 +154,26 @@ function executeRequest(_original_id, _request_options) {
         delete options.body;
         options["headers"]["Content-Length"] = data.length;
         console.log("Options:\n" + JSON.stringify(options));
-        var req = https.request(options, (res) => {
-            console.log("executeRequest() is being executed ...");
-            let data = '';
-            console.log('statusCode:', res.statusCode);
-            console.log('headers:', res.headers);
 
-            res.on('data', (chunk) => {
-                //console.log("Creating response string ...");
-                data += chunk;
-            });
+const req = https.request(options, (res) => {
+    let data = '';
 
-            res.on('end', () => {
-                console.log('END: ', JSON.parse(data));
-                //console.log(req_response);
-                //resolve(res);
-                // print to console when response ends
-            });
-        }).on("error", (err) => {
-            console.error("Error", err.message);
-        });
-        req.write(data);
-        req.end();
+    console.log('Status Code:', res.statusCode);
+
+    res.on('data', (chunk) => {
+        data += chunk;
+    });
+
+    res.on('end', () => {
+        console.log('Body: ', JSON.parse(data));
+    });
+
+}).on("error", (err) => {
+    console.log("Error: ", err.message);
+});
+
+req.write(data);
+req.end();
     });
 }
 
