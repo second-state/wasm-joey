@@ -153,8 +153,8 @@ function executeRequest(_original_id, _request_options) {
         var req = https.request(options, (res) => {
             console.log("executeRequest() is being executed ...");
             var req_response = "";
-            //console.log('statusCode:', res.statusCode);
-            //console.log('headers:', res.headers);
+            console.log('statusCode:', res.statusCode);
+            console.log('headers:', res.headers);
 
             res.on("data", (data) => {
                 //console.log("Creating response string ...");
