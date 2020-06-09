@@ -228,8 +228,9 @@ function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _
                     } else {
                         console.log(file_read_error);
                     }
+                    _readyAtZero.decrease();
                 });
-                _readyAtZero.decrease();
+                
             }
             console.log("There are " + Object.keys(_fields).length + " fields to process");
             for (var field of Object.entries(_fields)) {
@@ -241,19 +242,22 @@ function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _
                             console.log("fetchUsingGet complete!");
                             console.log(fetched_result);
                             _overarching_container[index_key] = fetched_result;
+                             _readyAtZero.decrease();
                         });
                     } else {
                         executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                             console.log("executeRequest complete!");
                             console.log(fetched_result2);
                             _overarching_container[index_key] = fetched_result2;
+                             _readyAtZero.decrease();
                         });
                     }
 
                 } else {
                     _overarching_container[index_key] = field[1];
+                     _readyAtZero.decrease();
                 }
-                _readyAtZero.decrease();
+               
             }
 }
 
