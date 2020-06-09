@@ -153,6 +153,7 @@ function executeRequest(_original_id, _request_options) {
         const data = JSON.stringify(options["body"]);
         delete options.body;
         options["headers"]["Content-Length"] = data.length;
+        console.log("Options:\n" + JSON.stringify(options));
         var req = https.request(options, (res) => {
             console.log("executeRequest() is being executed ...");
             let data = '';
