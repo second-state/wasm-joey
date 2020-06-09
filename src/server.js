@@ -150,27 +150,30 @@ function executeRequest(_original_id, _request_options) {
         console.log("Options:\n" + JSON.stringify(options));
         console.log("Method:\n" + options["method"]);
         console.log("Body:\n" + JSON.stringify(options["body"]));
+        const data = JSON.stringify(options["body"]);
+        delete options.body;
+        options["headers"]["Content-Length"] = data.length;
         var req = https.request(options, (res) => {
             console.log("executeRequest() is being executed ...");
-            var req_response = "";
+            let data = '';
             console.log('statusCode:', res.statusCode);
             console.log('headers:', res.headers);
 
-            res.on("data", (data) => {
+            res.on('data', (chunk) => {
                 //console.log("Creating response string ...");
-                req_response += data;
+                data += chunk;
             });
 
-            res.on("end", () => {
+            res.on('end', () => {
+                console.log('END: ', JSON.parse(data));
                 //console.log(req_response);
-                resolve(res);
+                //resolve(res);
                 // print to console when response ends
             });
+        }).on("error", (err) => {
+            console.error("Error", err.message);
         });
-        req.on('error', (e) => {
-            console.error(`problem with request: ${e.message}`);
-        });
-        req.write(JSON.stringify(options["body"]));
+        req.write(data);
         req.end();
     });
 }
