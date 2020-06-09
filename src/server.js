@@ -489,8 +489,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         var wasm_state_as_string = result2[0].wasm_state;
                         var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
                         var function_name = req.params.function_name;
-                        var raw_data = {};
-                        _form.parse(_req, (err, fields, files) => {
+                        form.parse(_req, (err, fields, files) => {
                             if (err) {
                                 next(err);
                                 json_response["return_value"] = "Error reading multipart fields and/or files";
