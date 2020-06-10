@@ -236,13 +236,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 if (field[1].startsWith("http")) {
                     fetchUsingGet(field).then((fetched_result, error) => {
                         fetched_result_object = JSON.parse(fetched_result);
-                        console.log("Key of fetched result:" + Object.keys(fetched_result_object)[0]);
                         const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
-                        console.log("String position: " + _string_position);
                         const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
-                        console.log("Index : " + index_key);
                         _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]];
-                        console.log("**GET" + JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -250,12 +246,10 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     });
                 } else {
                     executeRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
-                        console.log(fetched_result2);
-                        console.log(JSON.stringify(fetched_result2));
-                        const _string_position2 = Object.keys(fetched_result2)[0].lastIndexOf("_");
-                        const index_key2 = Object.keys(fetched_result2)[0].slice(_string_position2 + 1, Object.keys(fetched_result2)[0].length);
-                        _readyAtZero.container[index_key2] = fetched_result2[Object.keys(fetched_result2)[0]];
-                        console.log("**REQ" + JSON.stringify(_readyAtZero.container));
+                        fetched_result_object2 = JSON.parse(fetched_result2);
+                        const _string_position2 = Object.keys(fetched_result_object2)[0].lastIndexOf("_");
+                        const index_key2 = Object.keys(fetched_result_object2)[0].slice(_string_position2 + 1, Object.keys(fetched_result_object2)[0].length);
+                        _readyAtZero.container[index_key2] = fetched_result_object2[Object.keys(fetched_result_object2)[0]];
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
