@@ -239,14 +239,17 @@ function fetchUsingGet(_info) {
     });
 }
 
-function readTheFile(_file_path) {
+function readTheFile(_file) {
     return new Promise(function(resolve, reject) {
-        fs.readFile(_file_path, (err, data) => {
+        var file_path = _file[1]["path"];
+        fs.readFile(file_path, (err, data) => {
             console.log("readTheFile() is being executed ...");
             if (err) {
                 console.log("err ocurred", err);
             } else {
-                resolve(data);
+                var return_data = {};
+                return_data[_file[0]] = data;
+                resolve(return_data);
             }
         });
     });
@@ -257,11 +260,12 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
         console.log("parseMultipart function is being executed ...");
         console.log("There are " + Object.keys(_files).length + " files to process");
         for (var file of Object.entries(_files)) {
-            var _string_position = file[0].lastIndexOf("_");
-            var index_key = file[0].slice(_string_position + 1, file[0].length)
-            readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
+            readTheFile(file).then((file_read_result, file_read_error) => {
                 if (!file_read_error) {
-                    _readyAtZero.container[index_key] = file_read_result;
+                    fetched_result_object = JSON.parse(file_read_result);
+                    const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
+                    const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
+                    _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]];
                     _readyAtZero.decrease();
                     if (_readyAtZero.isReady()) {
                         resolve();
@@ -269,9 +273,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 } else {
                     console.log(file_read_error);
                 }
-
             });
-
         }
         for (var field of Object.entries(_fields)) {
             if (field[0].startsWith("fetch")) {
