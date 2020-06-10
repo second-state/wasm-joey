@@ -233,10 +233,12 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 if (!file_read_error) {
                     console.log("readTheFile complete!");
                     _readyAtZero.container[index_key] = file_read_result;
+                    _readyAtZero.decrease();
+                    resolve();
                 } else {
                     console.log(file_read_error);
                 }
-                _readyAtZero.decrease();
+
             });
 
         }
@@ -536,9 +538,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             res.send(JSON.stringify(json_response));
                                             break;
                                         }
-                                        /*else {
-                                                                           console.log("...");
-                                                                       }*/
                                     }
                                 } else {
                                     console.log(m_error);
