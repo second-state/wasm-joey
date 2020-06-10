@@ -222,7 +222,7 @@ function readTheFile(_file_path) {
 }
 
 function parseMultipart(_readyAtZero, _files, _fields, _req) {
-    //return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
         console.log("parseMultipart function is being executed ...");
         console.log("There are " + Object.keys(_files).length + " files to process");
         for (var file of Object.entries(_files)) {
@@ -234,7 +234,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     console.log("readTheFile complete!");
                     _readyAtZero.container[index_key] = file_read_result;
                     _readyAtZero.decrease();
-                   //resolve();
+                    if (_readyAtZero.isReady()) {
+                        resolve();
+                    }
                 } else {
                     console.log(file_read_error);
                 }
@@ -250,33 +252,37 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             var index_key = field[0].slice(_string_position + 1, field[0].length)
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
-                    console.log("Calling fetchUsingGet ...");
                     fetchUsingGet(field[1]).then((fetched_result, error) => {
                         console.log("fetchUsingGet complete!");
                         console.log(fetched_result);
                         _readyAtZero.container[index_key] = fetched_result;
                         _readyAtZero.decrease();
-                        //resolve();
+                        if (_readyAtZero.isReady()) {
+                            resolve();
+                        }
                     });
                 } else {
-                    console.log("Calling executeRequest ...");
                     executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                         console.log("executeRequest complete!");
                         console.log(fetched_result2);
                         _readyAtZero.container[index_key] = fetched_result2;
                         _readyAtZero.decrease();
-                        //resolve();
+                        if (_readyAtZero.isReady()) {
+                            resolve();
+                        }
                     });
                 }
 
             } else {
                 _readyAtZero.container[index_key] = field[1];
                 _readyAtZero.decrease();
-                //resolve();
+                if (_readyAtZero.isReady()) {
+                    resolve();
+                }
             }
 
         }
-    //});
+    });
 }
 
 class ReadyAtZero {
@@ -519,8 +525,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             }
                             // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
                             var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                            parseMultipart(readyAtZero, files, fields, req);  // .then((m_result, m_error) => {
-                                //if (!m_error) {
+                            parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
+                                if (!m_error) {
                                     while (true) {
                                         if (readyAtZero.isReady() == true) {
                                             console.log("Ready? " + readyAtZero.isReady());
@@ -541,10 +547,10 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             break;
                                         }
                                     }
-                                //} else {
-                                    //console.log(m_error);
-                                //}
-                             //});
+                                } else {
+                                    console.log(m_error);
+                                }
+                            });
                         });
                     });
                 }
