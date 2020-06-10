@@ -249,7 +249,7 @@ function readTheFile(_file) {
             } else {
                 var return_data = {};
                 return_data[_file[0]] = data;
-                resolve(return_data);
+                resolve(JSON.stringify(return_data));
             }
         });
     });
