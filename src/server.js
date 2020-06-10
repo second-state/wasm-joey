@@ -233,6 +233,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 if (!file_read_error) {
                     console.log("readTheFile complete!");
                     _readyAtZero.container[index_key] = file_read_result;
+                    console.log(JSON.stringify(_readyAtZero.container));
                     _readyAtZero.decrease();
                     if (_readyAtZero.isReady()) {
                         resolve();
@@ -256,6 +257,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         console.log("fetchUsingGet complete!");
                         console.log(fetched_result);
                         _readyAtZero.container[index_key] = fetched_result;
+                        console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -266,6 +268,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         console.log("executeRequest complete!");
                         console.log(fetched_result2);
                         _readyAtZero.container[index_key] = fetched_result2;
+                        console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -275,6 +278,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 
             } else {
                 _readyAtZero.container[index_key] = field[1];
+                console.log(JSON.stringify(_readyAtZero.container));
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
                     resolve();
