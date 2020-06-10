@@ -137,7 +137,7 @@ function executeRequest(_original_id, _request_options) {
             console.log("Creating log object");
             var logging_object = {};
             logging_object["original_wasm_executables_id"] = _original_id;
-            logging_object["callback_request_options"] = _request_options;
+            logging_object["callback_request_options"] = _request_options[1];
             var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
             console.log("sqlInsert: " + sqlInsert);
             performSqlQuery(sqlInsert).then((resultInsert) => {
@@ -146,7 +146,7 @@ function executeRequest(_original_id, _request_options) {
         });
         console.log("Performing callback via https ...");
         //var https = require('follow-redirects').https;
-        var options = JSON.parse(_request_options);
+        var options = JSON.parse(_request_options[1]);
         console.log("Options:\n" + JSON.stringify(options));
         console.log("Method:\n" + options["method"]);
         console.log("Body:\n" + JSON.stringify(options["body"]));
@@ -166,7 +166,9 @@ function executeRequest(_original_id, _request_options) {
 
             res.on("end", () => {
                 try {
-                    resolve(data);
+                    var dict_return = {};
+                    dict_return[_request_options[0]] = data;
+                    resolve(JSON.stringify(dict_return));
                 } catch (error) {
                     console.error(error.message);
                 };
@@ -258,9 +260,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     fetchUsingGet(field).then((fetched_result, error) => {
                         console.log("fetchUsingGet complete!");
                         console.log(fetched_result);
-                        //var _string_position = fetched_result[0].lastIndexOf("_");
-                        //var index_key = fetched_result[0].slice(_string_position + 1, fetched_result[0].length)
-                        _readyAtZero.container[fetched_result[0].slice(fetched_result[0].lastIndexOf("_") + 1, fetched_result[0].length)] = fetched_result;
+                        const _string_position = fetched_result[0].lastIndexOf("_");
+                        const index_key = fetched_result[0].slice(_string_position + 1, fetched_result[0].length);
+                        _readyAtZero.container[fetched_result[0].slice(index_key] = fetched_result;
                         console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
@@ -268,10 +270,12 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         }
                     });
                 } else {
-                    executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                    executeRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
                         console.log("executeRequest complete!");
                         console.log(fetched_result2);
-                        _readyAtZero.container[field[0].slice(_string_position + 1, field[0].length)] = fetched_result2;
+                        const _string_position2 = fetched_result2[0].lastIndexOf("_");
+                        const index_key2 = fetched_result2[0].slice(_string_position2 + 1, fetched_result2[0].length);
+                        _readyAtZero.container[index_key2] = fetched_result2;
                         console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
@@ -279,9 +283,10 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         }
                     });
                 }
-
             } else {
-                _readyAtZero.container[field[0].slice(_string_position + 1, field[0].length)] = field[1];
+                const _string_position3 = field[0].lastIndexOf("_");
+                const index_key3 = field[0].slice(_string_position2 + 1, field[0].length);
+                _readyAtZero.container[index_key3] = field[1];
                 console.log(JSON.stringify(_readyAtZero.container));
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
