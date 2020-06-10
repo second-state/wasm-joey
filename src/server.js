@@ -200,7 +200,7 @@ function fetchUsingGet(_info) {
                 try {
                     var dict_return = {};
                     dict_return[_info[0]] = body;
-                    resolve(JSON.stringify(dict_return));
+                    resolve(dict_return);
                 } catch (error) {
                     console.error(error.message);
                 };
