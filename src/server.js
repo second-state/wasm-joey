@@ -234,6 +234,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
                     fetchUsingGet(field).then((fetched_result, error) => {
+                        console.log("Key of fetched result:" + Object.keys(fetched_result)[0]);
                         const _string_position = Object.keys(fetched_result)[0].lastIndexOf("_");
                         console.log("String position: " + _string_position);
                         const index_key = Object.keys(fetched_result)[0].slice(_string_position + 1, Object.keys(fetched_result)[0].length);
