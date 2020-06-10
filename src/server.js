@@ -244,6 +244,8 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     });
                 } else {
                     executeRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
+                        console.log(fetched_result2);
+                        console.log(JSON.stringify(fetched_result2));
                         const _string_position2 = fetched_result2[0].lastIndexOf("_");
                         const index_key2 = fetched_result2[0].slice(_string_position2 + 1, fetched_result2[0].length);
                         _readyAtZero.container[index_key2] = fetched_result2;
