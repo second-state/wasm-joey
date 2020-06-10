@@ -130,7 +130,7 @@ function executionLogExists(wasm_id) {
 }
 
 function executeRequest(_original_id, _request_options) {
-    return new Promise(function(resolve, reject) {
+    //return new Promise(function(resolve, reject) {
         console.log("Updating execution log");
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
         performSqlQuery(sqlSelect).then((stateResult) => {
@@ -165,7 +165,7 @@ const req = https.request(options, (res) => {
     });
 
     res.on('end', () => {
-        console.log('Body: ', JSON.parse(data));
+        console.log('Body!: ', JSON.parse(data));
     });
 
 }).on("error", (err) => {
@@ -174,7 +174,7 @@ const req = https.request(options, (res) => {
 
 req.write(data);
 req.end();
-    });
+    //});
 }
 
 function fetchUsingGet(_url) {
@@ -217,7 +217,7 @@ function readTheFile(_file_path) {
     });
 }
 
-function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _req) {
+function parseMultipart(_readyAtZero, _files, _fields, _req) {
         console.log("parseMultipart function is being executed ...");
             console.log("There are " + Object.keys(_files).length + " files to process");
             for (var file of Object.entries(_files)) {
@@ -227,7 +227,7 @@ function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _
                 readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                     if (!file_read_error) {
                         console.log("readTheFile complete!");
-                        _overarching_container[index_key] = file_read_result;
+                        _readyAtZero.container[index_key] = file_read_result;
                     } else {
                         console.log(file_read_error);
                     }
@@ -246,20 +246,20 @@ function parseMultipart(_overarching_container, _readyAtZero, _files, _fields, _
                         fetchUsingGet(field[1]).then((fetched_result, error) => {
                             console.log("fetchUsingGet complete!");
                             console.log(fetched_result);
-                            _overarching_container[index_key] = fetched_result;
+                            _readyAtZero.container[index_key] = fetched_result;
                              _readyAtZero.decrease();
                         });
                     } else {
                         executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                             console.log("executeRequest complete!");
                             console.log(fetched_result2);
-                            _overarching_container[index_key] = fetched_result2;
+                            _readyAtZero.container[index_key] = fetched_result2;
                              _readyAtZero.decrease();
                         });
                     }
 
                 } else {
-                    _overarching_container[index_key] = field[1];
+                    _readyAtZero.container[index_key] = field[1];
                      _readyAtZero.decrease();
                 }
                
@@ -270,6 +270,7 @@ class ReadyAtZero {
     constructor(_items) {
         this.value = _items;
         console.log(this.value);
+        this.container = {};
     }
     decrease(){
         this.value = this.value - 1;
@@ -505,14 +506,13 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             }
                             // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
                             var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                            var overarching_container = {};
-                            parseMultipart(overarching_container, readyAtZero, files, fields, req)
+                            parseMultipart(readyAtZero, files, fields, req)
                             while (true){
                                 if (readyAtZero.isReady() == true) {
                                     console.log("Ready? " + readyAtZero.isReady());
                                     var ordered_overarching_container = {};
-                                    Object.keys(overarching_container).sort().forEach(function(key) {
-                                        ordered_overarching_container[key] = overarching_container[key];
+                                    Object.keys(readyAtZero.container).sort().forEach(function(key) {
+                                        ordered_overarching_container[key] = readyAtZero.container[key];
                                     });
                                     for (let [key, value] of Object.entries(ordered_overarching_container)) {
                                         array_of_parameters.push(`${value}`);
