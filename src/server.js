@@ -184,7 +184,7 @@ function fetchUsingGet(_info) {
                 try {
                     var dict_return = {};
                     dict_return[_info[0]] = body;
-                    concole.log("Returning: " + JSON.stringify(dict_return);
+                    console.log("Returning: " + JSON.stringify(dict_return));
                     resolve(JSON.stringify(dict_return));
                 } catch (error) {
                     console.error(error.message);
