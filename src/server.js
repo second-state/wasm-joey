@@ -262,7 +262,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         console.log(fetched_result);
                         const _string_position = fetched_result[0].lastIndexOf("_");
                         const index_key = fetched_result[0].slice(_string_position + 1, fetched_result[0].length);
-                        _readyAtZero.container[fetched_result[0].slice(index_key] = fetched_result;
+                        _readyAtZero.container[index_key] = fetched_result;
                         console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
