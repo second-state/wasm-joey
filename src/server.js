@@ -510,31 +510,35 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             }
                             // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
                             var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                            parseMultipart(readyAtZero, files, fields, req);
-                            
-                            while (true) {
-                                if (readyAtZero.isReady() == true) {
-                                    console.log("Ready? " + readyAtZero.isReady());
-                                    var ordered_overarching_container = {};
-                                    Object.keys(readyAtZero.container).sort().forEach(function(key) {
-                                        ordered_overarching_container[key] = readyAtZero.container[key];
-                                    });
-                                    for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                        array_of_parameters.push(`${value}`);
+                            parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
+                                if (!m_error) {
+                                    while (true) {
+                                        if (readyAtZero.isReady() == true) {
+                                            console.log("Ready? " + readyAtZero.isReady());
+                                            var ordered_overarching_container = {};
+                                            Object.keys(readyAtZero.container).sort().forEach(function(key) {
+                                                ordered_overarching_container[key] = readyAtZero.container[key];
+                                            });
+                                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                                                array_of_parameters.push(`${value}`);
+                                            }
+                                            /*
+                                            var vm = new ssvm.VM(wasm_as_buffer);
+                                            var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
+                                            json_response["return_value"] = return_value;
+                                            */
+                                            console.log("Array of parameters:\n" + JSON.stringify(array_of_parameters));
+                                            res.send(JSON.stringify(json_response));
+                                            break;
+                                        }
+                                        /*else {
+                                                                           console.log("...");
+                                                                       }*/
                                     }
-                                    /*
-                                    var vm = new ssvm.VM(wasm_as_buffer);
-                                    var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
-                                    json_response["return_value"] = return_value;
-                                    */
-                                    console.log("Array of parameters:\n" + JSON.stringify(array_of_parameters));
-                                    res.send(JSON.stringify(json_response));
-                                    break;
+                                } else {
+                                    console.log(m_error);
                                 }
-                                /*else {
-                                                                   console.log("...");
-                                                               }*/
-                            }
+                            });
                         });
                     });
                 }
