@@ -253,6 +253,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         console.log(fetched_result);
                         _readyAtZero.container[index_key] = fetched_result;
                         _readyAtZero.decrease();
+                        resolve();
                     });
                 } else {
                     executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
@@ -260,12 +261,14 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         console.log(fetched_result2);
                         _readyAtZero.container[index_key] = fetched_result2;
                         _readyAtZero.decrease();
+                        resolve();
                     });
                 }
 
             } else {
                 _readyAtZero.container[index_key] = field[1];
                 _readyAtZero.decrease();
+                resolve();
             }
 
         }
