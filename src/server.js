@@ -130,7 +130,7 @@ function executionLogExists(wasm_id) {
 }
 
 function executeRequest(_original_id, _request_options) {
-    //return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
         console.log("Updating execution log");
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
         performSqlQuery(sqlSelect).then((stateResult) => {
@@ -174,7 +174,7 @@ const req = https.request(options, (res) => {
 
 req.write(data);
 req.end();
-    //});
+    });
 }
 
 function fetchUsingGet(_url) {
