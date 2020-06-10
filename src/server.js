@@ -237,6 +237,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         const _string_position = Object.keys(fetched_result)[0].lastIndexOf("_");
                         const index_key = Object.keys(fetched_result)[0].slice(_string_position + 1, Object.keys(fetched_result)[0].length);
                         _readyAtZero.container[index_key] = fetched_result[Object.keys(fetched_result)[0]];
+                        console.log("**GET" + JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -249,6 +250,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         const _string_position2 = Object.keys(fetched_result2)[0].lastIndexOf("_");
                         const index_key2 = Object.keys(fetched_result2)[0].slice(_string_position2 + 1, Object.keys(fetched_result2)[0].length);
                         _readyAtZero.container[index_key2] = fetched_result2[Object.keys(fetched_result2)[0]];
+                        console.log("**REQ" + JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
