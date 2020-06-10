@@ -181,7 +181,7 @@ function executeRequest(_original_id, _request_options) {
     });
 }
 
-function fetchUsingGet(_url) {
+function fetchUsingGet(_info) {
     return new Promise(function(resolve, reject) {
         https.get(_url, (res) => {
             console.log("fetchUsingGet() is being executed ...");
@@ -196,7 +196,9 @@ function fetchUsingGet(_url) {
 
             res.on("end", () => {
                 try {
-                    resolve(body);
+                    var dict_return = {};
+                    dict_return[_info[0]] = body;
+                    resolve(JSON.stringify(dict_return));
                 } catch (error) {
                     console.error(error.message);
                 };
@@ -250,14 +252,15 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
         for (var field of Object.entries(_fields)) {
             console.log("Processing field: " + field[0]);
             console.log("Value of field is: " + field[1]);
-            var _string_position = field[0].lastIndexOf("_");
-            //var index_key = field[0].slice(_string_position + 1, field[0].length)
+            
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
-                    fetchUsingGet(field[1]).then((fetched_result, error) => {
+                    fetchUsingGet(field).then((fetched_result, error) => {
                         console.log("fetchUsingGet complete!");
                         console.log(fetched_result);
-                        _readyAtZero.container[field[0].slice(_string_position + 1, field[0].length)] = fetched_result;
+                        //var _string_position = fetched_result[0].lastIndexOf("_");
+                        //var index_key = fetched_result[0].slice(_string_position + 1, fetched_result[0].length)
+                        _readyAtZero.container[fetched_result[0].slice(fetched_result[0].lastIndexOf("_") + 1, fetched_result[0].length)] = fetched_result;
                         console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
