@@ -250,13 +250,13 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             console.log("Processing field: " + field[0]);
             console.log("Value of field is: " + field[1]);
             var _string_position = field[0].lastIndexOf("_");
-            var index_key = field[0].slice(_string_position + 1, field[0].length)
+            //var index_key = field[0].slice(_string_position + 1, field[0].length)
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
                     fetchUsingGet(field[1]).then((fetched_result, error) => {
                         console.log("fetchUsingGet complete!");
                         console.log(fetched_result);
-                        _readyAtZero.container[index_key] = fetched_result;
+                        _readyAtZero.container[field[0].slice(_string_position + 1, field[0].length)] = fetched_result;
                         console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
@@ -267,7 +267,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                         console.log("executeRequest complete!");
                         console.log(fetched_result2);
-                        _readyAtZero.container[index_key] = fetched_result2;
+                        _readyAtZero.container[field[0].slice(_string_position + 1, field[0].length)] = fetched_result2;
                         console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
@@ -277,7 +277,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 }
 
             } else {
-                _readyAtZero.container[index_key] = field[1];
+                _readyAtZero.container[field[0].slice(_string_position + 1, field[0].length)] = field[1];
                 console.log(JSON.stringify(_readyAtZero.container));
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
