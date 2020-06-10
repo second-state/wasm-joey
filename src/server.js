@@ -234,9 +234,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
                     fetchUsingGet(field).then((fetched_result, error) => {
-                        const _string_position = fetched_result[0].lastIndexOf("_");
-                        const index_key = fetched_result[0].slice(_string_position + 1, fetched_result[0].length);
-                        _readyAtZero.container[index_key] = fetched_result;
+                        const _string_position = Object.keys(fetched_result)[0].lastIndexOf("_");
+                        const index_key = Object.keys(fetched_result)[0].slice(_string_position + 1, Object.keys(fetched_result)[0].length);
+                        _readyAtZero.container[index_key] = fetched_result[Object.keys(fetched_result)[0]];
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -246,9 +246,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     executeRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
                         console.log(fetched_result2);
                         console.log(JSON.stringify(fetched_result2));
-                        const _string_position2 = fetched_result2[0].lastIndexOf("_");
-                        const index_key2 = fetched_result2[0].slice(_string_position2 + 1, fetched_result2[0].length);
-                        _readyAtZero.container[index_key2] = fetched_result2;
+                        const _string_position2 = Object.keys(fetched_result2)[0].lastIndexOf("_");
+                        const index_key2 = Object.keys(fetched_result2)[0].slice(_string_position2 + 1, Object.keys(fetched_result2)[0].length);
+                        _readyAtZero.container[index_key2] = fetched_result2[Object.keys(fetched_result2)[0]];
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
