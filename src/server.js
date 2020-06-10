@@ -250,6 +250,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             var index_key = field[0].slice(_string_position + 1, field[0].length)
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
+                    console.log("Calling fetchUsingGet ...");
                     fetchUsingGet(field[1]).then((fetched_result, error) => {
                         console.log("fetchUsingGet complete!");
                         console.log(fetched_result);
@@ -258,6 +259,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         //resolve();
                     });
                 } else {
+                    console.log("Calling executeRequest ...");
                     executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                         console.log("executeRequest complete!");
                         console.log(fetched_result2);
