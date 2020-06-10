@@ -246,6 +246,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 
         }
         console.log("There are " + Object.keys(_fields).length + " fields to process");
+        console.log("Fields: " + _fields);
         for (var field of Object.entries(_fields)) {
             console.log("Processing field: " + field[0]);
             console.log("Value of field is: " + field[1]);
