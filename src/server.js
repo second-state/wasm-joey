@@ -155,14 +155,14 @@ function executeRequest(_original_id, _request_options) {
         options["headers"]["Content-Length"] = data.length;
         console.log("Options:\n" + JSON.stringify(options));
 
-const req = https.request(options, (res) => {
-    let data = '';
+        const req = https.request(options, (res) => {
+            let data = '';
 
-    console.log('Status Code:', res.statusCode);
+            console.log('Status Code:', res.statusCode);
 
-    res.on('data', (chunk) => {
-        data += chunk;
-    });
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
 
             res.on("end", () => {
                 try {
@@ -172,12 +172,12 @@ const req = https.request(options, (res) => {
                 };
             });
 
-}).on("error", (err) => {
-    console.log("Error: ", err.message);
-});
+        }).on("error", (err) => {
+            console.log("Error: ", err.message);
+        });
 
-req.write(data);
-req.end();
+        req.write(data);
+        req.end();
     });
 }
 
@@ -222,52 +222,52 @@ function readTheFile(_file_path) {
 }
 
 function parseMultipart(_readyAtZero, _files, _fields, _req) {
-        console.log("parseMultipart function is being executed ...");
-            console.log("There are " + Object.keys(_files).length + " files to process");
-            for (var file of Object.entries(_files)) {
-                console.log("Processing file: " + file[0]);
-                var _string_position = file[0].lastIndexOf("_");
-                var index_key = file[0].slice(_string_position + 1, file[0].length)
-                readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
-                    if (!file_read_error) {
-                        console.log("readTheFile complete!");
-                        _readyAtZero.container[index_key] = file_read_result;
-                    } else {
-                        console.log(file_read_error);
-                    }
+    console.log("parseMultipart function is being executed ...");
+    console.log("There are " + Object.keys(_files).length + " files to process");
+    for (var file of Object.entries(_files)) {
+        console.log("Processing file: " + file[0]);
+        var _string_position = file[0].lastIndexOf("_");
+        var index_key = file[0].slice(_string_position + 1, file[0].length)
+        readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
+            if (!file_read_error) {
+                console.log("readTheFile complete!");
+                _readyAtZero.container[index_key] = file_read_result;
+            } else {
+                console.log(file_read_error);
+            }
+            _readyAtZero.decrease();
+        });
+
+    }
+    console.log("There are " + Object.keys(_fields).length + " fields to process");
+    for (var field of Object.entries(_fields)) {
+        console.log("Processing field: " + field[0]);
+        console.log("Value of field is: " + field[1]);
+        var _string_position = field[0].lastIndexOf("_");
+        var index_key = field[0].slice(_string_position + 1, field[0].length)
+        if (field[0].startsWith("fetch")) {
+            if (field[1].startsWith("http")) {
+                fetchUsingGet(field[1]).then((fetched_result, error) => {
+                    console.log("fetchUsingGet complete!");
+                    console.log(fetched_result);
+                    _readyAtZero.container[index_key] = fetched_result;
                     _readyAtZero.decrease();
                 });
-                
+            } else {
+                executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                    console.log("executeRequest complete!");
+                    console.log(fetched_result2);
+                    _readyAtZero.container[index_key] = fetched_result2;
+                    _readyAtZero.decrease();
+                });
             }
-            console.log("There are " + Object.keys(_fields).length + " fields to process");
-            for (var field of Object.entries(_fields)) {
-                console.log("Processing field: " + field[0]);
-                console.log("Value of field is: " + field[1]);
-                var _string_position = field[0].lastIndexOf("_");
-                var index_key = field[0].slice(_string_position + 1, field[0].length)
-                if (field[0].startsWith("fetch")) {
-                    if (field[1].startsWith("http")) {
-                        fetchUsingGet(field[1]).then((fetched_result, error) => {
-                            console.log("fetchUsingGet complete!");
-                            console.log(fetched_result);
-                            _readyAtZero.container[index_key] = fetched_result;
-                             _readyAtZero.decrease();
-                        });
-                    } else {
-                        executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
-                            console.log("executeRequest complete!");
-                            console.log(fetched_result2);
-                            _readyAtZero.container[index_key] = fetched_result2;
-                             _readyAtZero.decrease();
-                        });
-                    }
 
-                } else {
-                    _readyAtZero.container[index_key] = field[1];
-                     _readyAtZero.decrease();
-                }
-               
-            }
+        } else {
+            _readyAtZero.container[index_key] = field[1];
+            _readyAtZero.decrease();
+        }
+
+    }
 }
 
 class ReadyAtZero {
@@ -276,17 +276,17 @@ class ReadyAtZero {
         console.log(this.value);
         this.container = {};
     }
-    decrease(){
+    decrease() {
         this.value = this.value - 1;
         console.log(this.value);
     }
-    increase(){
+    increase() {
         this.value = this.value + 1;
         console.log(this.value);
     }
-    isReady(){
+    isReady() {
         //console.log(this.value);
-        if (this.value == 0){
+        if (this.value == 0) {
             return true;
         } else {
             return false;
@@ -511,7 +511,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                             // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
                             var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
                             parseMultipart(readyAtZero, files, fields, req)
-                            while (true){
+                            while (true) {
                                 if (readyAtZero.isReady() == true) {
                                     console.log("Ready? " + readyAtZero.isReady());
                                     var ordered_overarching_container = {};
@@ -529,9 +529,10 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                     console.log("Array of parameters:\n" + JSON.stringify(array_of_parameters));
                                     res.send(JSON.stringify(json_response));
                                     break;
-                                } /*else {
-                                    console.log("...");
-                                }*/
+                                }
+                                /*else {
+                                                                   console.log("...");
+                                                               }*/
                             }
                         });
                     });
