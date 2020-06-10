@@ -199,8 +199,8 @@ function fetchUsingGet(_info) {
             res.on("end", () => {
                 try {
                     var dict_return = {};
-                    dict_return[JSON.stringify(_info[0])] = body;
-                    resolve(dict_return);
+                    dict_return[_info[0]] = body;
+                    resolve(JSON.stringify(dict_return));
                 } catch (error) {
                     console.error(error.message);
                 };
