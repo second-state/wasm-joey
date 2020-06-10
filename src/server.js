@@ -164,10 +164,13 @@ const req = https.request(options, (res) => {
         data += chunk;
     });
 
-    res.on('end', () => {
-        console.log('Body!: ', JSON.parse(data));
-        resolve();
-    });
+            res.on("end", () => {
+                try {
+                    resolve(data);
+                } catch (error) {
+                    console.error(error.message);
+                };
+            });
 
 }).on("error", (err) => {
     console.log("Error: ", err.message);
