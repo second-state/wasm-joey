@@ -543,7 +543,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                     performSqlQuery(sqlSelect).then((result2, error2) => {
                         //console.log(result2[0].wasm_binary.data);
                         var wasm_state_as_string = result2[0].wasm_state;
-                        var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
+                        var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary["data"]);
                         var function_name = req.params.function_name;
                         form.parse(req, (err, fields, files) => {
                             if (err) {
