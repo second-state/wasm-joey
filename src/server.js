@@ -545,6 +545,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         var wasm_state_as_string = result2[0].wasm_state;
                         console.log(result2[0].wasm_binary);
                         var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
+                        console.log(wasm_as_buffer);
                         var function_name = req.params.function_name;
                         form.parse(req, (err, fields, files) => {
                             if (err) {
