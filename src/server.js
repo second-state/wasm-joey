@@ -166,7 +166,7 @@ const req = https.request(options, (res) => {
 
     res.on('end', () => {
         console.log('Body!: ', JSON.parse(data));
-        resolve(res);
+        resolve();
     });
 
 }).on("error", (err) => {
