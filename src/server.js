@@ -131,30 +131,20 @@ function executionLogExists(wasm_id) {
 
 function executeRequest(_original_id, _request_options) {
     return new Promise(function(resolve, reject) {
-        console.log("Updating execution log");
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
         performSqlQuery(sqlSelect).then((stateResult) => {
-            console.log("Creating log object");
             var logging_object = {};
             logging_object["original_wasm_executables_id"] = _original_id;
             logging_object["callback_request_options"] = _request_options[1];
             var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-            console.log("sqlInsert: " + sqlInsert);
             performSqlQuery(sqlInsert).then((resultInsert) => {
                 console.log("Logging updated");
             });
         });
-        console.log("Performing callback via https ...");
-        //var https = require('follow-redirects').https;
         var options = JSON.parse(_request_options[1]);
-        console.log("Options:\n" + JSON.stringify(options));
-        console.log("Method:\n" + options["method"]);
-        console.log("Body:\n" + JSON.stringify(options["body"]));
         const data = JSON.stringify(options["body"]);
         delete options.body;
         options["headers"]["Content-Length"] = data.length;
-        console.log("Options:\n" + JSON.stringify(options));
-
         const req = https.request(options, (res) => {
             let data = '';
 
@@ -186,16 +176,10 @@ function executeRequest(_original_id, _request_options) {
 function fetchUsingGet(_info) {
     return new Promise(function(resolve, reject) {
         https.get(_info[1], (res) => {
-            console.log("fetchUsingGet() is being executed ...");
-            if (res.headers["content-type"].includes("text")) {
-                console.log("URL has content type text");
-            }
             let body = "";
-
             res.on("data", (chunk) => {
                 body += chunk;
             });
-
             res.on("end", () => {
                 try {
                     var dict_return = {};
@@ -230,14 +214,11 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
         console.log("parseMultipart function is being executed ...");
         console.log("There are " + Object.keys(_files).length + " files to process");
         for (var file of Object.entries(_files)) {
-            console.log("Processing file: " + file[0]);
             var _string_position = file[0].lastIndexOf("_");
             var index_key = file[0].slice(_string_position + 1, file[0].length)
             readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
                 if (!file_read_error) {
-                    console.log("readTheFile complete!");
                     _readyAtZero.container[index_key] = file_read_result;
-                    console.log(JSON.stringify(_readyAtZero.container));
                     _readyAtZero.decrease();
                     if (_readyAtZero.isReady()) {
                         resolve();
@@ -249,21 +230,13 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             });
 
         }
-        console.log("There are " + Object.keys(_fields).length + " fields to process");
-        console.log("****Fields: " + JSON.stringify(_fields));
         for (var field of Object.entries(_fields)) {
-            console.log("Processing field: " + field[0]);
-            console.log("Value of field is: " + field[1]);
-            
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
                     fetchUsingGet(field).then((fetched_result, error) => {
-                        console.log("fetchUsingGet complete!");
-                        console.log(fetched_result);
                         const _string_position = fetched_result[0].lastIndexOf("_");
                         const index_key = fetched_result[0].slice(_string_position + 1, fetched_result[0].length);
                         _readyAtZero.container[index_key] = fetched_result;
-                        console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -271,12 +244,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     });
                 } else {
                     executeRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
-                        console.log("executeRequest complete!");
-                        console.log(fetched_result2);
                         const _string_position2 = fetched_result2[0].lastIndexOf("_");
                         const index_key2 = fetched_result2[0].slice(_string_position2 + 1, fetched_result2[0].length);
                         _readyAtZero.container[index_key2] = fetched_result2;
-                        console.log(JSON.stringify(_readyAtZero.container));
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -287,7 +257,6 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 const _string_position3 = field[0].lastIndexOf("_");
                 const index_key3 = field[0].slice(_string_position2 + 1, field[0].length);
                 _readyAtZero.container[index_key3] = field[1];
-                console.log(JSON.stringify(_readyAtZero.container));
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
                     resolve();
@@ -542,7 +511,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 if (!m_error) {
                                     while (true) {
                                         if (readyAtZero.isReady() == true) {
-                                            console.log("Ready? " + readyAtZero.isReady());
+                                            console.log("Ready with the following parts ...\n " + readyAtZero.container);
                                             var ordered_overarching_container = {};
                                             Object.keys(readyAtZero.container).sort().forEach(function(key) {
                                                 ordered_overarching_container[key] = readyAtZero.container[key];
