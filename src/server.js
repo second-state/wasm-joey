@@ -129,7 +129,49 @@ function executionLogExists(wasm_id) {
     });
 }
 
-function executeRequest(_original_id, _request_options) {
+function executeCallbackRequest(_original_id, _request_options) {
+    return new Promise(function(resolve, reject) {
+        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
+        performSqlQuery(sqlSelect).then((stateResult) => {
+            var logging_object = {};
+            logging_object["original_wasm_executables_id"] = _original_id;
+            logging_object["callback_request_options"] = _request_options;
+            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+            performSqlQuery(sqlInsert).then((resultInsert) => {
+                console.log("Logging updated");
+            });
+        });
+        var options = JSON.parse(_request_options);
+        const data = JSON.stringify(options["body"]);
+        delete options.body;
+        options["headers"]["Content-Length"] = data.length;
+        const req = https.request(options, (res) => {
+            let data = '';
+
+            console.log('Status Code:', res.statusCode);
+
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            res.on("end", () => {
+                try {
+                    resolve(data);
+                } catch (error) {
+                    console.error(error.message);
+                };
+            });
+
+        }).on("error", (err) => {
+            console.log("Error: ", err.message);
+        });
+
+        req.write(data);
+        req.end();
+    });
+}
+
+function executeMultipartRequest(_original_id, _request_options) {
     return new Promise(function(resolve, reject) {
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
         performSqlQuery(sqlSelect).then((stateResult) => {
@@ -245,7 +287,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         }
                     });
                 } else {
-                    executeRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
+                    executeMultipartRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
                         fetched_result_object2 = JSON.parse(fetched_result2);
                         const _string_position2 = Object.keys(fetched_result_object2)[0].lastIndexOf("_");
                         const index_key2 = Object.keys(fetched_result_object2)[0].slice(_string_position2 + 1, Object.keys(fetched_result_object2)[0].length);
@@ -630,7 +672,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 callback_object_for_processing["body"] = return_value_as_object;
                                 //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
                                 //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
-                                executeRequest(req.params.wasm_id, callback_object_for_processing).then((c_result, error) => {
+                                executeCallbackRequest(req.params.wasm_id, callback_object_for_processing).then((c_result, error) => {
                                     //console.log("*New value" + c_result);
                                     json_response["return_value"] = c_result;
                                     console.log(json_response);
