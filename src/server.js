@@ -566,7 +566,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             for (let [key, value] of Object.entries(ordered_overarching_container)) {
                                                 array_of_parameters.push(`${value}`);
                                             }
-                                            console.log("Array of parameters for SSVM are as follows\n" + array_of_parameters);
+                                            //console.log("Array of parameters for SSVM are as follows\n" + array_of_parameters);
                                             for (var i = 1; i <= array_of_parameters.length; i++) {
                                                 console.log("\nParameter: " + i);
                                                 console.log(array_of_parameters[i - 1]);
