@@ -183,7 +183,7 @@ function executeRequest(_original_id, _request_options) {
 
 function fetchUsingGet(_info) {
     return new Promise(function(resolve, reject) {
-        https.get(_url, (res) => {
+        https.get(_info[1], (res) => {
             console.log("fetchUsingGet() is being executed ...");
             if (res.headers["content-type"].includes("text")) {
                 console.log("URL has content type text");
