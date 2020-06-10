@@ -222,52 +222,54 @@ function readTheFile(_file_path) {
 }
 
 function parseMultipart(_readyAtZero, _files, _fields, _req) {
-    console.log("parseMultipart function is being executed ...");
-    console.log("There are " + Object.keys(_files).length + " files to process");
-    for (var file of Object.entries(_files)) {
-        console.log("Processing file: " + file[0]);
-        var _string_position = file[0].lastIndexOf("_");
-        var index_key = file[0].slice(_string_position + 1, file[0].length)
-        readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
-            if (!file_read_error) {
-                console.log("readTheFile complete!");
-                _readyAtZero.container[index_key] = file_read_result;
-            } else {
-                console.log(file_read_error);
-            }
-            _readyAtZero.decrease();
-        });
+    return new Promise(function(resolve, reject) {
+        console.log("parseMultipart function is being executed ...");
+        console.log("There are " + Object.keys(_files).length + " files to process");
+        for (var file of Object.entries(_files)) {
+            console.log("Processing file: " + file[0]);
+            var _string_position = file[0].lastIndexOf("_");
+            var index_key = file[0].slice(_string_position + 1, file[0].length)
+            readTheFile(file[1]["path"]).then((file_read_result, file_read_error) => {
+                if (!file_read_error) {
+                    console.log("readTheFile complete!");
+                    _readyAtZero.container[index_key] = file_read_result;
+                } else {
+                    console.log(file_read_error);
+                }
+                _readyAtZero.decrease();
+            });
 
-    }
-    console.log("There are " + Object.keys(_fields).length + " fields to process");
-    for (var field of Object.entries(_fields)) {
-        console.log("Processing field: " + field[0]);
-        console.log("Value of field is: " + field[1]);
-        var _string_position = field[0].lastIndexOf("_");
-        var index_key = field[0].slice(_string_position + 1, field[0].length)
-        if (field[0].startsWith("fetch")) {
-            if (field[1].startsWith("http")) {
-                fetchUsingGet(field[1]).then((fetched_result, error) => {
-                    console.log("fetchUsingGet complete!");
-                    console.log(fetched_result);
-                    _readyAtZero.container[index_key] = fetched_result;
-                    _readyAtZero.decrease();
-                });
-            } else {
-                executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
-                    console.log("executeRequest complete!");
-                    console.log(fetched_result2);
-                    _readyAtZero.container[index_key] = fetched_result2;
-                    _readyAtZero.decrease();
-                });
-            }
-
-        } else {
-            _readyAtZero.container[index_key] = field[1];
-            _readyAtZero.decrease();
         }
+        console.log("There are " + Object.keys(_fields).length + " fields to process");
+        for (var field of Object.entries(_fields)) {
+            console.log("Processing field: " + field[0]);
+            console.log("Value of field is: " + field[1]);
+            var _string_position = field[0].lastIndexOf("_");
+            var index_key = field[0].slice(_string_position + 1, field[0].length)
+            if (field[0].startsWith("fetch")) {
+                if (field[1].startsWith("http")) {
+                    fetchUsingGet(field[1]).then((fetched_result, error) => {
+                        console.log("fetchUsingGet complete!");
+                        console.log(fetched_result);
+                        _readyAtZero.container[index_key] = fetched_result;
+                        _readyAtZero.decrease();
+                    });
+                } else {
+                    executeRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                        console.log("executeRequest complete!");
+                        console.log(fetched_result2);
+                        _readyAtZero.container[index_key] = fetched_result2;
+                        _readyAtZero.decrease();
+                    });
+                }
 
-    }
+            } else {
+                _readyAtZero.container[index_key] = field[1];
+                _readyAtZero.decrease();
+            }
+
+        }
+    });
 }
 
 class ReadyAtZero {
