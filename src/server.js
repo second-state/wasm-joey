@@ -511,7 +511,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                 if (!m_error) {
                                     while (true) {
                                         if (readyAtZero.isReady() == true) {
-                                            console.log("Ready with the following parts ...\n " + readyAtZero.container);
+                                            console.log("Ready with the following parts ...\n " + JSON.stringify(readyAtZero.container));
                                             var ordered_overarching_container = {};
                                             Object.keys(readyAtZero.container).sort().forEach(function(key) {
                                                 ordered_overarching_container[key] = readyAtZero.container[key];
