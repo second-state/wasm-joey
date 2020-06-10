@@ -522,6 +522,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             for (let [key, value] of Object.entries(ordered_overarching_container)) {
                                                 array_of_parameters.push(`${value}`);
                                             }
+                                            console.log("Array of parameters for SSVM are as follows\n" + array_of_parameters);
                                             /*
                                             var vm = new ssvm.VM(wasm_as_buffer);
                                             var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
