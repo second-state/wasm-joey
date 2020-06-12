@@ -630,7 +630,8 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         }
                         var function_parameters_as_string = JSON.stringify(function_parameters);
                         console.log("Function parameters as string" + function_parameters_as_string);
-                        var uint8array_for_ssvm = new Uint8Array(result[0].wasm_binary.length);
+                        var wasm_length = result[0].wasm_binary.length;
+                        var uint8array_for_ssvm = new Uint8Array(wasm_length);
                         uint8array_for_ssvm.set(result[0].wasm_binary);
                         console.log(uint8array_for_ssvm);
                         var vm = new ssvm.VM(uint8array_for_ssvm);
