@@ -618,7 +618,8 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     performSqlQuery(sqlSelect).then((result, error) => {
                         console.log(result[0].wasm_binary.data);
                         //var raw_data = result[0].wasm_binary;
-                        var wasm_state_as_string = result[0].wasm_state;
+                        var wasm_state_as_string = JSON.stringify(result[0].wasm_state);
+                        console.log("wasm_state as string: " + wasm_state_as_string);
                         /* Just for testing purposes, we are going to read the wasm from the file system instead of the database
                         var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
                         */
