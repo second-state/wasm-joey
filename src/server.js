@@ -596,6 +596,14 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 });
 
 //
+function toArrayBuffer(myBuf) {
+   var myBuffer = new ArrayBuffer(myBuf.length);
+   var res = new Uint8Array(myBuffer);
+   for (var i = 0; i < myBuf.length; ++i) {
+      res[i] = myBuf[i];
+   }
+   console.log(res);
+}
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     // Perform logging
@@ -629,6 +637,8 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             json_response["error"] = err;
                             res.send(JSON.stringify(json_response));
                         }
+                        toArrayBuffer(result[0].wasm_binary);
+                        /*
                         var function_parameters_as_string = JSON.stringify(function_parameters);
                         console.log("Function parameters as string" + function_parameters_as_string);
                         console.log(result[0].wasm_binary);
@@ -640,7 +650,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         console.log("New VM instance at: " + vm);
                         var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
                         console.log("Return value: " + return_value);
-
+                        */
                         /*
                         The Rust / Wasm application is allowed to optionally generate a callback object and merge the callback object into the response. 
                         Joey must check each response from the RunString execution and process a callback object if it is present.
