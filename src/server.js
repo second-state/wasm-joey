@@ -625,7 +625,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         fs.readFile("/home/ubuntu/hello/pkg/hello_bg.wasm", function (err, w_data) {
                             if (err) throw err;
                             var wasm_as_buffer = Uint8Array.from(w_data);
-                        });
+                        
                         console.log(wasm_as_buffer);
                         var function_name = req.params.function_name;
                         console.log("Function name: " + function_name);
@@ -702,6 +702,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             json_response["return_value"] = return_value
                             res.send(JSON.stringify(json_response));
                         }
+                        });
                     });
                 } else {
                     console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
