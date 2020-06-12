@@ -354,7 +354,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     json_response = {};
     //console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
-        var wasm_as_buffer = Uint8Array.from(req.body);
+        var wasm_as_buffer = req.body;
         var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', '{}');";
         //console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
