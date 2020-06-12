@@ -617,6 +617,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result, error) => {
                         console.log(result[0].wasm_binary.data);
+                        //var raw_data = result[0].wasm_binary;
                         var wasm_state_as_string = JSON.stringify(result[0].wasm_state);
                         console.log("wasm_state as string: " + wasm_state_as_string);
                         var function_name = req.params.function_name;
@@ -694,7 +695,6 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             json_response["return_value"] = return_value
                             res.send(JSON.stringify(json_response));
                         }
-                        });
                     });
                 } else {
                     console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
