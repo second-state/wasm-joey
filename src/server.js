@@ -619,7 +619,13 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         console.log(result[0].wasm_binary.data);
                         //var raw_data = result[0].wasm_binary;
                         var wasm_state_as_string = result[0].wasm_state;
+                        /* Just for testing purposes, we are going to read the wasm from the file system instead of the database
                         var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
+                        */
+                        fs.readFile("/home/ubuntu/hello/pkg/hello_bg.wasm", function (err, w_data) {
+                            if (err) throw err;
+                            var wasm_as_buffer = Uint8Array.from(w_data);
+                        });
                         console.log(wasm_as_buffer);
                         var function_name = req.params.function_name;
                         console.log("Function name: " + function_name);
