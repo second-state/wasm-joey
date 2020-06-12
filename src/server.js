@@ -595,15 +595,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 });
 
-//
-function toArrayBuffer(myBuf) {
-   var myBuffer = new ArrayBuffer(myBuf.length);
-   var res = new Uint8Array(myBuffer);
-   for (var i = 0; i < myBuf.length; ++i) {
-      res[i] = myBuf[i];
-   }
-   console.log(res);
-}
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     // Perform logging
@@ -637,7 +628,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             json_response["error"] = err;
                             res.send(JSON.stringify(json_response));
                         }
-                        toArrayBuffer(result[0].wasm_binary);
+                        console.log(result[0].wasm_binary);
                         /*
                         var function_parameters_as_string = JSON.stringify(function_parameters);
                         console.log("Function parameters as string" + function_parameters_as_string);
