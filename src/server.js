@@ -630,6 +630,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         }
                         var function_parameters_as_string = JSON.stringify(function_parameters);
                         console.log("Function parameters as string" + function_parameters_as_string);
+                        console.log("Wasm binary:\n" + result[0].wasm_binary);
                         var vm = new ssvm.VM(result[0].wasm_binary);
                         console.log("New VM instance at: " + vm);
                         var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
