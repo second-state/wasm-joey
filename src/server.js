@@ -354,7 +354,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     json_response = {};
     //console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
-        var wasm_as_buffer = req.body;
+        var wasm_as_buffer = Uint8Array.from(req.body);
         var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', '{}');";
         //console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
@@ -617,17 +617,8 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result, error) => {
                         console.log(result[0].wasm_binary.data);
-                        //var raw_data = result[0].wasm_binary;
                         var wasm_state_as_string = JSON.stringify(result[0].wasm_state);
                         console.log("wasm_state as string: " + wasm_state_as_string);
-                        /* Just for testing purposes, we are going to read the wasm from the file system instead of the database
-                        var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
-                        */
-                        fs.readFile("/home/ubuntu/hello/pkg/hello_bg.wasm", function (err, w_data) {
-                            if (err) throw err;
-                            var wasm_as_buffer = Uint8Array.from(w_data);
-                        
-                        console.log(wasm_as_buffer);
                         var function_name = req.params.function_name;
                         console.log("Function name: " + function_name);
                         try {
@@ -638,7 +629,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         }
                         var function_parameters_as_string = JSON.stringify(function_parameters);
                         console.log("Function parameters as string" + function_parameters_as_string);
-                        var vm = new ssvm.VM(wasm_as_buffer);
+                        var vm = new ssvm.VM(result[0].wasm_binary);
                         console.log("New VM instance at: " + vm);
                         var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
                         console.log("Return value: " + return_value);
