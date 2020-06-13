@@ -355,9 +355,9 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     //console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_string = Uint8Array.from(req.body).toString();
-        console.log(wasm_as_string);
+        //console.log(wasm_as_string);
         var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_string + "', '{}');";
-        console.log(sqlInsert);
+        //console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             //console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
             json_response["wasm_id"] = resultInsert.insertId;
@@ -704,7 +704,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             res.send(new Buffer(return_value));
                         });
                     } else {
-                        console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+                        console.log("Error processing bytes for function: " + req.params.function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
                         res.end();
                     }
                 } else {
