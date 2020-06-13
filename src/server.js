@@ -627,13 +627,11 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         }
                         var function_parameters_as_string = JSON.stringify(function_parameters);                        
                         var uint8array = new Uint8Array(result[0].wasm_binary.split(','));
+                        // wasm state will be implemented once ssvm supports wasi
+                        // var wasm_state_object = JSON.parse(result[0].wasm_state);
+                        // let vm = new ssvm.VM(uint8array, wasi_options);
                         var vm = new ssvm.VM(uint8array);
-                        var wasm_state_object = JSON.parse(result[0].wasm_state);
-                        if (Object.keys(wasm_state_object).length === 0) {
-                            var return_value = vm.RunString(function_name, function_parameters_as_string); 
-                        } else {
-                            var return_value = vm.RunString(function_name, JSON.stringify(wasm_state_object), function_parameters_as_string);                        
-                        }                       
+                        var return_value = vm.RunString(function_name, function_parameters_as_string);                   
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                             var return_value_as_object = JSON.parse(return_value);
@@ -695,17 +693,14 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelect).then((result, error) => {
-
-                            var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
-                            var vm = new ssvm.VM(wasm_as_buffer);
+                            var uint8array = new Uint8Array(result[0].wasm_binary.split(','));
+                            // wasm state will be implemented once ssvm supports wasi
+                            // var wasm_state_object = JSON.parse(result[0].wasm_state);
+                            // let vm = new ssvm.VM(uint8array, wasi_options);
+                            var vm = new ssvm.VM(uint8array);
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
-                            var wasm_state_object = JSON.parse(result[0].wasm_state);
-                            if (Object.keys(wasm_state_object).length === 0) {
                             var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
-                            } else {
-                                var return_value = vm.RunUint8Array(function_name, JSON.stringify(wasm_state_object), body_as_buffer); 
-                            }
                             res.send(new Buffer(return_value));
                         });
                     } else {
