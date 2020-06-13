@@ -354,10 +354,10 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     json_response = {};
     //console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
-        var wasm_as_buffer = Uint8Array.from(req.body);
-        console.log(wasm_as_buffer);
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', '{}');";
-        //console.log(sqlInsert);
+        var wasm_as_string = Uint8Array.from(req.body).toString();
+        console.log(wasm_as_string);
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_string + "', '{}');";
+        console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             //console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
             json_response["wasm_id"] = resultInsert.insertId;
@@ -595,6 +595,13 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 });
 
+function arrayBufferToUint8Array(_array_buffer){
+    var newUint8Array = new Uint8Array(_array_buffer.length);
+    for (var i = 0; i < _array_buffer.length; i++){
+        newUint8Array[i] = _array_buffer[i];
+    }
+    return newUint8Array;
+}
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     // Perform logging
@@ -605,75 +612,28 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
         logging_object["original_wasm_executables_id"] = req.params.wasm_id;
         logging_object["data_payload"] = req.body;
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-        //console.log("sqlInsert: " + sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
-            console.log("Logging updated");
-
             var json_response = {};
             executableExists(req.params.wasm_id).then((result, error) => {
-                //console.log("Result:" + result + ".");
                 if (result == 1) {
-                    console.log("Checking request Content-Type: " + req.is('application/json'));
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result, error) => {
-                        console.log(result[0].wasm_binary.data);
-                        //var raw_data = result[0].wasm_binary;
-                        var wasm_state_as_string = JSON.stringify(result[0].wasm_state);
-                        console.log("wasm_state as string: " + wasm_state_as_string);
                         var function_name = req.params.function_name;
-                        console.log("Function name: " + function_name);
                         try {
                             var function_parameters = req.body;
                         } catch (err) {
                             json_response["error"] = err;
                             res.send(JSON.stringify(json_response));
                         }
-                        console.log(result[0].wasm_binary);
-                        /*
-                        var function_parameters_as_string = JSON.stringify(function_parameters);
-                        console.log("Function parameters as string" + function_parameters_as_string);
-                        console.log(result[0].wasm_binary);
-                        var wasm_length = result[0].wasm_binary.length;
-                        var uint8array_for_ssvm = new Uint8Array(wasm_length);
-                        uint8array_for_ssvm.set(result[0].wasm_binary);
-                        console.log(uint8array_for_ssvm);
-                        var vm = new ssvm.VM(uint8array_for_ssvm);
-                        console.log("New VM instance at: " + vm);
-                        var return_value = vm.RunString(wasm_state_as_string, function_name, function_parameters_as_string);
-                        console.log("Return value: " + return_value);
-                        */
-                        /*
-                        The Rust / Wasm application is allowed to optionally generate a callback object and merge the callback object into the response. 
-                        Joey must check each response from the RunString execution and process a callback object if it is present.
-                        The following is a temporary example, which will be commented out when SSVM is complete and able to send back JSON string
-                        */
-
-                        // Fictitious return value for development and testing purposes
-                        /*
-                        return_value = `{
-                                "function": {
-                                    "name": "new template name"
-                                },
-                                "callback": {
-                                    "method": "GET",
-                                    "hostname": "jsonplaceholder.typicode.com",
-                                    "path": "/posts/1",
-                                    "headers": {
-                                        "Content-Type": "application/json"
-                                    },
-                                    "maxRedirects": 20
-                                }
-                            }`
-
-                        /*
-                        // Another fictitious return value to test the non callback version
-                        return_value = `{
-                                "function": {
-                                    "name": "new template name"
-                                }
-                            }`
-                            */
-                        // Allow for the return value to just be a string and not valid JSON (strings are still acceptable for this vm.RunString endpoint)
+                        var function_parameters_as_string = JSON.stringify(function_parameters);                        
+                        var uint8array = new Uint8Array(result[0].wasm_binary.split(','));
+                        var vm = new ssvm.VM(uint8array);
+                        var wasm_state_object = JSON.parse(result[0].wasm_state);
+                        if (Object.keys(wasm_state_object).length === 0) {
+                            var return_value = vm.RunString(function_name, function_parameters_as_string); 
+                        } else {
+                            var return_value = vm.RunString(function_name, JSON.stringify(wasm_state_object), function_parameters_as_string);                        
+                        }                       
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                             var return_value_as_object = JSON.parse(return_value);
@@ -684,10 +644,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 delete return_value_as_object.callback;
                                 // Add the left over return value to inside the callback object as the body
                                 callback_object_for_processing["body"] = return_value_as_object;
-                                //console.log("*Return value object: " + JSON.stringify(return_value_as_object));
-                                //TODO strip out the callback object and pass exactly what is left of this response to the callback function as the --data payload
                                 executeCallbackRequest(req.params.wasm_id, callback_object_for_processing).then((c_result, error) => {
-                                    //console.log("*New value" + c_result);
                                     json_response["return_value"] = c_result;
                                     console.log(json_response);
                                     res.send(JSON.stringify(json_response));
@@ -738,15 +695,18 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelect).then((result, error) => {
-                            var wasm_state_as_string = result[0].wasm_state;
+
                             var wasm_as_buffer = Uint8Array.from(result[0].wasm_binary);
-                            //var vm = new ssvm.VM(wasm_as_buffer);
+                            var vm = new ssvm.VM(wasm_as_buffer);
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
-                            //var return_value = vm.RunUint8Array(wasm_state_as_string, function_name, body_as_buffer); 
-                            // TODO remove this line when SSVM is ready
-                            res.send(req.body); // Delete this line, it is just for testing whilst ssvm is being updated
-                            //res.send(new Buffer(return_value));
+                            var wasm_state_object = JSON.parse(result[0].wasm_state);
+                            if (Object.keys(wasm_state_object).length === 0) {
+                            var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
+                            } else {
+                                var return_value = vm.RunUint8Array(function_name, JSON.stringify(wasm_state_object), body_as_buffer); 
+                            }
+                            res.send(new Buffer(return_value));
                         });
                     } else {
                         console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
