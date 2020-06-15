@@ -337,20 +337,19 @@ class ReadyAtZero {
         }
     }
 }
+/*
+// This code is now inline in each function purely for performance reasons. Feel free to copy it's logic as required
 
 function convertB2F(_string){
-    //first = true;
     temp = '';
     array = [];
     for (c of _string) {
         if (c == ",") {
             array.push(Number(temp));
             temp = '';
-            //first = true;
         } else {
             if (temp.length == 0) {
                 temp = c;
-                //first = false;
             } else {
                 temp = temp + c;
             }
@@ -361,6 +360,8 @@ function convertB2F(_string){
     }
     return Uint8Array.from(array);
 }
+*/
+
 /* Utils end */
 
 /* RESTful endpoints */
@@ -715,7 +716,24 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         performSqlQuery(sqlSelect).then((result, error) => {
                             var start = new Date();
                             var hrstart = process.hrtime();
-                            var view = convertB2F(result[0].wasm_binary.toString());
+                            // Code to get wasm binary ready for VM instantiation
+                            temp = '';
+                            array = [];
+                            for (c of result[0].wasm_binary.toString()) {
+                                if (c == ",") {
+                                    array.push(Number(temp));
+                                    temp = '';
+                                } else {
+                                    if (temp.length == 0) {
+                                        temp = c;
+                                    } else {
+                                        temp = temp + c;
+                                    }
+                                }
+                            }
+                            if (temp.length > 0){
+                                array.push(Number(temp));
+                            }
                             var end = new Date() - start,
                                 hrend = process.hrtime(hrstart);
                             console.info('Converted data to Uint8Array in: %dms', hrend[1] / 1000000);
@@ -724,7 +742,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             // let vm = new ssvm.VM(uint8array, wasi_options);
                             var start2 = new Date();
                             var hrstart2 = process.hrtime();
-                            let vm = new ssvm.VM(view);
+                            let vm = new ssvm.VM(Uint8Array.from(array));
                             var end2 = new Date() - start2,
                                 hrend2 = process.hrtime(hrstart2);
                             console.info('Instantiated VM in: %dms', hrend2[1] / 1000000);
