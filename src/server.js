@@ -688,9 +688,8 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelect).then((result, error) => {
-                            const b = Buffer.from(result[0].wasm_binary);
-                            let view = new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT);
-                            console.log("View of data: " + view);
+                            const view = Uint8Array.from(result[0].wasm_binary.toString().split(','));
+                            //console.log("View of data: " + view);
                             // wasm state will be implemented once ssvm supports wasi
                             // var wasm_state_object = JSON.parse(result[0].wasm_state);
                             // let vm = new ssvm.VM(uint8array, wasi_options);
