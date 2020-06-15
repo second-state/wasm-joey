@@ -354,12 +354,14 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     json_response = {};
     //console.log("Request to set a new wasm hex into the database ...");
     if (req.is('application/octet-stream') == 'application/octet-stream') {
-        var wasm_as_string = Uint8Array.from(req.body).toString();
-        //console.log(wasm_as_string);
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_string + "', '{}');";
+        //var wasm_as_string = Uint8Array.from(req.body).toString();
+        var wasm_as_buffer = Uint8Array.from(req.body);
+        console.log(wasm_as_buffer);
+        //var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_string + "', '{}');";
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state) VALUES ('" + req.header('SSVM-Description') + "','" + wasm_as_buffer + "', '{}');";
         //console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
-            //console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
+            console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
             json_response["wasm_id"] = resultInsert.insertId;
             //console.log(JSON.stringify(json_response));
             res.send(JSON.stringify(json_response));
@@ -595,13 +597,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 });
 
-function arrayBufferToUint8Array(_array_buffer){
-    var newUint8Array = new Uint8Array(_array_buffer.length);
-    for (var i = 0; i < _array_buffer.length; i++){
-        newUint8Array[i] = _array_buffer[i];
-    }
-    return newUint8Array;
-}
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
     // Perform logging
@@ -693,15 +688,20 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelect).then((result, error) => {
-                            var uint8array = new Uint8Array(result[0].wasm_binary.split(','));
+                            const b = Buffer.from(result[0].wasm_binary);
+                            let view = new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT);
+                            console.log("View of data: " + view);
                             // wasm state will be implemented once ssvm supports wasi
                             // var wasm_state_object = JSON.parse(result[0].wasm_state);
                             // let vm = new ssvm.VM(uint8array, wasi_options);
-                            var vm = new ssvm.VM(uint8array);
+                            let vm = new ssvm.VM(view);
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
+                            console.log("Body as buffer: " + body_as_buffer);
                             var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
-                            res.send(new Buffer(return_value));
+                            console.log("Return value: " + return_value);
+                            console.log("Buffer from return value: " + Buffer.from(return_value));
+                            res.send(Buffer.from(return_value));
                         });
                     } else {
                         console.log("Error processing bytes for function: " + req.params.function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
