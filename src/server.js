@@ -620,13 +620,13 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             json_response["error"] = err;
                             res.send(JSON.stringify(json_response));
                         }
-                        var function_parameters_as_string = JSON.stringify(function_parameters);                        
+                        var function_parameters_as_string = JSON.stringify(function_parameters);
                         var uint8array = new Uint8Array(result[0].wasm_binary.split(','));
                         // wasm state will be implemented once ssvm supports wasi
                         // var wasm_state_object = JSON.parse(result[0].wasm_state);
                         // let vm = new ssvm.VM(uint8array, wasi_options);
                         var vm = new ssvm.VM(uint8array);
-                        var return_value = vm.RunString(function_name, function_parameters_as_string);                   
+                        var return_value = vm.RunString(function_name, function_parameters_as_string);
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                             var return_value_as_object = JSON.parse(return_value);
@@ -692,7 +692,8 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             var start = new Date()
                             var hrstart = process.hrtime()
                             const view = Uint8Array.from(result[0].wasm_binary.toString().split(','));
-                            var end = new Date() - start, hrend = process.hrtime(hrstart)
+                            var end = new Date() - start,
+                                hrend = process.hrtime(hrstart)
                             console.info('Converted data to Uint8Array in: %dms', hrend[1] / 1000000);
                             //console.log("View of data: " + view);
                             // wasm state will be implemented once ssvm supports wasi
@@ -701,15 +702,17 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             var start2 = new Date()
                             var hrstart2 = process.hrtime()
                             let vm = new ssvm.VM(view);
-                            var end2 = new Date() - start2, hrend2 = process.hrtime(hrstart2);                            
+                            var end2 = new Date() - start2,
+                                hrend2 = process.hrtime(hrstart2);
                             console.info('Instantiated VM in: %dms', hrend2[1] / 1000000);
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
                             console.log("Body as buffer: " + body_as_buffer);
                             var start3 = new Date()
                             var hrstart3 = process.hrtime()
-                            var return_value = vm.RunUint8Array(function_name, body_as_buffer); 
-                            var end3 = new Date() - start3, hrend3 = process.hrtime(hrstart3)
+                            var return_value = vm.RunUint8Array(function_name, body_as_buffer);
+                            var end3 = new Date() - start3,
+                                hrend3 = process.hrtime(hrstart3)
                             console.info('VM execution took: %dms', hrend3[1] / 1000000);
                             console.log("Return value: " + return_value);
                             console.log("Buffer from return value: " + Buffer.from(return_value));
