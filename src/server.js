@@ -337,6 +337,30 @@ class ReadyAtZero {
         }
     }
 }
+
+function convertB2F(_string){
+    //first = true;
+    temp = '';
+    array = [];
+    for (c of _string) {
+        if (c == ",") {
+            array.push(Number(temp));
+            temp = '';
+            //first = true;
+        } else {
+            if (temp.length == 0) {
+                temp = c;
+                //first = false;
+            } else {
+                temp = temp + c;
+            }
+        }
+    }
+    if (temp.length > 0){
+        array.push(Number(temp));
+    }
+    return Uint8Array.from(array);
+}
 /* Utils end */
 
 /* RESTful endpoints */
@@ -689,33 +713,32 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelect).then((result, error) => {
-                            var start = new Date()
-                            var hrstart = process.hrtime()
-                            const view = Uint8Array.from(result[0].wasm_binary.toString().split(','));
+                            var start = new Date();
+                            var hrstart = process.hrtime();
+                            var view = convertB2F(result[0].wasm_binary.toString());
                             var end = new Date() - start,
-                                hrend = process.hrtime(hrstart)
+                                hrend = process.hrtime(hrstart);
                             console.info('Converted data to Uint8Array in: %dms', hrend[1] / 1000000);
-                            //console.log("View of data: " + view);
                             // wasm state will be implemented once ssvm supports wasi
                             // var wasm_state_object = JSON.parse(result[0].wasm_state);
                             // let vm = new ssvm.VM(uint8array, wasi_options);
-                            var start2 = new Date()
-                            var hrstart2 = process.hrtime()
+                            var start2 = new Date();
+                            var hrstart2 = process.hrtime();
                             let vm = new ssvm.VM(view);
                             var end2 = new Date() - start2,
                                 hrend2 = process.hrtime(hrstart2);
                             console.info('Instantiated VM in: %dms', hrend2[1] / 1000000);
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
-                            console.log("Body as buffer: " + body_as_buffer);
-                            var start3 = new Date()
-                            var hrstart3 = process.hrtime()
+                            //console.log("Body as buffer: " + body_as_buffer);
+                            var start3 = new Date();
+                            var hrstart3 = process.hrtime();
                             var return_value = vm.RunUint8Array(function_name, body_as_buffer);
                             var end3 = new Date() - start3,
-                                hrend3 = process.hrtime(hrstart3)
+                                hrend3 = process.hrtime(hrstart3);
                             console.info('VM execution took: %dms', hrend3[1] / 1000000);
-                            console.log("Return value: " + return_value);
-                            console.log("Buffer from return value: " + Buffer.from(return_value));
+                            //console.log("Return value: " + return_value);
+                            //console.log("Buffer from return value: " + Buffer.from(return_value));
                             res.send(Buffer.from(return_value));
                         });
                     } else {
