@@ -284,7 +284,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         fetched_result_object = JSON.parse(fetched_result);
                         const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
                         const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
-                        _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]];
+                        _readyAtZero.container[index_key] = JSON.stringify(fetched_result_object[Object.keys(fetched_result_object)[0]]);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -295,7 +295,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         fetched_result_object2 = JSON.parse(fetched_result2);
                         const _string_position2 = Object.keys(fetched_result_object2)[0].lastIndexOf("_");
                         const index_key2 = Object.keys(fetched_result_object2)[0].slice(_string_position2 + 1, Object.keys(fetched_result_object2)[0].length);
-                        _readyAtZero.container[index_key2] = fetched_result_object2[Object.keys(fetched_result_object2)[0]];
+                        _readyAtZero.container[index_key2] = JSON.stringify(fetched_result_object2[Object.keys(fetched_result_object2)[0]]);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
