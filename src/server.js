@@ -572,10 +572,11 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result2, error2) => {
                         //console.log(result2[0].wasm_binary.data);
-                        var wasm_state_as_string = result2[0].wasm_state;
-                        console.log(result2[0].wasm_binary);
-                        var wasm_as_buffer = Uint8Array.from(result2[0].wasm_binary);
-                        console.log(wasm_as_buffer);
+                        //var wasm_state_as_string = result2[0].wasm_state;
+                        // wasm state will be implemented once ssvm supports wasi
+                        // var wasm_state_object = JSON.parse(result[0].wasm_state);
+                        // let vm = new ssvm.VM(uint8array, wasi_options);
+                        var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
                         var function_name = req.params.function_name;
                         form.parse(req, (err, fields, files) => {
                             if (err) {
@@ -603,7 +604,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                                 console.log("\nParameter: " + i);
                                                 console.log(array_of_parameters[i - 1]);
                                             }
-                                            var vm = new ssvm.VM(wasm_as_buffer);
+                                            var vm = new ssvm.VM(uint8array);
                                             var return_value = vm.RunString(wasm_state_as_string, ...array_of_parameters);
                                             json_response["return_value"] = return_value;
                                             res.send(JSON.stringify(json_response));
