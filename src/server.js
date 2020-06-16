@@ -644,6 +644,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                             var return_value_as_object = JSON.parse(return_value);
+                            console.log(return_value_as_object);
                             if (return_value_as_object.hasOwnProperty('callback')) {
                                 console.log("Processing callback");
                                 var callback_object_for_processing = return_value_as_object["callback"];
