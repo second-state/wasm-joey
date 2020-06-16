@@ -585,7 +585,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             } catch (err) {
                                                 json_response["return_value"] = err;
                                                 res.send(JSON.stringify(json_response));
-                                                break;
                                             }
                                             json_response["return_value"] = return_value;
                                             res.send(JSON.stringify(json_response));
@@ -640,7 +639,6 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         } catch (err) {
                             json_response["return_value"] = err;
                             res.send(JSON.stringify(json_response));
-                            break;
                         }
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
@@ -716,7 +714,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             } catch (err) {
                                 json_response["return_value"] = err;
                                 res.send(JSON.stringify(json_response));
-                                break;
                             }
                             var end = new Date() - start,
                                 hrend = process.hrtime(hrstart);
