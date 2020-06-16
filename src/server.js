@@ -583,7 +583,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             try {
                                                 var return_value = vm.RunString(function_name, ...array_of_parameters);
                                             } catch (err) {
-                                                json_response["return_value"] = err;
+                                                json_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                                                 res.send(JSON.stringify(json_response));
                                             }
                                             json_response["return_value"] = return_value;
@@ -637,7 +637,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         try {
                             var return_value = vm.RunString(function_name, function_parameters_as_string);
                         } catch (err) {
-                            json_response["return_value"] = err;
+                            json_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                             res.send(JSON.stringify(json_response));
                         }
                         try {
@@ -712,7 +712,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             try {
                                 var return_value = vm.RunUint8Array(function_name, body_as_buffer);
                             } catch (err) {
-                                json_response["return_value"] = err;
+                                json_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                                 res.send(JSON.stringify(json_response));
                             }
                             var end = new Date() - start,
