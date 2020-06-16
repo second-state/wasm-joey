@@ -648,7 +648,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             res.send(JSON.stringify(json_response));
                         }
                         var function_parameters_as_string = JSON.stringify(function_parameters);
-                        var uint8array = new Uint8Array(result[0].wasm_binary.split(','));
+                        var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
                         // wasm state will be implemented once ssvm supports wasi
                         // var wasm_state_object = JSON.parse(result[0].wasm_state);
                         // let vm = new ssvm.VM(uint8array, wasi_options);
@@ -709,7 +709,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             console.log("Logging updated");
             json_response = {};
             executableExists(req.params.wasm_id).then((result, error) => {
-                console.log("Result:" + result + ".");
                 if (result == 1) {
                     console.log("Checking content type ...");
                     // Setting response type
@@ -717,7 +716,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelect).then((result, error) => {
-                            var array = converter.convert(result[0].wasm_binary.toString());
+                            var array = result[0].wasm_binary.toString().split(",");
                             // wasm state will be implemented once ssvm supports wasi
                             // var wasm_state_object = JSON.parse(result[0].wasm_state);
                             // let vm = new ssvm.VM(uint8array, wasi_options);
@@ -725,8 +724,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
                             var return_value = vm.RunUint8Array(function_name, body_as_buffer);
-                            //console.log("Return value: " + return_value);
-                            //console.log("Buffer from return value: " + Buffer.from(return_value));
                             var end = new Date() - start,
                                 hrend = process.hrtime(hrstart);
                             console.info('Whole process completed in: %dms', hrend[1] / 1000000);
