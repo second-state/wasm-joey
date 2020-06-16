@@ -12,6 +12,8 @@ const credentials = {
     cert: certificate,
     ca: ca
 };
+// Buffer string to array
+const converter = require('buffer-string-to-array')
 // Express
 const express = require('express');
 const app = express();
@@ -702,8 +704,9 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
         var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
         //console.log("sqlInsert: " + sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
+            var start = new Date();
+            var hrstart = process.hrtime();
             console.log("Logging updated");
-
             json_response = {};
             executableExists(req.params.wasm_id).then((result, error) => {
                 console.log("Result:" + result + ".");
@@ -714,49 +717,19 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelect).then((result, error) => {
-                            var start = new Date();
-                            var hrstart = process.hrtime();
-                            // Code to get wasm binary ready for VM instantiation
-                            temp = '';
-                            array = [];
-                            for (c of result[0].wasm_binary.toString()) {
-                                if (c == ",") {
-                                    array.push(Number(temp));
-                                    temp = '';
-                                } else {
-                                    if (temp.length == 0) {
-                                        temp = c;
-                                    } else {
-                                        temp = temp + c;
-                                    }
-                                }
-                            }
-                            if (temp.length > 0){
-                                array.push(Number(temp));
-                            }
-                            var end = new Date() - start,
-                                hrend = process.hrtime(hrstart);
-                            console.info('Converted data to Uint8Array in: %dms', hrend[1] / 1000000);
+                            var array = converter.convert(result[0].wasm_binary.toString());
                             // wasm state will be implemented once ssvm supports wasi
                             // var wasm_state_object = JSON.parse(result[0].wasm_state);
                             // let vm = new ssvm.VM(uint8array, wasi_options);
-                            var start2 = new Date();
-                            var hrstart2 = process.hrtime();
                             let vm = new ssvm.VM(Uint8Array.from(array));
-                            var end2 = new Date() - start2,
-                                hrend2 = process.hrtime(hrstart2);
-                            console.info('Instantiated VM in: %dms', hrend2[1] / 1000000);
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
-                            //console.log("Body as buffer: " + body_as_buffer);
-                            var start3 = new Date();
-                            var hrstart3 = process.hrtime();
                             var return_value = vm.RunUint8Array(function_name, body_as_buffer);
-                            var end3 = new Date() - start3,
-                                hrend3 = process.hrtime(hrstart3);
-                            console.info('VM execution took: %dms', hrend3[1] / 1000000);
                             //console.log("Return value: " + return_value);
                             //console.log("Buffer from return value: " + Buffer.from(return_value));
+                            var end = new Date() - start,
+                                hrend = process.hrtime(hrstart);
+                            console.info('Whole process completed in: %dms', hrend[1] / 1000000);
                             res.send(Buffer.from(return_value));
                         });
                     } else {
