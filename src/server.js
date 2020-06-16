@@ -580,7 +580,13 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                                 console.log(array_of_parameters[i - 1]);
                                             }
                                             var vm = new ssvm.VM(uint8array);
+                                            try{
                                             var return_value = vm.RunString(function_name, ...array_of_parameters);
+                                        } catch(err){
+                                            json_response["return_value"] = err;
+                                            res.send(JSON.stringify(json_response));
+                                            break;
+                                        }
                                             json_response["return_value"] = return_value;
                                             res.send(JSON.stringify(json_response));
                                             break;
