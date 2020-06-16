@@ -576,7 +576,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         // wasm state will be implemented once ssvm supports wasi
                         // var wasm_state_object = JSON.parse(result[0].wasm_state);
                         // let vm = new ssvm.VM(uint8array, wasi_options);
-                        var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
+                        var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
                         var function_name = req.params.function_name;
                         form.parse(req, (err, fields, files) => {
                             if (err) {
