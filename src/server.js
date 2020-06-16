@@ -305,7 +305,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             } else {
                 const _string_position3 = field[0].lastIndexOf("_");
                 const index_key3 = field[0].slice(_string_position3 + 1, field[0].length);
-                _readyAtZero.container[index_key3] = field[1];
+                _readyAtZero.container[index_key3] = JSON.stringify(field[1]);
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
                     resolve();
@@ -339,31 +339,6 @@ class ReadyAtZero {
         }
     }
 }
-/*
-// This code is now inline in each function purely for performance reasons. Feel free to copy it's logic as required
-
-function convertB2F(_string){
-    temp = '';
-    array = [];
-    for (c of _string) {
-        if (c == ",") {
-            array.push(Number(temp));
-            temp = '';
-        } else {
-            if (temp.length == 0) {
-                temp = c;
-            } else {
-                temp = temp + c;
-            }
-        }
-    }
-    if (temp.length > 0){
-        array.push(Number(temp));
-    }
-    return Uint8Array.from(array);
-}
-*/
-
 /* Utils end */
 
 /* RESTful endpoints */
