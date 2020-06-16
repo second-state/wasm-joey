@@ -580,13 +580,13 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                                 console.log(array_of_parameters[i - 1]);
                                             }
                                             var vm = new ssvm.VM(uint8array);
-                                            try{
-                                            var return_value = vm.RunString(function_name, ...array_of_parameters);
-                                        } catch(err){
-                                            json_response["return_value"] = err;
-                                            res.send(JSON.stringify(json_response));
-                                            break;
-                                        }
+                                            try {
+                                                var return_value = vm.RunString(function_name, ...array_of_parameters);
+                                            } catch (err) {
+                                                json_response["return_value"] = err;
+                                                res.send(JSON.stringify(json_response));
+                                                break;
+                                            }
                                             json_response["return_value"] = return_value;
                                             res.send(JSON.stringify(json_response));
                                             break;
@@ -635,7 +635,13 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         // var wasm_state_object = JSON.parse(result[0].wasm_state);
                         // let vm = new ssvm.VM(uint8array, wasi_options);
                         var vm = new ssvm.VM(uint8array);
-                        var return_value = vm.RunString(function_name, function_parameters_as_string);
+                        try {
+                            var return_value = vm.RunString(function_name, function_parameters_as_string);
+                        } catch (err) {
+                            json_response["return_value"] = err;
+                            res.send(JSON.stringify(json_response));
+                            break;
+                        }
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                             var return_value_as_object = JSON.parse(return_value);
@@ -705,7 +711,13 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                             let vm = new ssvm.VM(Uint8Array.from(array));
                             var function_name = req.params.function_name;
                             var body_as_buffer = Uint8Array.from(req.body);
-                            var return_value = vm.RunUint8Array(function_name, body_as_buffer);
+                            try {
+                                var return_value = vm.RunUint8Array(function_name, body_as_buffer);
+                            } catch (err) {
+                                json_response["return_value"] = err;
+                                res.send(JSON.stringify(json_response));
+                                break;
+                            }
                             var end = new Date() - start,
                                 hrend = process.hrtime(hrstart);
                             console.info('Whole process completed in: %dms', hrend[1] / 1000000);
