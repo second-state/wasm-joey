@@ -143,6 +143,7 @@ function executeCallbackRequest(_original_id, _request_options) {
                 //console.log("Logging updated");
             });
         });
+        console.log(_request_options);
         var options = JSON.parse(_request_options);
         const data = JSON.stringify(options["body"]);
         delete options.body;
