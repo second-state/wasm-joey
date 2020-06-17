@@ -630,15 +630,14 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             json_response["error"] = err;
                             res.send(JSON.stringify(json_response));
                         }
-                        var function_parameters_as_string = JSON.stringify(function_parameters);
                         // Check for callback object
-                        if (function_parameters_as_string.hasOwnProperty('callback')) {
+                        if (function_parameters.hasOwnProperty('callback')) {
                             process_callback = true;
                             console.log("Processing callback");
-                            var callback_object_for_processing = function_parameters_as_string["callback"];
-                            delete function_parameters_as_string.callback;
+                            var callback_object_for_processing = function_parameters["callback"];
+                            delete function_parameters.callback;
                             console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
-                            console.log("function_parameters_as_string: " + JSON.stringify(function_parameters_as_string));
+                            console.log("function_parameters_as_string: " + JSON.stringify(function_parameters));
                         }
                         var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
                         // wasm state will be implemented once ssvm supports wasi
@@ -646,7 +645,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         // let vm = new ssvm.VM(uint8array, wasi_options);
                         var vm = new ssvm.VM(uint8array);
                         try {
-                            var return_value = vm.RunString(function_name, function_parameters_as_string);
+                            var return_value = vm.RunString(function_name, JSON.stringify(function_parameters));
                         } catch (err) {
                             json_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                             res.send(JSON.stringify(json_response));
