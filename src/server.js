@@ -625,7 +625,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     performSqlQuery(sqlSelect).then((result, error) => {
                         var function_name = req.params.function_name;
                         try {
-                            var function_parameters = JSON.parse(req.body);
+                            var function_parameters = JSON.parse(JSON.stringify(req.body));
                         } catch (err) {
                             json_response["error"] = err;
                             res.send(JSON.stringify(json_response));
