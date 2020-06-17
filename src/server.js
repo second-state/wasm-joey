@@ -739,15 +739,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
         });
     });
 });
-//
-//
-/* Running Wasm Functions */
 
-// 
-//
-//* Dynamic configuration for individual Wasm executables */
-
-// Set any state information i.e. config that relates to this Wasm executable only accepts string format (text) the caller and the Rust Wasm must agree on how the text string is parsed and used
 app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     console.log("Request to update state into the database ...");
     //console.log(req.body);
