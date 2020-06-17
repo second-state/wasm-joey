@@ -608,7 +608,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
-    var process_callback == false;
+    var process_callback = false;
     // Perform logging
     var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((stateResult) => {
@@ -633,7 +633,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         var function_parameters_as_string = JSON.stringify(function_parameters);
                         // Check for callback object
                         if (function_parameters_as_string.hasOwnProperty('callback')) {
-                            process_callback == true;
+                            process_callback = true;
                             console.log("Processing callback");
                             var callback_object_for_processing = function_parameters_as_string["callback"];
                             delete function_parameters_as_string.callback;
