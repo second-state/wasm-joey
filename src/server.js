@@ -637,7 +637,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             var callback_object_for_processing = function_parameters["callback"];
                             delete function_parameters.callback;
                             console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
-                            console.log("function_parameters_as_string: " + JSON.stringify(function_parameters));
+                            console.log("function_parameters_as_string: " + JSON.stringify(function_parameters) + "\n\n");
                         }
                         var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
                         // wasm state will be implemented once ssvm supports wasi
