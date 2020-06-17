@@ -608,6 +608,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
+    var process_callback == false;
     // Perform logging
     var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
     performSqlQuery(sqlSelect).then((stateResult) => {
@@ -624,12 +625,21 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                     performSqlQuery(sqlSelect).then((result, error) => {
                         var function_name = req.params.function_name;
                         try {
-                            var function_parameters = req.body;
+                            var function_parameters = JSON.parse(req.body);
                         } catch (err) {
                             json_response["error"] = err;
                             res.send(JSON.stringify(json_response));
                         }
                         var function_parameters_as_string = JSON.stringify(function_parameters);
+                        // Check for callback object
+                        if (function_parameters_as_string.hasOwnProperty('callback')) {
+                            process_callback == true;
+                            console.log("Processing callback");
+                            var callback_object_for_processing = function_parameters_as_string["callback"];
+                            delete function_parameters_as_string.callback;
+                            console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
+                            console.log("function_parameters_as_string: " + JSON.stringify(function_parameters_as_string));
+                        }
                         var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
                         // wasm state will be implemented once ssvm supports wasi
                         // var wasm_state_object = JSON.parse(result[0].wasm_state);
@@ -644,13 +654,8 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                         try {
                             // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
                             var return_value_as_object = JSON.parse(return_value);
-                            //console.log(return_value_as_object);
-                            if (return_value_as_object.hasOwnProperty('callback')) {
-                                console.log("Processing callback");
-                                var callback_object_for_processing = return_value_as_object["callback"];
-                                // Delete the callback section from the return value
-                                delete return_value_as_object.callback;
-                                // Add the left over return value to inside the callback object as the body
+                            if (process_callback == true) {
+                                // Add the return value to inside the callback object as the body
                                 callback_object_for_processing["body"] = return_value_as_object;
                                 //console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
                                 executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((c_result, error) => {
@@ -660,7 +665,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 });
                             } else {
                                 // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                                json_response["return_value"] = return_value
+                                json_response["return_value"] = return_value_as_object
                                 res.send(JSON.stringify(json_response));
                             }
                         } catch {
