@@ -652,7 +652,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 delete return_value_as_object.callback;
                                 // Add the left over return value to inside the callback object as the body
                                 callback_object_for_processing["body"] = return_value_as_object;
-                                executeCallbackRequest(req.params.wasm_id, callback_object_for_processing).then((c_result, error) => {
+                                executeCallbackRequest(req.params.wasm_id, JOSN.stringify(callback_object_for_processing)).then((c_result, error) => {
                                     json_response["return_value"] = c_result;
                                     console.log(json_response);
                                     res.send(JSON.stringify(json_response));
