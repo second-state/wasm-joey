@@ -430,7 +430,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 //console.log(sqlSelect);
                                 performSqlQuery(sqlSelect).then((result) => {
-                                    json_response["wasm_sha256"] = checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                                    json_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
                                     if (filters.length == 0) {
                                         res.send(JSON.stringify(json_response));
                                     }
