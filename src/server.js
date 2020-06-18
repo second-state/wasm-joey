@@ -75,6 +75,9 @@ const formidable = require('formidable');
 // SSVM
 var ssvm = require('ssvm');
 
+// Checksum
+const checksum = require('crypto');
+
 /* Startup */
 // Serve
 https.createServer(credentials, app).listen(port, process.env.host, () => {
@@ -379,7 +382,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     executableExists(req.params.wasm_id).then((result, error) => {
         //console.log("Result:" + result + ".");
         if (result == 1) {
-            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state"];
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 try {
@@ -446,6 +449,9 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 if (filters.includes("wasm_description")) {
                                     json_response["wasm_description"] = result[0].wasm_description;
                                 }
+                                if (filters.includes("wasm_sha256")) {
+                                    json_response["wasm_sha256"] = checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                                }
                                 filters = [];
                                 if (filters.length == 0) {
                                     res.send(JSON.stringify(json_response));
@@ -460,6 +466,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 //console.log(sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_id"] = result[0].wasm_id;
+                    json_response["wasm_sha256"] = checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
                     json_response["wasm_description"] = result[0].wasm_description;
                     json_response["wasm_as_buffer"] = result[0].wasm_binary;
                     json_response["wasm_state"] = result[0].wasm_state;
