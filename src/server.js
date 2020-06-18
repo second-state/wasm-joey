@@ -425,12 +425,12 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         }
                         // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
                         if (filters.length >= 1) {
-                            if (filters.includes("wasm_state")) {
-                                filters = removeElementFromArray(filters, "wasm_state");
-                                var sqlSelect = "SELECT wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            if (filters.includes("wasm_sha256")) {
+                                filters = removeElementFromArray(filters, "wasm_sha256");
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 //console.log(sqlSelect);
                                 performSqlQuery(sqlSelect).then((result) => {
-                                    json_response["wasm_state"] = result[0].wasm_state;
+                                    json_response["wasm_sha256"] = checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
                                     if (filters.length == 0) {
                                         res.send(JSON.stringify(json_response));
                                     }
@@ -449,8 +449,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 if (filters.includes("wasm_description")) {
                                     json_response["wasm_description"] = result[0].wasm_description;
                                 }
-                                if (filters.includes("wasm_sha256")) {
-                                    json_response["wasm_sha256"] = checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                                if (filters.includes("wasm_state")) {
+                                    json_response["wasm_state"] = result[0].wasm_state;
                                 }
                                 filters = [];
                                 if (filters.length == 0) {
@@ -466,7 +466,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                 //console.log(sqlSelect);
                 performSqlQuery(sqlSelect).then((result) => {
                     json_response["wasm_id"] = result[0].wasm_id;
-                    json_response["wasm_sha256"] = checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                    json_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
                     json_response["wasm_description"] = result[0].wasm_description;
                     json_response["wasm_as_buffer"] = result[0].wasm_binary;
                     json_response["wasm_state"] = result[0].wasm_state;
