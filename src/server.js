@@ -370,9 +370,15 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
             console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
             json_response["wasm_id"] = resultInsert.insertId;
             //console.log(JSON.stringify(json_response));
-            res.send(JSON.stringify(json_response));
+            //res.send(JSON.stringify(json_response));
 
         });
+        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+        //console.log(sqlSelect);
+        performSqlQuery(sqlSelect).then((result) => {
+            json_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+        });
+        res.send(JSON.stringify(json_response));
     }
 });
 
