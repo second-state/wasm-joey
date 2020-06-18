@@ -499,7 +499,7 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
                 //console.log(sqlUpdate);
                 performSqlQuery(sqlUpdate).then((result) => {
                     json_response["wasm_id"] = req.params.wasm_id;
-                    //console.log(JSON.stringify(json_response));
+                    json_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
                     res.send(JSON.stringify(json_response));
                 });
             }
