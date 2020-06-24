@@ -1,4 +1,9 @@
 // System
+// Node Cache
+const NodeCache = require("node-cache");
+const myCache = new NodeCache();
+// UUID
+const { v4: uuidv4 } = require('uuid');
 //File system
 const fs = require('fs');
 // HTTPS
@@ -345,7 +350,57 @@ class ReadyAtZero {
 }
 /* Utils end */
 
-/* RESTful endpoints */
+/* Ephemeral storage endpoints - cached in memory */
+// Default ephemeral storage lasts for 1 hour (3600 seconds)
+// TTL is refreshed back to 1 hour if the data us updated, otherwise is expires and is deleted
+
+// Post data to ephmeral storage location
+app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
+    if (req.is('application/json') == 'application/json') {
+    var result = {};
+    var new_key = uuidv4();
+    success = myCache.set( new_key, req.body, 3600 );
+    result["key"] = new_key;
+    res.send(JSON.stringify(result));
+    } else {
+        result["error"] = "Value must be a valid JSON string";
+        res.send(JSON.stringify(result));
+    }
+});
+// Get content at ephemeral storage location
+app.get('/api/ephemeral_storage/:key', (req, res) => {
+    var result = {};
+    var value = myCache.get(req.params.key);
+    if ( value == undefined ){
+        result["error"] = "Key not found";
+        res.send(JSON.stringify(result));
+    } else {
+        result["value"] = value;
+        res.send(JSON.stringify(result));
+    }
+});
+// Update data at ephemeral storage location
+app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
+    if (req.is('application/json') == 'application/json') {
+    var result = {};
+    success = myCache.set( req.params.key, req.body, 3600 );
+    result["key"] = req.params.key;
+    res.send(JSON.stringify(result));
+    } else {
+        result["error"] = "Value must be a valid JSON string";
+        res.send(JSON.stringify(result));
+    }
+});
+// Delete data at ephemeral storage location
+app.delete('/api/ephemeral_storage/:key', (req, res) => {
+    result = {};
+    value = myCache.del(req.params.key);
+    result["key"] = req.params.key;
+    res.send(JSON.stringify(result));
+});
+
+/* Main application endpoints */
+
 app.get('/', (req, res) => {
     json_response = [{
         "application": "wasm_joey"
