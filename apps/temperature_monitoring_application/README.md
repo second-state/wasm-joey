@@ -1,6 +1,6 @@
 # Temperature monitoring application
 
-![](images/average.png)
+![](https://raw.githubusercontent.com/second-state/wasm-joey/master/images/temperature_monitoring_application_overview.png)
 
 Step 1 - Sensor performs POST request to https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage (this happens 5 times because we have 5 sensors)
 
@@ -13,5 +13,7 @@ Step 4 - Gauge performs POST request to https://rpc.ssvm.secondstate.io:8081/api
 Step 5 - Raspberry Crunch performs callback as a POST to the aforementioned https://rpc.ssvm.secondstate.io:8081/api/run/46/convert_celsius_to_fahrenheit
 
 Step 6 - Gauge updates its Fahrenheit value with the single result that is returned
+
+![](https://raw.githubusercontent.com/second-state/wasm-joey/master/images/temperature_monitoring_application_dashboard.png)
 
 
