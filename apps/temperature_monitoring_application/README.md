@@ -1,6 +1,6 @@
 # Temperature monitoring application
 
-
+![](images/average.png)
 
 Step 1 - Sensor performs POST request to https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage (this happens 5 times because we have 5 sensors)
 
