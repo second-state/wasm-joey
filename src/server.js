@@ -691,11 +691,11 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             res.send(JSON.stringify(json_response));
                         }
                         // Check for callback object
-                        if (function_parameters.hasOwnProperty('callback')) {
+                        if (function_parameters.hasOwnProperty('SSVM_Callback')) {
                             process_callback = true;
                             console.log("Processing callback");
-                            var callback_object_for_processing = function_parameters["callback"];
-                            delete function_parameters.callback;
+                            var callback_object_for_processing = function_parameters["SSVM_Callback"];
+                            delete function_parameters.SSVM_Callback;
                             console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
                             console.log("function_parameters_as_string: " + JSON.stringify(function_parameters) + "\n\n");
                         }
@@ -724,7 +724,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 });
                             } else {
                                 // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                                json_response["return_value"] = return_value_as_object
+                                json_response["return_value"] = return_value_as_object;
                                 res.send(JSON.stringify(json_response));
                             }
                         } catch {
