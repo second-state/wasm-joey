@@ -378,7 +378,8 @@ class ReadyAtZero {
 
 // Post data to ephmeral storage location
 app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
-    isValidJSON(req.body).then((result, error) => {
+    console.log(req.body.data);
+    isValidJSON(JSON.stringify(req.body)).then((result, error) => {
         if (result == true) {
             if (req.is('application/json') == 'application/json') {
                 var result = {};
@@ -411,7 +412,7 @@ app.get('/api/ephemeral_storage/:key', (req, res) => {
 });
 // Update data at ephemeral storage location
 app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
-    isValidJSON(req.body).then((result, error) => {
+    isValidJSON(JSON.stringify(req.body)).then((result, error) => {
         if (result == true) {
             if (req.is('application/json') == 'application/json') {
                 var result = {};
@@ -712,7 +713,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
-    isValidJSON(req.body).then((result, error) => {
+    isValidJSON(JSON.stringify(req.body)).then((result, error) => {
         if (result == true) {
             var process_callback = false;
             // Perform logging
@@ -875,7 +876,7 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
 app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
     console.log("Request to update callback object in the database ...");
     //console.log(req.body);
-    isValidJSON(req.body).then((result, error) => {
+    isValidJSON(JSON.stringify(req.body)).then((result, error) => {
         if (result == true) {
             executableExists(req.params.wasm_id).then((result, error) => {
 
