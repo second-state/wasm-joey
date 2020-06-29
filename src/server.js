@@ -864,7 +864,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         res.send(JSON.stringify(joey_response));
                     }
                     // If the user has not specified a callback object in the request, then check if there is a callback in the db for this wasm executable
-                    if process_callback == false {
+                    if (process_callback == false) {
                         var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                             callback_object_for_processing = resultCallback[0].wasm_callback_object;
