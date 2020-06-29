@@ -834,26 +834,29 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
 app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
     console.log("Request to update callback object in the database ...");
     //console.log(req.body);
-    executableExists(req.params.wasm_id).then((result, error) => {
-        //console.log("Result:" + result + ".");
-        if (result == 1) {
-                try {
-                    var json_body = JSON.parse(JSON.stringify(req.body));
+    try {
+        var json_body = JSON.parse(JSON.stringify(req.body));
+        executableExists(req.params.wasm_id).then((result, error) => {
+            //console.log("Result:" + result + ".");
+            if (result == 1) {
 
-                    var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + json_body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    //console.log(sqlInsert);
-                    performSqlQuery(sqlInsert).then((resultInsert) => {
-                        //console.log("1 callback object has been inserted at wasm_id: " + req.params.wasm_id);
-                        res.send(req.params.wasm_id);
-                    });
-                } catch (err) {
-                    json_response["Error, not valid json"] = err;
-                    res.send(JSON.stringify(json_response));
-                }
-        } else {
-            res.send(req.params.wasm_id + " does not exist");
-        }
-    });
+
+                var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + json_body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                //console.log(sqlInsert);
+                performSqlQuery(sqlInsert).then((resultInsert) => {
+                    //console.log("1 callback object has been inserted at wasm_id: " + req.params.wasm_id);
+                    res.send(req.params.wasm_id);
+                });
+
+            } else {
+                res.send(req.params.wasm_id + " does not exist");
+            }
+
+        });
+    } catch (err) {
+        json_response["Error, not valid json"] = err;
+        res.send(JSON.stringify(json_response));
+    }
 });
 
 // Get a set of records in relation to execution of callbacks for a particular wasm_id
