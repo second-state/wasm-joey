@@ -829,14 +829,20 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     });
 });
 
-app.put('/api/callback/:wasm_id', bodyParser.text(), (req, res) => {
+app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
     console.log("Request to update callback object in the database ...");
     //console.log(req.body);
     executableExists(req.params.wasm_id).then((result, error) => {
         //console.log("Result:" + result + ".");
         if (result == 1) {
-            if (req.is('text/plain') == 'text/plain') {
-                var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+            if (req.is('application/json') == 'application/json') {
+            try {
+                    var json_body = JSON.parse(JSON.stringify(req.body));
+                } catch (err) {
+                    json_response["Error, not valid json"] = err;
+                    res.send(JSON.stringify(json_response));
+                }
+                var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + json_body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                 //console.log(sqlInsert);
                 performSqlQuery(sqlInsert).then((resultInsert) => {
                     //console.log("1 callback object has been inserted at wasm_id: " + req.params.wasm_id);
