@@ -99,6 +99,23 @@ https.createServer(credentials, app).listen(port, process.env.host, () => {
 /* End Startup*/
 
 /* Utils */
+
+
+function isValidJSON(text) {
+    return new Promise(function(resolve, reject) {
+        if (typeof text !== "string") {
+            console.log("Not a JSON string");
+            resolve(false);
+        }
+        try {
+            JSON.parse(text);
+            resolve(true);
+        } catch (error) {
+            resolve(false);
+        }
+    });
+}
+
 function removeElementFromArray(arr, value) {
     return arr.filter(function(ele) {
         return ele != value;
@@ -361,16 +378,24 @@ class ReadyAtZero {
 
 // Post data to ephmeral storage location
 app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
-    if (req.is('application/json') == 'application/json') {
-        var result = {};
-        var new_key = uuidv4();
-        success = myCache.set(new_key, req.body, 3600);
-        result["key"] = new_key;
-        res.send(JSON.stringify(result));
-    } else {
-        result["error"] = "Value must be a valid JSON string";
-        res.send(JSON.stringify(result));
-    }
+    isValidJSON(req.body).then((result, error) => {
+        if (result == true) {
+            if (req.is('application/json') == 'application/json') {
+                var result = {};
+                var new_key = uuidv4();
+                success = myCache.set(new_key, req.body, 3600);
+                result["key"] = new_key;
+                res.send(JSON.stringify(result));
+            } else {
+                result["error"] = "Value must be a valid JSON string";
+                res.send(JSON.stringify(result));
+            }
+        } else {
+            res.send({
+                "error": "Not valid JSON"
+            });
+        }
+    });
 });
 // Get content at ephemeral storage location
 app.get('/api/ephemeral_storage/:key', (req, res) => {
@@ -386,15 +411,23 @@ app.get('/api/ephemeral_storage/:key', (req, res) => {
 });
 // Update data at ephemeral storage location
 app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
-    if (req.is('application/json') == 'application/json') {
-        var result = {};
-        success = myCache.set(req.params.key, req.body, 3600);
-        result["key"] = req.params.key;
-        res.send(JSON.stringify(result));
-    } else {
-        result["error"] = "Value must be a valid JSON string";
-        res.send(JSON.stringify(result));
-    }
+    isValidJSON(req.body).then((result, error) => {
+        if (result == true) {
+            if (req.is('application/json') == 'application/json') {
+                var result = {};
+                success = myCache.set(req.params.key, req.body, 3600);
+                result["key"] = req.params.key;
+                res.send(JSON.stringify(result));
+            } else {
+                result["error"] = "Value must be a valid JSON string";
+                res.send(JSON.stringify(result));
+            }
+        } else {
+            res.send({
+                "error": "Not valid JSON"
+            });
+        }
+    });
 });
 // Delete data at ephemeral storage location
 app.delete('/api/ephemeral_storage/:key', (req, res) => {
@@ -679,77 +712,85 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
-    var process_callback = false;
-    // Perform logging
-    var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    performSqlQuery(sqlSelect).then((stateResult) => {
-        console.log("Creating log object");
-        var logging_object = {};
-        logging_object["original_wasm_executables_id"] = req.params.wasm_id;
-        logging_object["data_payload"] = req.body;
-        var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-        performSqlQuery(sqlInsert).then((resultInsert) => {
-            var json_response = {};
-            executableExists(req.params.wasm_id).then((result, error) => {
-                if (result == 1) {
-                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    performSqlQuery(sqlSelect).then((result, error) => {
-                        var function_name = req.params.function_name;
-                        try {
-                            var function_parameters = JSON.parse(JSON.stringify(req.body));
-                        } catch (err) {
-                            json_response["error"] = err;
-                            res.send(JSON.stringify(json_response));
-                        }
-                        // Check for callback object
-                        if (function_parameters.hasOwnProperty('SSVM_Callback')) {
-                            process_callback = true;
-                            console.log("Processing callback");
-                            var callback_object_for_processing = function_parameters["SSVM_Callback"];
-                            delete function_parameters.SSVM_Callback;
-                            console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
-                            console.log("function_parameters_as_string: " + JSON.stringify(function_parameters) + "\n\n");
-                        }
-                        var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
-                        // wasm state will be implemented once ssvm supports wasi
-                        // var wasm_state_object = JSON.parse(result[0].wasm_state);
-                        // let vm = new ssvm.VM(uint8array, wasi_options);
-                        var vm = new ssvm.VM(uint8array);
-                        try {
-                            var return_value = vm.RunString(function_name, JSON.stringify(function_parameters));
-                        } catch (err) {
-                            json_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                            res.send(JSON.stringify(json_response));
-                        }
-                        try {
-                            // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
-                            var return_value_as_object = JSON.parse(return_value);
-                            if (process_callback == true) {
-                                // Add the return value to inside the callback object as the body
-                                callback_object_for_processing["body"] = return_value_as_object;
-                                //console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
-                                executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((c_result, error) => {
-                                    json_response["return_value"] = c_result;
-                                    console.log(json_response);
+    isValidJSON(req.body).then((result, error) => {
+        if (result == true) {
+            var process_callback = false;
+            // Perform logging
+            var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlSelect).then((stateResult) => {
+                console.log("Creating log object");
+                var logging_object = {};
+                logging_object["original_wasm_executables_id"] = req.params.wasm_id;
+                logging_object["data_payload"] = req.body;
+                var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+                performSqlQuery(sqlInsert).then((resultInsert) => {
+                    var json_response = {};
+                    executableExists(req.params.wasm_id).then((result, error) => {
+                        if (result == 1) {
+                            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            performSqlQuery(sqlSelect).then((result, error) => {
+                                var function_name = req.params.function_name;
+                                try {
+                                    var function_parameters = JSON.parse(JSON.stringify(req.body));
+                                } catch (err) {
+                                    json_response["error"] = err;
                                     res.send(JSON.stringify(json_response));
-                                });
-                            } else {
-                                // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                                json_response["return_value"] = return_value_as_object;
-                                res.send(JSON.stringify(json_response));
-                            }
-                        } catch {
-                            // The response was obviously not valid JSON string so we just want to pass this string back to the original caller verbatim
-                            json_response["return_value"] = return_value
-                            res.send(JSON.stringify(json_response));
+                                }
+                                // Check for callback object
+                                if (function_parameters.hasOwnProperty('SSVM_Callback')) {
+                                    process_callback = true;
+                                    console.log("Processing callback");
+                                    var callback_object_for_processing = function_parameters["SSVM_Callback"];
+                                    delete function_parameters.SSVM_Callback;
+                                    console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
+                                    console.log("function_parameters_as_string: " + JSON.stringify(function_parameters) + "\n\n");
+                                }
+                                var uint8array = new Uint8Array(result[0].wasm_binary.toString().split(','));
+                                // wasm state will be implemented once ssvm supports wasi
+                                // var wasm_state_object = JSON.parse(result[0].wasm_state);
+                                // let vm = new ssvm.VM(uint8array, wasi_options);
+                                var vm = new ssvm.VM(uint8array);
+                                try {
+                                    var return_value = vm.RunString(function_name, JSON.stringify(function_parameters));
+                                } catch (err) {
+                                    json_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    res.send(JSON.stringify(json_response));
+                                }
+                                try {
+                                    // If Joey is able to parse this response AND the response has a callback object, then Joey needs to perform the callback and give the response of the callback to the original caller
+                                    var return_value_as_object = JSON.parse(return_value);
+                                    if (process_callback == true) {
+                                        // Add the return value to inside the callback object as the body
+                                        callback_object_for_processing["body"] = return_value_as_object;
+                                        //console.log("callback_object_for_processing: " + JSON.stringify(callback_object_for_processing));
+                                        executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((c_result, error) => {
+                                            json_response["return_value"] = c_result;
+                                            console.log(json_response);
+                                            res.send(JSON.stringify(json_response));
+                                        });
+                                    } else {
+                                        // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
+                                        json_response["return_value"] = return_value_as_object;
+                                        res.send(JSON.stringify(json_response));
+                                    }
+                                } catch {
+                                    // The response was obviously not valid JSON string so we just want to pass this string back to the original caller verbatim
+                                    json_response["return_value"] = return_value
+                                    res.send(JSON.stringify(json_response));
+                                }
+                            });
+                        } else {
+                            console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
+                            res.end();
                         }
                     });
-                } else {
-                    console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
-                    res.end();
-                }
+                });
             });
-        });
+        } else {
+            res.send({
+                "error": "Not valid JSON"
+            });
+        }
     });
 });
 
@@ -834,31 +875,30 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
 app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
     console.log("Request to update callback object in the database ...");
     //console.log(req.body);
-    try {
-        var json_body = JSON.parse(JSON.stringify(req.body));
-            } catch (err) {
-        json_response["Error, not valid json"] = err;
-        res.send(JSON.stringify(json_response));
-        res.end();
-    }
-        executableExists(req.params.wasm_id).then((result, error) => {
-            //console.log("Result:" + result + ".");
-            if (result == 1) {
+    isValidJSON(req.body).then((result, error) => {
+        if (result == true) {
+            executableExists(req.params.wasm_id).then((result, error) => {
 
+                if (result == 1) {
+                    var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + JSON.parse(JSON.stringify(req.body)) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    //console.log(sqlInsert);
+                    performSqlQuery(sqlInsert).then((resultInsert) => {
+                        //console.log("1 callback object has been inserted at wasm_id: " + req.params.wasm_id);
+                        res.send(req.params.wasm_id);
+                    });
 
-                var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + json_body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                //console.log(sqlInsert);
-                performSqlQuery(sqlInsert).then((resultInsert) => {
-                    //console.log("1 callback object has been inserted at wasm_id: " + req.params.wasm_id);
-                    res.send(req.params.wasm_id);
-                });
+                } else {
+                    res.send(req.params.wasm_id + " does not exist");
+                }
 
-            } else {
-                res.send(req.params.wasm_id + " does not exist");
-            }
+            });
 
-        });
-
+        } else {
+            res.send({
+                "error": "Not valid JSON"
+            });
+        }
+    });
 });
 
 // Get a set of records in relation to execution of callbacks for a particular wasm_id
