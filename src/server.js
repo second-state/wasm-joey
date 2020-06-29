@@ -439,7 +439,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     executableExists(req.params.wasm_id).then((result, error) => {
         //console.log("Result:" + result + ".");
         if (result == 1) {
-            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256"];
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 try {
@@ -509,6 +509,9 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 if (filters.includes("wasm_state")) {
                                     json_response["wasm_state"] = result[0].wasm_state;
                                 }
+                                if (filters.includes("wasm_callback_object")) {
+                                    json_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                                }
                                 filters = [];
                                 if (filters.length == 0) {
                                     res.send(JSON.stringify(json_response));
@@ -527,6 +530,8 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                     json_response["wasm_description"] = result[0].wasm_description;
                     json_response["wasm_as_buffer"] = result[0].wasm_binary;
                     json_response["wasm_state"] = result[0].wasm_state;
+                    json_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                    
                     res.send(JSON.stringify(json_response));
                 });
             }
