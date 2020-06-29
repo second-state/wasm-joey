@@ -836,6 +836,11 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
     //console.log(req.body);
     try {
         var json_body = JSON.parse(JSON.stringify(req.body));
+            } catch (err) {
+        json_response["Error, not valid json"] = err;
+        res.send(JSON.stringify(json_response));
+        res.end();
+    }
         executableExists(req.params.wasm_id).then((result, error) => {
             //console.log("Result:" + result + ".");
             if (result == 1) {
@@ -853,10 +858,7 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
             }
 
         });
-    } catch (err) {
-        json_response["Error, not valid json"] = err;
-        res.send(JSON.stringify(json_response));
-    }
+
 });
 
 // Get a set of records in relation to execution of callbacks for a particular wasm_id
