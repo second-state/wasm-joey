@@ -17,7 +17,7 @@ class Sensor {
     }
 }
 
-function initializeDataStorage(data) {
+function initializeDataStorage(_data) {
     return new Promise(function(resolve, reject) {
         var settings = {
             "url": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage",
@@ -26,10 +26,9 @@ function initializeDataStorage(data) {
             "headers": {
                 "Content-Type": "application/json"
             },
-            "data": JSON.stringify(
-                {data}),
+            "data": _data,
         };
-
+        console.log(JSON.stringify(settings));
         jQuery.ajax(settings).done(function(response) {
             resolve(response);
         });
@@ -73,6 +72,7 @@ function calculateAverageTemp(data) {
 }
 
 function initializeSensors(sensors){
+
     initializeDataStorage(sensors["sensor1"].getDegreesC())
         .then(function(result) {
             console.log(JSON.stringify(JSON.parse(result).key));
