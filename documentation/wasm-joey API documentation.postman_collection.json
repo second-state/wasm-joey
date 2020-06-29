@@ -106,7 +106,7 @@
 						"type": "text"
 					},
 					{
-						"key": "SSVM-Description",
+						"key": "SSVM_Description",
 						"value": "Description of wasm file",
 						"type": "text"
 					}
