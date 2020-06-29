@@ -3,7 +3,9 @@
 const NodeCache = require("node-cache");
 const myCache = new NodeCache();
 // UUID
-const { v4: uuidv4 } = require('uuid');
+const {
+    v4: uuidv4
+} = require('uuid');
 //File system
 const fs = require('fs');
 // HTTPS
@@ -360,11 +362,11 @@ class ReadyAtZero {
 // Post data to ephmeral storage location
 app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
     if (req.is('application/json') == 'application/json') {
-    var result = {};
-    var new_key = uuidv4();
-    success = myCache.set( new_key, req.body, 3600 );
-    result["key"] = new_key;
-    res.send(JSON.stringify(result));
+        var result = {};
+        var new_key = uuidv4();
+        success = myCache.set(new_key, req.body, 3600);
+        result["key"] = new_key;
+        res.send(JSON.stringify(result));
     } else {
         result["error"] = "Value must be a valid JSON string";
         res.send(JSON.stringify(result));
@@ -374,7 +376,7 @@ app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
 app.get('/api/ephemeral_storage/:key', (req, res) => {
     var result = {};
     var value = myCache.get(req.params.key);
-    if ( value == undefined ){
+    if (value == undefined) {
         result["error"] = "Key not found";
         res.send(JSON.stringify(result));
     } else {
@@ -385,10 +387,10 @@ app.get('/api/ephemeral_storage/:key', (req, res) => {
 // Update data at ephemeral storage location
 app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
     if (req.is('application/json') == 'application/json') {
-    var result = {};
-    success = myCache.set( req.params.key, req.body, 3600 );
-    result["key"] = req.params.key;
-    res.send(JSON.stringify(result));
+        var result = {};
+        success = myCache.set(req.params.key, req.body, 3600);
+        result["key"] = req.params.key;
+        res.send(JSON.stringify(result));
     } else {
         result["error"] = "Value must be a valid JSON string";
         res.send(JSON.stringify(result));
@@ -531,7 +533,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                     json_response["wasm_as_buffer"] = result[0].wasm_binary;
                     json_response["wasm_state"] = result[0].wasm_state;
                     json_response["wasm_callback_object"] = result[0].wasm_callback_object;
-                    
+
                     res.send(JSON.stringify(json_response));
                 });
             }
@@ -835,20 +837,19 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
     executableExists(req.params.wasm_id).then((result, error) => {
         //console.log("Result:" + result + ".");
         if (result == 1) {
-            if (req.is('application/json') == 'application/json') {
-            try {
+                try {
                     var json_body = JSON.parse(JSON.stringify(req.body));
+
+                    var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + json_body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    //console.log(sqlInsert);
+                    performSqlQuery(sqlInsert).then((resultInsert) => {
+                        //console.log("1 callback object has been inserted at wasm_id: " + req.params.wasm_id);
+                        res.send(req.params.wasm_id);
+                    });
                 } catch (err) {
                     json_response["Error, not valid json"] = err;
                     res.send(JSON.stringify(json_response));
                 }
-                var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + json_body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                //console.log(sqlInsert);
-                performSqlQuery(sqlInsert).then((resultInsert) => {
-                    //console.log("1 callback object has been inserted at wasm_id: " + req.params.wasm_id);
-                    res.send(req.params.wasm_id);
-                });
-            }
         } else {
             res.send(req.params.wasm_id + " does not exist");
         }
