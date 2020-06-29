@@ -821,7 +821,9 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
             logging_object["data_payload"] = req.body;
             var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
             //console.log("sqlInsert: " + sqlInsert);
-            performSqlQuery(sqlInsert).then((resultInsert) => {}):
+            performSqlQuery(sqlInsert).then((resultInsert) => {
+                
+            });
         }):
     }
     var start = new Date();
