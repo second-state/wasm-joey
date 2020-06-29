@@ -181,7 +181,7 @@ setTimeout(function() {
                         list_of_temps.push(Number(sensors[key].degreesC));
                     });
                     var data_45 = JSON.stringify({
-                        "callback": {
+                        "SSVM_Callback": {
                             "hostname": "rpc.ssvm.secondstate.io",
                             "path": "/api/run/46/convert_celsius_to_fahrenheit",
                             "method": "POST",
@@ -198,10 +198,8 @@ setTimeout(function() {
                         .then(function(result) {
                           var result_object = JSON.parse(result);
                           //var result_object = JSON.parse(JSON.stringify(result));
-                          //console.log("3******************" + result_object);
                           //var c = JSON.parse(result_object.return_value);
                           var o = JSON.parse(result_object.return_value);
-                          console.log("c******************" + Number(JSON.stringify(o.return_value.result)));
                             data.setValue(0, 1, Number(JSON.stringify(o.return_value.result)));
                             chart.draw(data, options);
                         })
@@ -216,5 +214,10 @@ setTimeout(function() {
             }
         });
       </script>
+        <div class="row">
+         <div class="col-sm-4"></div>
+          <div class="col-sm-4">Powered by <a href="https://www.secondstate.io/articles/why-webassembly-server/">SecondState & WebAssembly(Wasm)</a></div>
+          <div class="col-sm-4"></div>
+      </div>
    </body>
 </html>

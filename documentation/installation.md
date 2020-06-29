@@ -84,10 +84,12 @@ sudo apt-get install -y nodejs
 ## Node libraries
 Node cache
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install node-cache
 ```
 uuid
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install uuid
 ```
 Urllib
@@ -199,6 +201,7 @@ CREATE TABLE wasm_executables(
     wasm_description CHAR(255) NOT NULL,
     wasm_binary LONGBLOB NOT NULL,
     wasm_state JSON NOT NULL,
+    wasm_callback_object JSON NOT NULL,
     PRIMARY KEY(wasm_id)
 );
 ```
@@ -255,6 +258,14 @@ Run the following command to enable sufficient permissions
 ```bash
 sudo chown $USER:$USER -R /etc/letsencrypt
 ```
+
+### SSVM
+https://www.npmjs.com/package/ssvm-napi#setup-for-ssvm-addon
+
+https://www.npmjs.com/package/ssvm#setup-for-rust-nodejs-and-ssvmup
+
+`npm install ssvm`
+
 ### Serve
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src

@@ -278,7 +278,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]]["data"];
                     _readyAtZero.decrease();
                     if (_readyAtZero.isReady()) {
-                        resolve();
+                        resolve("{}");
                     }
                 } else {
                     console.log(file_read_error);
@@ -295,7 +295,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         _readyAtZero.container[index_key] = JSON.stringify(fetched_result_object[Object.keys(fetched_result_object)[0]]);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
-                            resolve();
+                            resolve("{}");
                         }
                     });
                 } else {
@@ -306,17 +306,21 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         _readyAtZero.container[index_key2] = JSON.stringify(fetched_result_object2[Object.keys(fetched_result_object2)[0]]);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
-                            resolve();
+                            resolve("{}");
                         }
                     });
                 }
+            } else if (field[0].startsWith("SSVM_Callback")) {
+                console.log("Found SSVM_Callback");
+                console.log(JSON.stringify(JSON.parse(field[1])));
+                resolve(JSON.stringify(JSON.parse(field[1])));
             } else {
                 const _string_position3 = field[0].lastIndexOf("_");
                 const index_key3 = field[0].slice(_string_position3 + 1, field[0].length);
                 _readyAtZero.container[index_key3] = JSON.stringify(field[1]);
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
-                    resolve();
+                    resolve("{}");
                 }
             }
 
