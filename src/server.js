@@ -925,7 +925,7 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
         if (result == true) {
             executableExists(req.params.wasm_id).then((result2, error) => {
                 if (result2 == 1) {
-                    var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                     console.log(sqlInsert);
                     performSqlQuery(sqlInsert).then((resultInsert) => {
                         res.send(req.params.wasm_id);
