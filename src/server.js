@@ -347,7 +347,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         }
                     });
                 }
-            } else if (field[0].startsWith("SSVM_Callback")) {
+            } else if (field[0].startsWith("SSVM_Callback") || field[0].startsWith("ssvm_callback")) {
                 console.log("Found SSVM_Callback");
                 console.log(JSON.stringify(JSON.parse(field[1])));
                 resolve(JSON.stringify(JSON.parse(field[1])));
@@ -758,7 +758,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                                 res.send(JSON.stringify(joey_response));
                             }
                             // Check for callback object
-                            if (function_parameters.hasOwnProperty('SSVM_Callback')) {
+                            if (function_parameters.hasOwnProperty('SSVM_Callback') || function_parameters.hasOwnProperty('ssvm_callback')) {
                                 process_callback = true;
                                 console.log("Processing callback");
                                 var callback_object_for_processing = function_parameters["SSVM_Callback"];
@@ -856,7 +856,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     try {
                         var request_parameters = JSON.parse(JSON.stringify(req.headers));
                         console.log("Request parameters" + JSON.stringify(request_parameters));
-                        if (request_parameters.hasOwnProperty('SSVM_Callback')) {
+                        if (request_parameters.hasOwnProperty('SSVM_Callback') || request_parameters.hasOwnProperty('ssvm_callback')) {
                             process_callback = true;
                             callback_object_for_processing = request_parameters["SSVM_Callback"];
                         }
