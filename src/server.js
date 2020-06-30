@@ -873,6 +873,8 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         });
                     }
                     try {
+                        console.log("O:" + callback_object_for_processing);
+                        console.log("OS:" + JSON.stringify(callback_object_for_processing));
                         var return_value = vm.RunUint8Array(function_name, body_as_buffer);
                         console.log("Value: " + return_value);
                         objectIsEmpty(JSON.stringify(callback_object_for_processing)).then((resultEmptyObject, error) => {
