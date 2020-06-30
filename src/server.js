@@ -855,6 +855,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     // A user can essentially turn off the callback by specifying a callback key and then adding a blank object in the header value
                     try {
                         var request_parameters = JSON.parse(JSON.stringify(req.headers));
+                        console.log("Request parameters" + request_parameters);
                         if (request_parameters.hasOwnProperty('SSVM_Callback')) {
                             process_callback = true;
                             callback_object_for_processing = request_parameters["SSVM_Callback"];
@@ -863,6 +864,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         joey_response["error"] = err;
                         res.send(JSON.stringify(joey_response));
                     }
+                    console.log("Process callback: " + process_callback);
                     // If the user has not specified a callback object in the request, then check if there is a callback in the db for this wasm executable
                     if (process_callback == false) {
                         var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
