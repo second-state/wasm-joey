@@ -858,7 +858,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         console.log("Request parameters" + JSON.stringify(request_parameters));
                         if (request_parameters.hasOwnProperty('SSVM_Callback') || request_parameters.hasOwnProperty('ssvm_callback')) {
                             process_callback = true;
-                            callback_object_for_processing = request_parameters["SSVM_Callback"];
+                            callback_object_for_processing = request_parameters["ssvm_callback"];
                         }
                     } catch (err) {
                         joey_response["error"] = err;
@@ -874,11 +874,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     }
                     try {
                         var return_value = vm.RunUint8Array(function_name, body_as_buffer);
-                    } catch (err) {
-                        joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                        res.send(JSON.stringify(joey_response));
-                    }
-                    objectIsEmpty(callback_object_for_processing).then((resultEmptyObject, error) => {
+                        objectIsEmpty(callback_object_for_processing).then((resultEmptyObject, error) => {
                         if (resultEmptyObject == false) {
                             var return_value_as_object = JSON.parse(return_value);
                             callback_object_for_processing["body"] = return_value_as_object;
@@ -891,6 +887,11 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         }
 
                     });
+                    } catch (err) {
+                        joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                        res.send(JSON.stringify(joey_response));
+                    }
+
                 });
             } else {
                 console.log("Error processing bytes for function: " + req.params.function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
