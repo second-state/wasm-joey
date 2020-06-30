@@ -876,7 +876,9 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         var return_value = vm.RunUint8Array(function_name, body_as_buffer);
                         objectIsEmpty(callback_object_for_processing).then((resultEmptyObject, error) => {
                         if (resultEmptyObject == false) {
+                            console.log("Value: " + return_value);
                             var return_value_as_object = JSON.parse(return_value);
+                            console.log("Value as object: " + return_value_as_object);
                             callback_object_for_processing["body"] = return_value_as_object;
                             executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((resultPostCallback, error) => {
                                 joey_response["return_value"] = resultPostCallback;
