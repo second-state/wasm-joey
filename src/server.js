@@ -876,7 +876,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         if (resultEmptyObject == false) {
                             var resBuf = Buffer.from(return_value);
                             console.log(...resBuf);
-                            callback_object_for_processing["body"] = ...resBuf;
+                            callback_object_for_processing["body"] = [...resBuf];
                             console.log("Callback object: " + callback_object_for_processing)
                             executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((resultPostCallback, error) => {
                                 joey_response["return_value"] = resultPostCallback;
