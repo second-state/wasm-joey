@@ -173,6 +173,7 @@ function executionLogExists(wasm_id) {
 }
 
 function executeCallbackRequest(_original_id, _request_options) {
+    console.log("Callback request options" + _request_options);
     return new Promise(function(resolve, reject) {
         if (log_level == 1) {
             var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
@@ -182,7 +183,6 @@ function executeCallbackRequest(_original_id, _request_options) {
                 logging_object["callback_request_options"] = _request_options;
                 var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
                 performSqlQuery(sqlInsert).then((resultInsert) => {
-                    //console.log("Logging updated");
                 });
             });
         }
@@ -876,6 +876,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         if (resultEmptyObject == false) {
                             const resBuf = Buffer.from(return_value);
                             callback_object_for_processing["body"] = resBuf.toJSON();
+                            console.log(callback_object_for_processing)
                             executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((resultPostCallback, error) => {
                                 joey_response["return_value"] = resultPostCallback;
                                 res.send(JSON.stringify(joey_response));
