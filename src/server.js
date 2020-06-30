@@ -876,6 +876,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         if (resultEmptyObject == false) {
                             var resBuf = Buffer.from(return_value);
                             console.log("resBuf" + resBuf);
+                            console.log("Updating callback object for processing ...");
                             callback_object_for_processing["body"] = resBuf.toJSON();
                             console.log("Callback object: " + callback_object_for_processing)
                             executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((resultPostCallback, error) => {
