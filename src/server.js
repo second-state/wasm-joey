@@ -855,7 +855,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     // A user can essentially turn off the callback by specifying a callback key and then adding a blank object in the header value
                     try {
                         var request_parameters = JSON.parse(JSON.stringify(req.headers));
-                        console.log("Request parameters" + request_parameters);
+                        console.log("Request parameters" + JSON.stringify(request_parameters));
                         if (request_parameters.hasOwnProperty('SSVM_Callback')) {
                             process_callback = true;
                             callback_object_for_processing = request_parameters["SSVM_Callback"];
