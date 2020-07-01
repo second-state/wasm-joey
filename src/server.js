@@ -179,8 +179,7 @@ function executeCallbackRequest(_original_id, _request_options) {
                 logging_object["original_wasm_executables_id"] = _original_id;
                 logging_object["callback_request_options"] = _request_options;
                 var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-                performSqlQuery(sqlInsert).then((resultInsert) => {
-                });
+                performSqlQuery(sqlInsert).then((resultInsert) => {});
             });
         }
         var options = JSON.parse(_request_options);
@@ -220,8 +219,7 @@ function executeCallbackRequestBytes(_original_id, _request_options) {
                 logging_object["original_wasm_executables_id"] = _original_id;
                 logging_object["callback_request_options"] = _request_options;
                 var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-                performSqlQuery(sqlInsert).then((resultInsert) => {
-                });
+                performSqlQuery(sqlInsert).then((resultInsert) => {});
             });
         }
         var options = _request_options;
@@ -257,8 +255,7 @@ function executeMultipartRequest(_original_id, _request_options) {
                 logging_object["original_wasm_executables_id"] = _original_id;
                 logging_object["callback_request_options"] = _request_options[1];
                 var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-                performSqlQuery(sqlInsert).then((resultInsert) => {
-                });
+                performSqlQuery(sqlInsert).then((resultInsert) => {});
             });
         }
         var options = JSON.parse(_request_options[1]);
@@ -339,7 +336,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]]["data"];
                     _readyAtZero.decrease();
                     if (_readyAtZero.isReady()) {
-                        resolve("{}");
+                        resolve();
                     }
                 } else {
                     console.log(file_read_error);
@@ -356,7 +353,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         _readyAtZero.container[index_key] = JSON.stringify(fetched_result_object[Object.keys(fetched_result_object)[0]]);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
-                            resolve("{}");
+                            resolve();
                         }
                     });
                 } else {
@@ -367,19 +364,29 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         _readyAtZero.container[index_key2] = JSON.stringify(fetched_result_object2[Object.keys(fetched_result_object2)[0]]);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
-                            resolve("{}");
+                            resolve();
                         }
                     });
                 }
             } else if (field[0].startsWith("SSVM_Callback") || field[0].startsWith("ssvm_callback")) {
-                resolve(JSON.stringify(JSON.parse(field[1])));
+                if (_readyAtZero.callback_already_set == false) {
+                    _readyAtZero.set_callback_object(JSON.parse(field[1]));
+                    _readyAtZero.decrease();
+                } else if (_readyAtZero.callback_already_set == true) {
+                    _readyAtZero.decrease();
+                    console.log("Only allowed one callback object per request");
+                }
+                if (_readyAtZero.isReady()) {
+                    resolve();
+                }
+
             } else {
                 const _string_position3 = field[0].lastIndexOf("_");
                 const index_key3 = field[0].slice(_string_position3 + 1, field[0].length);
                 _readyAtZero.container[index_key3] = JSON.stringify(field[1]);
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
-                    resolve("{}");
+                    resolve();
                 }
             }
 
@@ -392,6 +399,8 @@ class ReadyAtZero {
         this.value = _items;
         //console.log(this.value);
         this.container = {};
+        this.callback_object = {};
+        this.callback_already_set = false;
     }
     decrease() {
         this.value = this.value - 1;
@@ -408,6 +417,13 @@ class ReadyAtZero {
         } else {
             return false;
         }
+    }
+    set_callback_object(_callback_object) {
+        this.callback_object = _callback_object;
+        this.callback_already_set = true;
+    }
+    callback_already_set() {
+        return this.callback_already_set;
     }
 }
 /* Utils end */
@@ -660,8 +676,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
             logging_object["original_wasm_executables_id"] = req.params.wasm_id;
             logging_object["data_payload"] = req.body;
             var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-            performSqlQuery(sqlInsert).then((resultInsert) => {
-            });
+            performSqlQuery(sqlInsert).then((resultInsert) => {});
         });
     }
     executableExists(req.params.wasm_id).then((result, error) => {
@@ -704,17 +719,42 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                         joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                                         res.send(JSON.stringify(joey_response));
                                     }
-                                    joey_response["return_value"] = return_value;
-                                    res.send(JSON.stringify(joey_response));
-                                    break;
+
+                                    // Callback
+                                    if (readyAtZero.callback_already_set == false) {
+                                        var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                        performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                            _readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                        });
+                                    }
+                                    objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                                        if (resultEmptyObject == false) {
+                                            var callback_object_for_processing = readyAtZero.get_callback_object();
+                                            var return_value_as_object = JSON.parse(return_value);
+                                            callback_object_for_processing["body"] = return_value_as_object;
+                                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                                                joey_response["return_value"] = callbackResult;
+                                                console.log(joey_response);
+                                                res.send(JSON.stringify(joey_response));
+                                            });
+                                        } else {
+                                            // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
+                                            joey_response["return_value"] = return_value_as_object;
+                                            res.send(JSON.stringify(joey_response));
+                                        }
+                                    });
+
                                 }
                             }
+
                         } else {
                             console.log(m_error);
                         }
                     });
                 });
             });
+        } else {
+            res.send(req.params.wasm_id + " does not exist");
         }
     });
 });
@@ -789,8 +829,7 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.json(), (req, res) => {
                             }
                         });
                     } else {
-                        console.log("Error processing bytes for function: " + function_name + " for Wasm executable with wasm_id: " + req.params.wasm_id);
-                        res.end();
+                        res.send(req.params.wasm_id + " does not exist");
                     }
                 });
             } else {
@@ -829,7 +868,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
 
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            console.log("Checking content type ...");
             // Setting response type
             res.set('Content-Type', 'application/octet-stream')
             if (req.is('application/octet-stream') == 'application/octet-stream') {
@@ -857,23 +895,24 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                         });
                     }
                     try {
+                        console.log("Body as buffer: " + body_as_buffer);
                         var return_value = vm.RunUint8Array(function_name, body_as_buffer);
-                        if (typeof callback_object_for_processing == "string"){
+                        if (typeof callback_object_for_processing == "string") {
                             callback_object_for_processing = JSON.parse(callback_object_for_processing);
                         }
                         objectIsEmpty(callback_object_for_processing).then((resultEmptyObject, error) => {
-                        if (resultEmptyObject == false) {
-                            var passable_object = callback_object_for_processing;
-                            passable_object["body"] = Buffer.from(return_value);
-                            executeCallbackRequestBytes(req.params.wasm_id, passable_object).then((resultPostCallback, error) => {
-                                res.send(resultPostCallback);
-                            });
-                        } else if (resultEmptyObject == true) {
-                            var rv = Uint8Array.from(return_value);
-                            res.send(Buffer.from(rv));
-                        }
+                            if (resultEmptyObject == false) {
+                                var passable_object = callback_object_for_processing;
+                                passable_object["body"] = Buffer.from(return_value);
+                                executeCallbackRequestBytes(req.params.wasm_id, passable_object).then((resultPostCallback, error) => {
+                                    res.send(resultPostCallback);
+                                });
+                            } else if (resultEmptyObject == true) {
+                                var rv = Uint8Array.from(return_value);
+                                res.send(Buffer.from(rv));
+                            }
 
-                    });
+                        });
                     } catch (err) {
                         joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                         res.send(JSON.stringify(joey_response));
