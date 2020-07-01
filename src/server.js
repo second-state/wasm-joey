@@ -422,6 +422,9 @@ class ReadyAtZero {
         this.callback_object = _callback_object;
         this.callback_already_set = true;
     }
+    get_callback_object(_callback_object) {
+        return this.callback_object;
+    }
     callback_already_set() {
         return this.callback_already_set;
     }
@@ -727,7 +730,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             _readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
                                         });
                                     }
-                                    objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                                    objectIsEmpty(readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                                         if (resultEmptyObject == false) {
                                             var callback_object_for_processing = readyAtZero.get_callback_object();
                                             var return_value_as_object = JSON.parse(return_value);
