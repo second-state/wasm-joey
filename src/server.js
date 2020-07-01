@@ -190,6 +190,9 @@ function executeCallbackRequest(_original_id, _request_options) {
         const data = JSON.stringify(options["body"]);
         delete options.body;
         options["headers"]["Content-Length"] = data.length;
+        console.log(data);
+        console.log(data.length);
+        console.log(options);
         const req = https.request(options, (res) => {
             let data = '';
 
@@ -849,10 +852,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     let vm = new ssvm.VM(Uint8Array.from(array));
                     var function_name = req.params.function_name;
                     var body_as_buffer = Uint8Array.from(req.body);
-                    // Establish if a callback exists in the request
-                    // If an Wasm executable has a callback in the DB it will execute by default
-                    // A user can override the callback in the DB by specifying a callback in the request using the SSVM_Callback key 
-                    // A user can essentially turn off the callback by specifying a callback key and then adding a blank object in the header value
                     try {
                         var request_parameters = JSON.parse(JSON.stringify(req.headers));
                         if (request_parameters.hasOwnProperty('SSVM_Callback') || request_parameters.hasOwnProperty('ssvm_callback')) {
@@ -872,13 +871,14 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.raw(), (req, res) 
                     }
                     try {
                         var return_value = vm.RunUint8Array(function_name, body_as_buffer);
-                        objectIsEmpty(JSON.stringify(callback_object_for_processing)).then((resultEmptyObject, error) => {
+                        if (typeof callback_object_for_processing == "string"){
+                            callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                        }
+                        objectIsEmpty(callback_object_for_processing).then((resultEmptyObject, error) => {
                         if (resultEmptyObject == false) {
-                            var resBuf = Buffer.from(return_value);
-                            console.log(...resBuf);
-                            callback_object_for_processing["body"] = [...resBuf];
-                            console.log("Callback object: " + callback_object_for_processing)
-                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((resultPostCallback, error) => {
+                            var passable_object = callback_object_for_processing;
+                            passable_object["body"] = Array.prototype.slice.call(return_value);;
+                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(passable_object)).then((resultPostCallback, error) => {
                                 joey_response["return_value"] = resultPostCallback;
                                 res.send(JSON.stringify(joey_response));
                             });
