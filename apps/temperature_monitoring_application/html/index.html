@@ -187,7 +187,7 @@ setTimeout(function() {
                             "method": "POST",
                             "port": 8081,
                             "headers": {
-                                "Content-Type": "application/json"
+                                "Content-Type": "text/plain"
                             }
                         },
                         "individual_temperatures": list_of_temps
@@ -196,11 +196,14 @@ setTimeout(function() {
                     calculateAverageTemp(data_45)
 
                         .then(function(result) {
+
                           var result_object = JSON.parse(result);
+                          //console.log("***********" + JSON.stringify(result_object));
                           //var result_object = JSON.parse(JSON.stringify(result));
                           //var c = JSON.parse(result_object.return_value);
-                          var o = JSON.parse(result_object.return_value);
-                            data.setValue(0, 1, Number(JSON.stringify(o.return_value.result)));
+                          //var o = JSON.parse(result_object.return_value);
+                          data.setValue(0, 1, Number(result_object["result"]));
+                            //data.setValue(0, 1, Number(JSON.stringify(o.return_value.result)));
                             chart.draw(data, options);
                         })
                         .catch(function() {
@@ -208,7 +211,7 @@ setTimeout(function() {
                         });
 
 
-                }, 1000);
+                }, 500);
                         }, 2000);
 
             }

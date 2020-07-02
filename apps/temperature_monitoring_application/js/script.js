@@ -186,5 +186,5 @@ function startProcessing(sensors) {
                 console.log("Error");
             });
 
-    }, 1000);
+    }, 500);
 }
