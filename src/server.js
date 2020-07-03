@@ -975,11 +975,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
                 // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                 var jsonToTest;
                 if (typeof req.body == "object") {
-                    if (Array.isArray(req.body)) {
-                        jsonToTest = req.body;
-                    } else {
-                        jsonToTest = JSON.stringify(req.body);
-                    }
+                    jsonToTest = JSON.stringify(req.body);
                 } else if (typeof req.body == "string") {
                     jsonToTest = req.body;
                 }
