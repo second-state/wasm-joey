@@ -920,15 +920,15 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
                     }
                     if (process_callback == true) {
                         isValidJSON(return_value).then((isCallbackJson, err) => {
-                            if(isCallbackJson == true){
+                            if (isCallbackJson == true) {
                                 console.log("- Return_value is valid JSON: " + return_value);
                                 return_value = JSON.parse(return_value);
-                            } 
-                            
-                        callback_object_for_processing["body"] = return_value;
-                        executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
-                            res.send(result4);
-                        });
+                            }
+
+                            callback_object_for_processing["body"] = return_value;
+                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
+                                res.send(result4);
+                            });
                         });
                     } else {
                         res.send(return_value);
@@ -941,17 +941,21 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
     });
 });
 
+// bytify
+// res.set('Content-Type', 'application/octet-stream')
+
+
 // Run a function belonging to a Wasm executable -> returns a Buffer
 // This endpoint calls vm.RunUint8Array which returns a Uint8Array,
 // Each of these endpoints can only accept one type of data as the body i.e. the middleware can only parse raw OR json OR plain.,
 // For this reason, this function will accept a Uint8Array from the caller (as the body). This makes the most sense because (sending receiving Uint8Array).
 app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res) => {
+    res.set('Content-Type', 'application/octet-stream')
     console.log("Request type: " + Object.prototype.toString.call(req.body));
     console.log("Request value: " + req.body);
+    var function_parameters;
     var process_callback = false;
-    var callback_object_for_processing = {};
-    joey_response = {};
-    // Logging
+    // Perform logging
     if (log_level == 1) {
         var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
         performSqlQuery(sqlSelect).then((stateResult) => {
@@ -959,69 +963,71 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
             var logging_object = {};
             logging_object["original_wasm_executables_id"] = req.params.wasm_id;
             logging_object["data_payload"] = req.body;
-            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-            performSqlQuery(sqlInsert).then((resultInsert) => {
-
-            });
+            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+            performSqlQuery(sqlInsert).then((resultInsert) => {});
         });
     }
-
-    executableExists(req.params.wasm_id).then((result, error) => {
-        if (result == 1) {
-            // Setting response type
-            res.set('Content-Type', 'application/octet-stream')
+    executableExists(req.params.wasm_id).then((result2, error) => {
+        if (result2 == 1) {
             var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result2, error) => {
-                var array = result2[0].wasm_binary.toString().split(",");
-                let vm = new ssvm.VM(Uint8Array.from(array));
+            performSqlQuery(sqlSelect).then((result3, error) => {
                 var function_name = req.params.function_name;
-                var body_as_buffer = Uint8Array.from(req.body);
-                console.log(body_as_buffer);
-                try {
-                    var request_parameters = JSON.parse(JSON.stringify(req.headers));
-                    if (request_parameters.hasOwnProperty('SSVM_Callback') || request_parameters.hasOwnProperty('ssvm_callback')) {
-                        process_callback = true;
-                        callback_object_for_processing = request_parameters["ssvm_callback"];
+                // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
+                var jsonToTest;
+                if (typeof req.body == "object") {
+                    if (Array.isArray(req.body)) {
+                        jsonToTest = req.body;
+                    } else {
+                        jsonToTest = JSON.stringify(req.body);
                     }
-                } catch (err) {
-                    joey_response["error"] = err;
-                    res.send(JSON.stringify(joey_response));
+                } else if (typeof req.body == "string") {
+                    jsonToTest = req.body;
                 }
-                // If the user has not specified a callback object in the request, then check if there is a callback in the db for this wasm executable
-                if (process_callback == false) {
-                    var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
-                        callback_object_for_processing = resultCallback[0].wasm_callback_object;
-                    });
-                }
-                try {
-                    console.log("Body as buffer: " + body_as_buffer);
-                    var return_value = vm.RunUint8Array(function_name, body_as_buffer);
-                    if (typeof callback_object_for_processing == "string") {
-                        callback_object_for_processing = JSON.parse(callback_object_for_processing);
-                    }
-                    objectIsEmpty(callback_object_for_processing).then((resultEmptyObject, error) => {
-                        if (resultEmptyObject == false) {
-                            var passable_object = callback_object_for_processing;
-                            passable_object["body"] = Buffer.from(return_value);
-                            executeCallbackRequestBytes(req.params.wasm_id, passable_object).then((resultPostCallback, error) => {
-                                res.send(resultPostCallback);
-                            });
-                        } else if (resultEmptyObject == true) {
-                            var rv = Uint8Array.from(return_value);
-                            res.send(Buffer.from(rv));
+                isValidJSON(jsonToTest).then((isBodyJson, err) => {
+                    console.log("Let's see if the object is valid json");
+                    if (isBodyJson == true) {
+                        console.log("Req.body is valid json");
+                        // Parse the request body 
+                        function_parameters = JSON.parse(jsonToTest);
+                        console.log("Function parameters are now: " + JSON.stringify(function_parameters));
+                        // Check for callback object
+                        if (function_parameters.hasOwnProperty('SSVM_Callback') || function_parameters.hasOwnProperty('ssvm_callback')) {
+                            process_callback = true;
+                            console.log("Processing callback");
+                            var callback_object_for_processing = function_parameters["SSVM_Callback"];
+                            delete function_parameters.SSVM_Callback;
                         }
+                        function_parameters = JSON.stringify(function_parameters);
+                    } else if (isBodyJson == false) {
+                        function_parameters = req.body;
+                        console.log("Req.body is only a string, not json");
+                        console.log("Function parameters are now: " + function_parameters);
+                    }
+                    var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
+                    console.log("Creating new VM instance");
+                    var vm = new ssvm.VM(uint8array);
+                    try {
+                        console.log("Executing function");
+                        var return_value = vm.RunUint8Array(function_name, function_parameters);
+                        console.log("Successfully executed function with return value of : " + return_value);
+                    } catch (err) {
+                        res.send("Error: " + err);
+                    }
+                    if (process_callback == true) {
+                        callback_object_for_processing["body"] = return_value;
+                        executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
+                            return_value_as_bytes = [].slice.call(result4);
+                            res.send(return_value_as_bytes);
+                        });
 
-                    });
-                } catch (err) {
-                    joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                    res.send(JSON.stringify(joey_response));
-                }
-
+                    } else {
+                        return_value_as_bytes = [].slice.call(return_value);
+                        res.send(return_value_as_bytes);
+                    }
+                });
             });
         } else {
-            joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
-            res.send(JSON.stringify(joey_response));
+            res.send(req.params.wasm_id + " does not exist");
         }
     });
 });
