@@ -1006,9 +1006,8 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
                         console.log("Executing function");
                         // Facilitates being passed a byte array (which will happen if this bytes endpoint is called by a callback from this bytes endpoint (which only returns bytes))
                         if (Array.isArray(JSON.parse(function_parameters))) {
-                            var function_parameters_as_byte_array = Uint8Array.from(function_parameters);
-                            var function_parameters_as_byte_array_2 = [].slice.call(function_parameters_as_byte_array);
-                            var return_value = vm.RunUint8Array(function_name, function_parameters_as_byte_array_2);
+                            function_parameters_as_byte_array = Uint8Array.from(function_parameters);
+                            var return_value = vm.RunUint8Array(function_name, function_parameters_as_byte_array);
                             console.log("Successfully executed function with return value of : " + return_value);
                         } else {
                             var return_value = vm.RunUint8Array(function_name, function_parameters);
