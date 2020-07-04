@@ -941,11 +941,47 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
     });
 });
 
-// bytify
-// res.set('Content-Type', 'application/octet-stream')
+app.post('/api/run/:wasm_id/:function_name/arbitrary_binary', bodyParser.raw(), (req, res) => {
+    res.set('Content-Type', 'application/octet-stream')
+    console.log("Request type: " + Object.prototype.toString.call(req.body));
+    console.log("Request value: " + req.body);
+    // Perform logging
+    if (log_level == 1) {
+        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+        performSqlQuery(sqlSelect).then((stateResult) => {
+            console.log("Creating log object");
+            var logging_object = {};
+            logging_object["original_wasm_executables_id"] = req.params.wasm_id;
+            logging_object["data_payload"] = req.body;
+            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+            performSqlQuery(sqlInsert).then((resultInsert) => {});
+        });
+    }
+    executableExists(req.params.wasm_id).then((result2, error) => {
+        if (result2 == 1) {
+            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlSelect).then((result3, error) => {
+                var function_name = req.params.function_name;
+                var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
+                console.log("Creating new VM instance");
+                var vm = new ssvm.VM(uint8array);
+                try {
+                    console.log("Executing function");
+                    var return_value = vm.RunUint8Array(function_name, req.body);
+                    console.log("Successfully executed function with return value of : " + return_value);
+                    res.send(return_value);
+                } catch (err) {
+                    res.send("Error: " + err);
+                }
+            });
+        } else {
+            res.send(req.params.wasm_id + " does not exist");
+        }
+    });
+});
 
 
-// Run a function belonging to a Wasm executable -> returns a Buffer
+// Run a function belonging to a Wasm executable -> returns a string Array (Uint8Array / Buffer)
 // This endpoint calls vm.RunUint8Array which returns a Uint8Array,
 // Each of these endpoints can only accept one type of data as the body i.e. the middleware can only parse raw OR json OR plain.,
 // For this reason, this function will accept a Uint8Array from the caller (as the body). This makes the most sense because (sending receiving Uint8Array).
@@ -1023,6 +1059,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
                         callback_object_for_processing["body"] = callback_value_as_bytes;
                         executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
                             return_value_as_bytes = [].slice.call(result4);
+                            process_callback = false;
                             res.send(return_value_as_bytes);
                         });
 
