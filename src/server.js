@@ -987,12 +987,13 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
                         // Parse the request body 
                         function_parameters = JSON.parse(jsonToTest);
                         console.log("Function parameters are now: " + JSON.stringify(function_parameters));
-                        // Check for callback object
-                        if (function_parameters.hasOwnProperty('SSVM_Callback') || function_parameters.hasOwnProperty('ssvm_callback')) {
+                        // Check for callback object in the body if a) body is json b) SSVM_Data object exists and c) SSVM_Callback object exists
+                        if (function_parameters.hasOwnProperty('SSVM_Callback') && function_parameters.hasOwnProperty('SSVM_Data')) {
                             process_callback = true;
                             console.log("Processing callback");
                             var callback_object_for_processing = function_parameters["SSVM_Callback"];
                             delete function_parameters.SSVM_Callback;
+                            function_parameters = function_parameters["SSVM_Data"];
                         }
                         function_parameters = JSON.stringify(function_parameters);
                     } else if (isBodyJson == false) {
@@ -1018,7 +1019,8 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
                         res.send("Error: " + err);
                     }
                     if (process_callback == true) {
-                        callback_object_for_processing["body"] = return_value;
+                        callback_value_as_bytes = [].slice.call(return_value);
+                        callback_object_for_processing["body"] = callback_value_as_bytes;
                         executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
                             return_value_as_bytes = [].slice.call(result4);
                             res.send(return_value_as_bytes);
@@ -1026,6 +1028,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
 
                     } else {
                         return_value_as_bytes = [].slice.call(return_value);
+                        console.log("Response type: " + Object.prototype.toString.call(return_value_as_bytes));
                         res.send(return_value_as_bytes);
                     }
                 });
