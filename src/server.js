@@ -1004,8 +1004,15 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
                     var vm = new ssvm.VM(uint8array);
                     try {
                         console.log("Executing function");
-                        var return_value = vm.RunUint8Array(function_name, function_parameters);
-                        console.log("Successfully executed function with return value of : " + return_value);
+                        // Facilitates being passed a byte array (which will happen if this bytes endpoint is called by a callback from this bytes endpoint (which only returns bytes))
+                        if (Array.isArray(JSON.parse(function_parameters))) {
+                            function_parameters_as_byte_array = Uint8Array.from(function_parameters);
+                            var return_value = vm.RunUint8Array(function_name, function_parameters_as_byte_array);
+                            console.log("Successfully executed function with return value of : " + return_value);
+                        } else {
+                            var return_value = vm.RunUint8Array(function_name, function_parameters);
+                            console.log("Successfully executed function with return value of : " + return_value);
+                        }
                     } catch (err) {
                         res.send("Error: " + err);
                     }
