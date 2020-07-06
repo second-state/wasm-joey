@@ -526,6 +526,8 @@ app.get('/', (req, res) => {
 
 // Set a Wasm executable
 app.post('/api/executables', bodyParser.raw(), (req, res) => {
+    console.log(req.header('SSVM_Create_Usage_Key'));
+    console.log(typeof req.header('SSVM_Create_Usage_Key'));
     joey_response = {};
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
