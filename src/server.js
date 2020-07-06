@@ -571,14 +571,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-
-            // Check the admin key
-            /* Perhaps not required for just looking 
-            var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
-            */
             var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
@@ -667,13 +659,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                     res.send(JSON.stringify(joey_response));
                 });
             }
-            /*
-                } else {
-                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
-                    res.send(JSON.stringify(joey_response));
-                }
-            });
-            */
         } else {
             joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(joey_response));
@@ -769,6 +754,11 @@ app.post('/api/multipart/run/:wasm_id/:function_name', bodyParser.text(), (req, 
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if(typeof header_usage_key === 'undefined'){
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     const form = formidable({
                         multiples: true
@@ -873,6 +863,11 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', bodyParser.text(), 
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if(typeof header_usage_key === 'undefined'){
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     const form = formidable({
                         multiples: true
@@ -980,6 +975,11 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if(typeof header_usage_key === 'undefined'){
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result3, error) => {
@@ -1070,6 +1070,11 @@ app.post('/api/run/:wasm_id/:function_name/arbitrary_binary', bodyParser.raw(), 
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if(typeof header_usage_key === 'undefined'){
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result3, error) => {
@@ -1124,6 +1129,11 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if(typeof header_usage_key === 'undefined'){
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result3, error) => {
@@ -1223,6 +1233,11 @@ app.post('/api/run/:wasm_id/:function_name/bytesV2', (req, res) => {
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if(typeof header_usage_key === 'undefined'){
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlSelect).then((result3, error) => {
@@ -1336,6 +1351,11 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if(typeof header_usage_key === 'undefined'){
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     if (req.is('text/plain') == 'text/plain') {
                         var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -1369,6 +1389,11 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
                     var header_usage_key = req.header('SSVM_Usage_Key');
                     var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                     performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                    // Set usage key
+                    if(typeof header_usage_key === 'undefined'){
+                        header_usage_key = "00000000-0000-0000-0000-000000000000";
+                    }
+                    // Set usage key
                         if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                             var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                             console.log(sqlInsert);
