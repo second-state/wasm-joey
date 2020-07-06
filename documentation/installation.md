@@ -202,6 +202,8 @@ CREATE TABLE wasm_executables(
     wasm_binary LONGBLOB NOT NULL,
     wasm_state JSON NOT NULL,
     wasm_callback_object JSON NOT NULL,
+    usage_key binary(16),
+    admin_key binary(16),
     PRIMARY KEY(wasm_id)
 );
 ```
