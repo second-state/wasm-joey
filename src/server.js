@@ -532,7 +532,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
         // Logic for creating keys
         var usage_key = "00000000-0000-0000-0000-000000000000";
         if (typeof req.header('SSVM_Create_Usage_Key') !== 'undefined') {
-            if (create_usage_key == "true" || create_usage_key == "True") {
+            if (req.header('SSVM_Create_Usage_Key') == "true" || req.header('SSVM_Create_Usage_Key') == "True") {
                 usage_key = uuidv4();
             }
         }
