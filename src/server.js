@@ -673,6 +673,7 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
+    req.header('SSVM_Admin_Key');
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
