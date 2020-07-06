@@ -686,10 +686,11 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
                         res.send(JSON.stringify(joey_response));
                     });
                 }
+
+            } else {
+                joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be deleted.";
+                res.send(JSON.stringify(joey_response));
             });
-        } else {
-            joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be deleted.";
-            res.send(JSON.stringify(joey_response));
         } else {
             joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(joey_response));
