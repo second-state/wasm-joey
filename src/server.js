@@ -552,7 +552,7 @@ app.put('/api/keys/:wasm_id/create_new_usage_key', (req, res) => {
         if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
             var usage_key = uuidv4();
             var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-            joey_response = ["usage_key"] = usage_key;
+            joey_response["usage_key"] = usage_key;
             res.send(joey_response);
         } else {
             joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
