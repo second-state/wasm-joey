@@ -655,15 +655,25 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            if (req.is('application/octet-stream') == 'application/octet-stream') {
-                var wasm_as_buffer = Uint8Array.from(req.body);
-                var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                performSqlQuery(sqlUpdate).then((result) => {
-                    joey_response["wasm_id"] = req.params.wasm_id;
-                    joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
+            // Check the admin key
+            var header_admin_key = req.header('SSVM_Admin_Key');
+            var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
+                    if (req.is('application/octet-stream') == 'application/octet-stream') {
+                        var wasm_as_buffer = Uint8Array.from(req.body);
+                        var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        performSqlQuery(sqlUpdate).then((result) => {
+                            joey_response["wasm_id"] = req.params.wasm_id;
+                            joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
+                            res.send(JSON.stringify(joey_response));
+                        });
+                    }
+                } else {
+                    joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
                     res.send(JSON.stringify(joey_response));
-                });
-            }
+                }
+            });
         } else {
             joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(joey_response));
