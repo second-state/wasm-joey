@@ -681,7 +681,9 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
             var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
                 console.log(admin_key);
-                console.log(resultCheckKey);
+                console.log(resultCheckKey[0]);
+                console.log(resultCheckKey[0].admin_key);
+                console.log(resultCheckKey[0].admin_key.toString().digest('hex'));
             var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlDelete).then((result) => {
                 joey_response["wasm_id"] = req.params.wasm_id
