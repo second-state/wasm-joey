@@ -550,7 +550,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
         if (result == 1) {
             // Check the admin key
             var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
 
