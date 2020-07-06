@@ -532,7 +532,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
         var wasm_as_buffer = Uint8Array.from(req.body);
         var usage_key = uuidv4();
         var admin_key = uuidv4();
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "');";
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "');";
         console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
