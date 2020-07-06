@@ -677,13 +677,11 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
             // Check the admin key
-            var admin_key = req.header('SSVM_Admin_Key');
+            var header_admin_key = req.header('SSVM_Admin_Key');
             var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                console.log(admin_key);
-                console.log(resultCheckKey[0]);
-                console.log(resultCheckKey[0].admin_key);
-                console.log(resultCheckKey[0].admin_key.toString());
+                console.log("Header admin key:" + admin_key);
+                console.log("DB Admin key:" + resultCheckKey[0].admin_key.toString());
             var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlDelete).then((result) => {
                 joey_response["wasm_id"] = req.params.wasm_id
