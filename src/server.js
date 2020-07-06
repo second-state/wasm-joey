@@ -1,4 +1,3 @@
-
 /* Application dependencies & config - START */
 
 // Node Cache
@@ -673,7 +672,6 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
-    req.header('SSVM_Admin_Key');
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
@@ -681,14 +679,17 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
             var header_admin_key = req.header('SSVM_Admin_Key');
             var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                console.log("Header admin key:" + header_admin_key);
-                console.log("DB Admin key:" + resultCheckKey[0].admin_key.toString());
-            var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlDelete).then((result) => {
-                joey_response["wasm_id"] = req.params.wasm_id
-                res.send(JSON.stringify(joey_response));
+                if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
+                    var sqlDelete = "DELETE from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlDelete).then((result) => {
+                        joey_response["wasm_id"] = req.params.wasm_id
+                        res.send(JSON.stringify(joey_response));
+                    });
+                }
             });
-            });
+        } else {
+            joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be deleted.";
+            res.send(JSON.stringify(joey_response));
         } else {
             joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(joey_response));
