@@ -530,12 +530,16 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     joey_response = {};
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}');";
+        var usage_key = uuidv4();
+        var admin_key = uuidv4();
+        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "');";
         console.log(sqlInsert);
         performSqlQuery(sqlInsert).then((resultInsert) => {
             console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
             joey_response["wasm_id"] = resultInsert.insertId;
             joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
+            joey_response["usage_key"] = usage_key;
+            joey_response["admin_key"] = admin_key;
             res.send(JSON.stringify(joey_response));
         });
     }
