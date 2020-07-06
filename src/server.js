@@ -526,16 +526,15 @@ app.get('/', (req, res) => {
 
 // Set a Wasm executable
 app.post('/api/executables', bodyParser.raw(), (req, res) => {
-    console.log(req.header('SSVM_Create_Usage_Key'));
-    console.log(typeof req.header('SSVM_Create_Usage_Key'));
     joey_response = {};
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
         // Logic for creating keys
         var usage_key = "00000000-0000-0000-0000-000000000000";
-        var create_usage_key = req.header('SSVM_Create_Usage_Key');
-        if (create_usage_key == "true" || create_usage_key == "True" ){
-            usage_key = uuidv4();
+        if (typeof req.header('SSVM_Create_Usage_Key') !== 'undefined') {
+            if (create_usage_key == "true" || create_usage_key == "True") {
+                usage_key = uuidv4();
+            }
         }
         var admin_key = uuidv4();
         var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "');";
@@ -1234,23 +1233,23 @@ app.post('/api/run/:wasm_id/:function_name/bytesV2', (req, res) => {
                         if (content_type == "application/octet-stream") {
                             console.log('application/octet-stream');
                             try {
-                            var return_value = vm.RunUint8Array(function_name, req.body);
-                        } catch {
-                            console.log("Error executing SSVM");
-                        }
+                                var return_value = vm.RunUint8Array(function_name, req.body);
+                            } catch {
+                                console.log("Error executing SSVM");
+                            }
                             console.log(return_value);
                             res.send(return_value);
                             res.end();
                         }
                     });
-                                } else {
+                } else {
                     console.log("Wrong key");
                 }
             });
         }
     });
 });
-            /*
+/*
                         // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                         var jsonToTest;
                         if (typeof req.body == "object") {
