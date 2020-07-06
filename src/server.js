@@ -548,105 +548,109 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
+
             // Check the admin key
+            /* Perhaps not required for just looking 
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
-
-                    var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object"];
-                    var request_validity = true;
-                    if (req.query.filterBy != undefined) {
-                        try {
-                            var filters = JSON.parse(req.query.filterBy);
-                        } catch {
-                            joey_response["error"] = "Please check your filterBy parameters. Not valid string array!";
-                            res.send(JSON.stringify(joey_response));
-                            res.end();
+            */
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object"];
+            var request_validity = true;
+            if (req.query.filterBy != undefined) {
+                try {
+                    var filters = JSON.parse(req.query.filterBy);
+                } catch {
+                    joey_response["error"] = "Please check your filterBy parameters. Not valid string array!";
+                    res.send(JSON.stringify(joey_response));
+                    res.end();
+                }
+                if (filters.length >= 1) {
+                    for (var i = 0; i < filters.length; i++) {
+                        if (!valid_filters.includes(filters[i])) {
+                            console.log(filters[i] + " is NOT a valid filter ...");
+                            request_validity = false;
+                        } else {
+                            console.log(filters[i] + " is a valid filter ...");
                         }
-                        if (filters.length >= 1) {
-                            for (var i = 0; i < filters.length; i++) {
-                                if (!valid_filters.includes(filters[i])) {
-                                    console.log(filters[i] + " is NOT a valid filter ...");
-                                    request_validity = false;
-                                } else {
-                                    console.log(filters[i] + " is a valid filter ...");
-                                }
-                            }
-                            if (request_validity == false) {
-                                res.send(JSON.stringify([{
-                                    "error_invalid_filter": JSON.stringify(filters)
-                                }, {
-                                    "valid_filters_include": valid_filters
-                                }]));
-                            } else {
-                                // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
-                                if (filters.length >= 1) {
-                                    if (filters.includes("wasm_as_buffer")) {
-                                        filters = removeElementFromArray(filters, "wasm_as_buffer");
-                                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                        performSqlQuery(sqlSelect).then((result) => {
-                                            joey_response["wasm_as_buffer"] = result[0].wasm_binary;
-                                            if (filters.length == 0) {
-                                                res.send(JSON.stringify(joey_response));
-                                            }
-                                        });
-                                    }
-                                }
-                                // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
-                                if (filters.length >= 1) {
-                                    if (filters.includes("wasm_sha256")) {
-                                        filters = removeElementFromArray(filters, "wasm_sha256");
-                                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                        performSqlQuery(sqlSelect).then((result) => {
-                                            joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
-                                            if (filters.length == 0) {
-                                                res.send(JSON.stringify(joey_response));
-                                            }
-                                        });
-                                    }
-                                }
-                                // We can join the simple objects i.e. char and just perform one select query for these
-                                if (filters.length >= 1) {
-                                    var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                    performSqlQuery(sqlSelect).then((result) => {
-                                        if (filters.includes("wasm_id")) {
-                                            joey_response["wasm_id"] = result[0].wasm_id;
-                                        }
-                                        if (filters.includes("wasm_description")) {
-                                            joey_response["wasm_description"] = result[0].wasm_description;
-                                        }
-                                        if (filters.includes("wasm_state")) {
-                                            joey_response["wasm_state"] = result[0].wasm_state;
-                                        }
-                                        if (filters.includes("wasm_callback_object")) {
-                                            joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
-                                        }
-                                        filters = [];
-                                        if (filters.length == 0) {
-                                            res.send(JSON.stringify(joey_response));
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                    } else {
-                        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                        performSqlQuery(sqlSelect).then((result) => {
-                            joey_response["wasm_id"] = result[0].wasm_id;
-                            joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
-                            joey_response["wasm_description"] = result[0].wasm_description;
-                            joey_response["wasm_as_buffer"] = result[0].wasm_binary;
-                            joey_response["wasm_state"] = result[0].wasm_state;
-                            joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
-                            res.send(JSON.stringify(joey_response));
-                        });
                     }
+                    if (request_validity == false) {
+                        res.send(JSON.stringify([{
+                            "error_invalid_filter": JSON.stringify(filters)
+                        }, {
+                            "valid_filters_include": valid_filters
+                        }]));
+                    } else {
+                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
+                        if (filters.length >= 1) {
+                            if (filters.includes("wasm_as_buffer")) {
+                                filters = removeElementFromArray(filters, "wasm_as_buffer");
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                performSqlQuery(sqlSelect).then((result) => {
+                                    joey_response["wasm_as_buffer"] = result[0].wasm_binary;
+                                    if (filters.length == 0) {
+                                        res.send(JSON.stringify(joey_response));
+                                    }
+                                });
+                            }
+                        }
+                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
+                        if (filters.length >= 1) {
+                            if (filters.includes("wasm_sha256")) {
+                                filters = removeElementFromArray(filters, "wasm_sha256");
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                performSqlQuery(sqlSelect).then((result) => {
+                                    joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                                    if (filters.length == 0) {
+                                        res.send(JSON.stringify(joey_response));
+                                    }
+                                });
+                            }
+                        }
+                        // We can join the simple objects i.e. char and just perform one select query for these
+                        if (filters.length >= 1) {
+                            var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            performSqlQuery(sqlSelect).then((result) => {
+                                if (filters.includes("wasm_id")) {
+                                    joey_response["wasm_id"] = result[0].wasm_id;
+                                }
+                                if (filters.includes("wasm_description")) {
+                                    joey_response["wasm_description"] = result[0].wasm_description;
+                                }
+                                if (filters.includes("wasm_state")) {
+                                    joey_response["wasm_state"] = result[0].wasm_state;
+                                }
+                                if (filters.includes("wasm_callback_object")) {
+                                    joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                                }
+                                filters = [];
+                                if (filters.length == 0) {
+                                    res.send(JSON.stringify(joey_response));
+                                }
+                            });
+                        }
+                    }
+                }
+            } else {
+                var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                performSqlQuery(sqlSelect).then((result) => {
+                    joey_response["wasm_id"] = result[0].wasm_id;
+                    joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                    joey_response["wasm_description"] = result[0].wasm_description;
+                    joey_response["wasm_as_buffer"] = result[0].wasm_binary;
+                    joey_response["wasm_state"] = result[0].wasm_state;
+                    joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                    res.send(JSON.stringify(joey_response));
+                });
+            }
+            /*
                 } else {
                     joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
                     res.send(JSON.stringify(joey_response));
                 }
             });
+            */
         } else {
             joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(joey_response));
@@ -739,77 +743,86 @@ app.post('/api/multipart/run/:wasm_id/:function_name', bodyParser.text(), (req, 
     }
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            const form = formidable({
-                multiples: true
-            });
-            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result2, error2) => {
-                var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
-                var function_name = req.params.function_name;
-                form.parse(req, (err, fields, files) => {
-                    if (err) {
-                        next(err);
-                        joey_response["return_value"] = "Error reading multipart fields and/or files";
-                        res.send(JSON.stringify(joey_response));
-                        return;
-                    }
-                    // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
-                    var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                    parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
-                        if (!m_error) {
-                            while (true) {
-                                if (readyAtZero.isReady() == true) {
-                                    var ordered_overarching_container = {};
-                                    Object.keys(readyAtZero.container).sort().forEach(function(key) {
-                                        ordered_overarching_container[key] = readyAtZero.container[key];
-                                    });
-                                    for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                        array_of_parameters.push(`${value}`);
-                                    }
-                                    for (var i = 1; i <= array_of_parameters.length; i++) {
-                                        console.log("\nParameter: " + i);
-                                        console.log(array_of_parameters[i - 1]);
-                                    }
-                                    var vm = new ssvm.VM(uint8array);
-                                    try {
-                                        var return_value = vm.RunString(function_name, ...array_of_parameters);
-                                    } catch (err) {
-                                        joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                                        res.send(JSON.stringify(joey_response));
-                                    }
-
-                                    // Callback
-                                    if (readyAtZero.callback_already_set == false) {
-                                        var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                        performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
-                                            _readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                        });
-                                    }
-                                    objectIsEmpty(readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
-                                        if (resultEmptyObject == false) {
-                                            var callback_object_for_processing = readyAtZero.get_callback_object();
-                                            var return_value_as_object = JSON.parse(return_value);
-                                            callback_object_for_processing["body"] = return_value_as_object;
-                                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
-                                                joey_response["return_value"] = callbackResult;
-                                                console.log(joey_response);
-                                                res.send(JSON.stringify(joey_response));
-                                            });
-                                        } else {
-                                            // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                                            joey_response["return_value"] = return_value_as_object;
-                                            res.send(JSON.stringify(joey_response));
-                                        }
-                                    });
-
-                                }
-                            }
-
-                        } else {
-                            console.log(m_error);
-                        }
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                    const form = formidable({
+                        multiples: true
                     });
-                });
+                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlSelect).then((result2, error2) => {
+                        var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
+                        var function_name = req.params.function_name;
+                        form.parse(req, (err, fields, files) => {
+                            if (err) {
+                                next(err);
+                                joey_response["return_value"] = "Error reading multipart fields and/or files";
+                                res.send(JSON.stringify(joey_response));
+                                return;
+                            }
+                            // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
+                            var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
+                            parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
+                                if (!m_error) {
+                                    while (true) {
+                                        if (readyAtZero.isReady() == true) {
+                                            var ordered_overarching_container = {};
+                                            Object.keys(readyAtZero.container).sort().forEach(function(key) {
+                                                ordered_overarching_container[key] = readyAtZero.container[key];
+                                            });
+                                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                                                array_of_parameters.push(`${value}`);
+                                            }
+                                            for (var i = 1; i <= array_of_parameters.length; i++) {
+                                                console.log("\nParameter: " + i);
+                                                console.log(array_of_parameters[i - 1]);
+                                            }
+                                            var vm = new ssvm.VM(uint8array);
+                                            try {
+                                                var return_value = vm.RunString(function_name, ...array_of_parameters);
+                                            } catch (err) {
+                                                joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                                res.send(JSON.stringify(joey_response));
+                                            }
+
+                                            // Callback
+                                            if (readyAtZero.callback_already_set == false) {
+                                                var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                                performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                                    _readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                                });
+                                            }
+                                            objectIsEmpty(readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                                                if (resultEmptyObject == false) {
+                                                    var callback_object_for_processing = readyAtZero.get_callback_object();
+                                                    var return_value_as_object = JSON.parse(return_value);
+                                                    callback_object_for_processing["body"] = return_value_as_object;
+                                                    executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                                                        joey_response["return_value"] = callbackResult;
+                                                        console.log(joey_response);
+                                                        res.send(JSON.stringify(joey_response));
+                                                    });
+                                                } else {
+                                                    // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
+                                                    joey_response["return_value"] = return_value_as_object;
+                                                    res.send(JSON.stringify(joey_response));
+                                                }
+                                            });
+
+                                        }
+                                    }
+
+                                } else {
+                                    console.log(m_error);
+                                }
+                            });
+                        });
+                    });
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
             });
         } else {
             res.send(req.params.wasm_id + " does not exist");
@@ -834,77 +847,86 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', bodyParser.text(), 
     }
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            const form = formidable({
-                multiples: true
-            });
-            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result2, error2) => {
-                var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
-                var function_name = req.params.function_name;
-                form.parse(req, (err, fields, files) => {
-                    if (err) {
-                        next(err);
-                        joey_response["return_value"] = "Error reading multipart fields and/or files";
-                        res.send(JSON.stringify(joey_response));
-                        return;
-                    }
-                    // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
-                    var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                    parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
-                        if (!m_error) {
-                            while (true) {
-                                if (readyAtZero.isReady() == true) {
-                                    var ordered_overarching_container = {};
-                                    Object.keys(readyAtZero.container).sort().forEach(function(key) {
-                                        ordered_overarching_container[key] = readyAtZero.container[key];
-                                    });
-                                    for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                        array_of_parameters.push(`${value}`);
-                                    }
-                                    for (var i = 1; i <= array_of_parameters.length; i++) {
-                                        console.log("\nParameter: " + i);
-                                        console.log(array_of_parameters[i - 1]);
-                                    }
-                                    var vm = new ssvm.VM(uint8array);
-                                    try {
-                                        var return_value = vm.RunUint8Array(function_name, ...array_of_parameters);
-                                    } catch (err) {
-                                        joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                                        res.send(JSON.stringify(joey_response));
-                                    }
-
-                                    // Callback
-                                    if (readyAtZero.callback_already_set == false) {
-                                        var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                        performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
-                                            _readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                        });
-                                    }
-                                    objectIsEmpty(readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
-                                        if (resultEmptyObject == false) {
-                                            var callback_object_for_processing = readyAtZero.get_callback_object();
-                                            var return_value_as_object = JSON.parse(return_value);
-                                            callback_object_for_processing["body"] = return_value_as_object;
-                                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
-                                                joey_response["return_value"] = callbackResult;
-                                                console.log(joey_response);
-                                                res.send(JSON.stringify(joey_response));
-                                            });
-                                        } else {
-                                            // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                                            joey_response["return_value"] = return_value_as_object;
-                                            res.send(JSON.stringify(joey_response));
-                                        }
-                                    });
-
-                                }
-                            }
-
-                        } else {
-                            console.log(m_error);
-                        }
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                    const form = formidable({
+                        multiples: true
                     });
-                });
+                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlSelect).then((result2, error2) => {
+                        var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
+                        var function_name = req.params.function_name;
+                        form.parse(req, (err, fields, files) => {
+                            if (err) {
+                                next(err);
+                                joey_response["return_value"] = "Error reading multipart fields and/or files";
+                                res.send(JSON.stringify(joey_response));
+                                return;
+                            }
+                            // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
+                            var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
+                            parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
+                                if (!m_error) {
+                                    while (true) {
+                                        if (readyAtZero.isReady() == true) {
+                                            var ordered_overarching_container = {};
+                                            Object.keys(readyAtZero.container).sort().forEach(function(key) {
+                                                ordered_overarching_container[key] = readyAtZero.container[key];
+                                            });
+                                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                                                array_of_parameters.push(`${value}`);
+                                            }
+                                            for (var i = 1; i <= array_of_parameters.length; i++) {
+                                                console.log("\nParameter: " + i);
+                                                console.log(array_of_parameters[i - 1]);
+                                            }
+                                            var vm = new ssvm.VM(uint8array);
+                                            try {
+                                                var return_value = vm.RunUint8Array(function_name, ...array_of_parameters);
+                                            } catch (err) {
+                                                joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                                res.send(JSON.stringify(joey_response));
+                                            }
+
+                                            // Callback
+                                            if (readyAtZero.callback_already_set == false) {
+                                                var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                                performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                                    _readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                                });
+                                            }
+                                            objectIsEmpty(readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                                                if (resultEmptyObject == false) {
+                                                    var callback_object_for_processing = readyAtZero.get_callback_object();
+                                                    var return_value_as_object = JSON.parse(return_value);
+                                                    callback_object_for_processing["body"] = return_value_as_object;
+                                                    executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                                                        joey_response["return_value"] = callbackResult;
+                                                        console.log(joey_response);
+                                                        res.send(JSON.stringify(joey_response));
+                                                    });
+                                                } else {
+                                                    // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
+                                                    joey_response["return_value"] = return_value_as_object;
+                                                    res.send(JSON.stringify(joey_response));
+                                                }
+                                            });
+
+                                        }
+                                    }
+
+                                } else {
+                                    console.log(m_error);
+                                }
+                            });
+                        });
+                    });
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
             });
         } else {
             res.send(req.params.wasm_id + " does not exist");
@@ -932,62 +954,71 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
     }
     executableExists(req.params.wasm_id).then((result2, error) => {
         if (result2 == 1) {
-            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result3, error) => {
-                var function_name = req.params.function_name;
-                // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
-                var jsonToTest;
-                if (typeof req.body == "object") {
-                    jsonToTest = JSON.stringify(req.body);
-                } else if (typeof req.body == "string") {
-                    jsonToTest = req.body;
-                }
-                isValidJSON(jsonToTest).then((isBodyJson, err) => {
-                    console.log("Let's see if the object is valid json");
-                    if (isBodyJson == true) {
-                        console.log("Req.body is valid json");
-                        // Parse the request body 
-                        function_parameters = JSON.parse(jsonToTest);
-                        console.log("Function parameters are now: " + JSON.stringify(function_parameters));
-                        // Check for callback object
-                        if (function_parameters.hasOwnProperty('SSVM_Callback') || function_parameters.hasOwnProperty('ssvm_callback')) {
-                            process_callback = true;
-                            console.log("Processing callback");
-                            var callback_object_for_processing = function_parameters["SSVM_Callback"];
-                            delete function_parameters.SSVM_Callback;
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlSelect).then((result3, error) => {
+                        var function_name = req.params.function_name;
+                        // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
+                        var jsonToTest;
+                        if (typeof req.body == "object") {
+                            jsonToTest = JSON.stringify(req.body);
+                        } else if (typeof req.body == "string") {
+                            jsonToTest = req.body;
                         }
-                        function_parameters = JSON.stringify(function_parameters);
-                    } else if (isBodyJson == false) {
-                        function_parameters = req.body;
-                        console.log("Req.body is only a string, not json");
-                        console.log("Function parameters are now: " + function_parameters);
-                    }
-                    var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
-                    console.log("Creating new VM instance");
-                    var vm = new ssvm.VM(uint8array);
-                    try {
-                        console.log("Executing function");
-                        var return_value = vm.RunString(function_name, function_parameters);
-                        console.log("Successfully executed function with return value of : " + return_value);
-                    } catch (err) {
-                        res.send("Error: " + err);
-                    }
-                    if (process_callback == true) {
-                        isValidJSON(return_value).then((isCallbackJson, err) => {
-                            if (isCallbackJson == true) {
-                                console.log("- Return_value is valid JSON: " + return_value);
-                                return_value = JSON.parse(return_value);
+                        isValidJSON(jsonToTest).then((isBodyJson, err) => {
+                            console.log("Let's see if the object is valid json");
+                            if (isBodyJson == true) {
+                                console.log("Req.body is valid json");
+                                // Parse the request body 
+                                function_parameters = JSON.parse(jsonToTest);
+                                console.log("Function parameters are now: " + JSON.stringify(function_parameters));
+                                // Check for callback object
+                                if (function_parameters.hasOwnProperty('SSVM_Callback') || function_parameters.hasOwnProperty('ssvm_callback')) {
+                                    process_callback = true;
+                                    console.log("Processing callback");
+                                    var callback_object_for_processing = function_parameters["SSVM_Callback"];
+                                    delete function_parameters.SSVM_Callback;
+                                }
+                                function_parameters = JSON.stringify(function_parameters);
+                            } else if (isBodyJson == false) {
+                                function_parameters = req.body;
+                                console.log("Req.body is only a string, not json");
+                                console.log("Function parameters are now: " + function_parameters);
                             }
+                            var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
+                            console.log("Creating new VM instance");
+                            var vm = new ssvm.VM(uint8array);
+                            try {
+                                console.log("Executing function");
+                                var return_value = vm.RunString(function_name, function_parameters);
+                                console.log("Successfully executed function with return value of : " + return_value);
+                            } catch (err) {
+                                res.send("Error: " + err);
+                            }
+                            if (process_callback == true) {
+                                isValidJSON(return_value).then((isCallbackJson, err) => {
+                                    if (isCallbackJson == true) {
+                                        console.log("- Return_value is valid JSON: " + return_value);
+                                        return_value = JSON.parse(return_value);
+                                    }
 
-                            callback_object_for_processing["body"] = return_value;
-                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
-                                res.send(result4);
-                            });
+                                    callback_object_for_processing["body"] = return_value;
+                                    executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
+                                        res.send(result4);
+                                    });
+                                });
+                            } else {
+                                res.send(return_value);
+                            }
                         });
-                    } else {
-                        res.send(return_value);
-                    }
-                });
+                    });
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
             });
         } else {
             res.send(req.params.wasm_id + " does not exist");
@@ -1013,19 +1044,28 @@ app.post('/api/run/:wasm_id/:function_name/arbitrary_binary', bodyParser.raw(), 
     }
     executableExists(req.params.wasm_id).then((result2, error) => {
         if (result2 == 1) {
-            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result3, error) => {
-                var function_name = req.params.function_name;
-                var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
-                console.log("Creating new VM instance");
-                var vm = new ssvm.VM(uint8array);
-                try {
-                    console.log("Executing function");
-                    var return_value = vm.RunUint8Array(function_name, req.body);
-                    console.log("Successfully executed function with return value of : " + return_value);
-                    res.send(return_value);
-                } catch (err) {
-                    res.send("Error: " + err);
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlSelect).then((result3, error) => {
+                        var function_name = req.params.function_name;
+                        var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
+                        console.log("Creating new VM instance");
+                        var vm = new ssvm.VM(uint8array);
+                        try {
+                            console.log("Executing function");
+                            var return_value = vm.RunUint8Array(function_name, req.body);
+                            console.log("Successfully executed function with return value of : " + return_value);
+                            res.send(return_value);
+                        } catch (err) {
+                            res.send("Error: " + err);
+                        }
+                    });
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
                 }
             });
         } else {
@@ -1058,70 +1098,79 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
     }
     executableExists(req.params.wasm_id).then((result2, error) => {
         if (result2 == 1) {
-            var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result3, error) => {
-                var function_name = req.params.function_name;
-                // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
-                var jsonToTest;
-                if (typeof req.body == "object") {
-                    jsonToTest = JSON.stringify(req.body);
-                } else if (typeof req.body == "string") {
-                    jsonToTest = req.body;
-                }
-                console.log("*" + jsonToTest);
-                isValidJSON(jsonToTest).then((isBodyJson, err) => {
-                    console.log("Let's see if the object is valid json");
-                    if (isBodyJson == true) {
-                        console.log("Req.body is valid json");
-                        // Parse the request body 
-                        function_parameters = JSON.parse(jsonToTest);
-                        console.log("Function parameters are now: " + JSON.stringify(function_parameters));
-                        // Check for callback object in the body if a) body is json b) SSVM_Data object exists and c) SSVM_Callback object exists
-                        if (function_parameters.hasOwnProperty('SSVM_Callback') && function_parameters.hasOwnProperty('SSVM_Data')) {
-                            process_callback = true;
-                            console.log("Processing callback");
-                            var callback_object_for_processing = function_parameters["SSVM_Callback"];
-                            delete function_parameters.SSVM_Callback;
-                            function_parameters = function_parameters["SSVM_Data"];
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlSelect).then((result3, error) => {
+                        var function_name = req.params.function_name;
+                        // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
+                        var jsonToTest;
+                        if (typeof req.body == "object") {
+                            jsonToTest = JSON.stringify(req.body);
+                        } else if (typeof req.body == "string") {
+                            jsonToTest = req.body;
                         }
-                        function_parameters = JSON.stringify(function_parameters);
-                    } else if (isBodyJson == false) {
-                        function_parameters = req.body;
-                        console.log("Req.body is only a string, not json");
-                        console.log("Function parameters are now: " + function_parameters);
-                    }
-                    var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
-                    console.log("Creating new VM instance");
-                    var vm = new ssvm.VM(uint8array);
-                    try {
-                        console.log("Executing function");
-                        // Facilitates being passed a byte array (which will happen if this bytes endpoint is called by a callback from this bytes endpoint (which only returns bytes))
-                        if (Array.isArray(JSON.parse(function_parameters))) {
-                            function_parameters_as_byte_array = Uint8Array.from(JSON.parse(function_parameters));
-                            var return_value = vm.RunUint8Array(function_name, function_parameters_as_byte_array);
-                            console.log("Successfully executed function with return value of : " + return_value);
-                        } else {
-                            var return_value = vm.RunUint8Array(function_name, function_parameters);
-                            console.log("Successfully executed function with return value of : " + return_value);
-                        }
-                    } catch (err) {
-                        res.send("Error: " + err);
-                    }
-                    if (process_callback == true) {
-                        callback_value_as_bytes = [].slice.call(return_value);
-                        callback_object_for_processing["body"] = callback_value_as_bytes;
-                        executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
-                            return_value_as_bytes = [].slice.call(result4);
-                            process_callback = false;
-                            res.send(return_value_as_bytes);
-                        });
+                        console.log("*" + jsonToTest);
+                        isValidJSON(jsonToTest).then((isBodyJson, err) => {
+                            console.log("Let's see if the object is valid json");
+                            if (isBodyJson == true) {
+                                console.log("Req.body is valid json");
+                                // Parse the request body 
+                                function_parameters = JSON.parse(jsonToTest);
+                                console.log("Function parameters are now: " + JSON.stringify(function_parameters));
+                                // Check for callback object in the body if a) body is json b) SSVM_Data object exists and c) SSVM_Callback object exists
+                                if (function_parameters.hasOwnProperty('SSVM_Callback') && function_parameters.hasOwnProperty('SSVM_Data')) {
+                                    process_callback = true;
+                                    console.log("Processing callback");
+                                    var callback_object_for_processing = function_parameters["SSVM_Callback"];
+                                    delete function_parameters.SSVM_Callback;
+                                    function_parameters = function_parameters["SSVM_Data"];
+                                }
+                                function_parameters = JSON.stringify(function_parameters);
+                            } else if (isBodyJson == false) {
+                                function_parameters = req.body;
+                                console.log("Req.body is only a string, not json");
+                                console.log("Function parameters are now: " + function_parameters);
+                            }
+                            var uint8array = new Uint8Array(result3[0].wasm_binary.toString().split(','));
+                            console.log("Creating new VM instance");
+                            var vm = new ssvm.VM(uint8array);
+                            try {
+                                console.log("Executing function");
+                                // Facilitates being passed a byte array (which will happen if this bytes endpoint is called by a callback from this bytes endpoint (which only returns bytes))
+                                if (Array.isArray(JSON.parse(function_parameters))) {
+                                    function_parameters_as_byte_array = Uint8Array.from(JSON.parse(function_parameters));
+                                    var return_value = vm.RunUint8Array(function_name, function_parameters_as_byte_array);
+                                    console.log("Successfully executed function with return value of : " + return_value);
+                                } else {
+                                    var return_value = vm.RunUint8Array(function_name, function_parameters);
+                                    console.log("Successfully executed function with return value of : " + return_value);
+                                }
+                            } catch (err) {
+                                res.send("Error: " + err);
+                            }
+                            if (process_callback == true) {
+                                callback_value_as_bytes = [].slice.call(return_value);
+                                callback_object_for_processing["body"] = callback_value_as_bytes;
+                                executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((result4, error) => {
+                                    return_value_as_bytes = [].slice.call(result4);
+                                    process_callback = false;
+                                    res.send(return_value_as_bytes);
+                                });
 
-                    } else {
-                        return_value_as_bytes = [].slice.call(return_value);
-                        console.log("Response type: " + Object.prototype.toString.call(return_value_as_bytes));
-                        res.send(return_value_as_bytes);
-                    }
-                });
+                            } else {
+                                return_value_as_bytes = [].slice.call(return_value);
+                                console.log("Response type: " + Object.prototype.toString.call(return_value_as_bytes));
+                                res.send(return_value_as_bytes);
+                            }
+                        });
+                    });
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
             });
         } else {
             res.send(req.params.wasm_id + " does not exist");
@@ -1138,12 +1187,21 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     console.log("Request to update state into the database ...");
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            if (req.is('text/plain') == 'text/plain') {
-                var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                performSqlQuery(sqlInsert).then((resultInsert) => {
-                    res.send(req.params.wasm_id);
-                });
-            }
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                    if (req.is('text/plain') == 'text/plain') {
+                        var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        performSqlQuery(sqlInsert).then((resultInsert) => {
+                            res.send(req.params.wasm_id);
+                        });
+                    }
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
+            });
         } else {
             res.send(req.params.wasm_id + " does not exist");
         }
@@ -1162,12 +1220,20 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
         if (result == true) {
             executableExists(req.params.wasm_id).then((result2, error) => {
                 if (result2 == 1) {
-                    var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    console.log(sqlInsert);
-                    performSqlQuery(sqlInsert).then((resultInsert) => {
-                        res.send(req.params.wasm_id);
+                    var header_usage_key = req.header('SSVM_Usage_Key');
+                    var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                        if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                            var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            console.log(sqlInsert);
+                            performSqlQuery(sqlInsert).then((resultInsert) => {
+                                res.send(req.params.wasm_id);
+                            });
+                        } else {
+                            joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                            res.send(JSON.stringify(joey_response));
+                        }
                     });
-
                 } else {
                     joey_response["error"] = req.params.wasm_id + " does not exist";
                     res.send(JSON.stringify(joey_response));
