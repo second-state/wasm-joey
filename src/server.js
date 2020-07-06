@@ -548,94 +548,105 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object"];
-            var request_validity = true;
-            if (req.query.filterBy != undefined) {
-                try {
-                    var filters = JSON.parse(req.query.filterBy);
-                } catch {
-                    joey_response["error"] = "Please check your filterBy parameters. Not valid string array!";
-                    res.send(JSON.stringify(joey_response));
-                    res.end();
-                }
-                if (filters.length >= 1) {
-                    for (var i = 0; i < filters.length; i++) {
-                        if (!valid_filters.includes(filters[i])) {
-                            console.log(filters[i] + " is NOT a valid filter ...");
-                            request_validity = false;
-                        } else {
-                            console.log(filters[i] + " is a valid filter ...");
+            // Check the admin key
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+
+                    var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object"];
+                    var request_validity = true;
+                    if (req.query.filterBy != undefined) {
+                        try {
+                            var filters = JSON.parse(req.query.filterBy);
+                        } catch {
+                            joey_response["error"] = "Please check your filterBy parameters. Not valid string array!";
+                            res.send(JSON.stringify(joey_response));
+                            res.end();
                         }
-                    }
-                    if (request_validity == false) {
-                        res.send(JSON.stringify([{
-                            "error_invalid_filter": JSON.stringify(filters)
-                        }, {
-                            "valid_filters_include": valid_filters
-                        }]));
+                        if (filters.length >= 1) {
+                            for (var i = 0; i < filters.length; i++) {
+                                if (!valid_filters.includes(filters[i])) {
+                                    console.log(filters[i] + " is NOT a valid filter ...");
+                                    request_validity = false;
+                                } else {
+                                    console.log(filters[i] + " is a valid filter ...");
+                                }
+                            }
+                            if (request_validity == false) {
+                                res.send(JSON.stringify([{
+                                    "error_invalid_filter": JSON.stringify(filters)
+                                }, {
+                                    "valid_filters_include": valid_filters
+                                }]));
+                            } else {
+                                // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
+                                if (filters.length >= 1) {
+                                    if (filters.includes("wasm_as_buffer")) {
+                                        filters = removeElementFromArray(filters, "wasm_as_buffer");
+                                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                        performSqlQuery(sqlSelect).then((result) => {
+                                            joey_response["wasm_as_buffer"] = result[0].wasm_binary;
+                                            if (filters.length == 0) {
+                                                res.send(JSON.stringify(joey_response));
+                                            }
+                                        });
+                                    }
+                                }
+                                // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
+                                if (filters.length >= 1) {
+                                    if (filters.includes("wasm_sha256")) {
+                                        filters = removeElementFromArray(filters, "wasm_sha256");
+                                        var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                        performSqlQuery(sqlSelect).then((result) => {
+                                            joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                                            if (filters.length == 0) {
+                                                res.send(JSON.stringify(joey_response));
+                                            }
+                                        });
+                                    }
+                                }
+                                // We can join the simple objects i.e. char and just perform one select query for these
+                                if (filters.length >= 1) {
+                                    var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                    performSqlQuery(sqlSelect).then((result) => {
+                                        if (filters.includes("wasm_id")) {
+                                            joey_response["wasm_id"] = result[0].wasm_id;
+                                        }
+                                        if (filters.includes("wasm_description")) {
+                                            joey_response["wasm_description"] = result[0].wasm_description;
+                                        }
+                                        if (filters.includes("wasm_state")) {
+                                            joey_response["wasm_state"] = result[0].wasm_state;
+                                        }
+                                        if (filters.includes("wasm_callback_object")) {
+                                            joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                                        }
+                                        filters = [];
+                                        if (filters.length == 0) {
+                                            res.send(JSON.stringify(joey_response));
+                                        }
+                                    });
+                                }
+                            }
+                        }
                     } else {
-                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
-                        if (filters.length >= 1) {
-                            if (filters.includes("wasm_as_buffer")) {
-                                filters = removeElementFromArray(filters, "wasm_as_buffer");
-                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                performSqlQuery(sqlSelect).then((result) => {
-                                    joey_response["wasm_as_buffer"] = result[0].wasm_binary;
-                                    if (filters.length == 0) {
-                                        res.send(JSON.stringify(joey_response));
-                                    }
-                                });
-                            }
-                        }
-                        // We need to perform separate select query for complex objects (LONGBLOB & LONGTEXT etc.)
-                        if (filters.length >= 1) {
-                            if (filters.includes("wasm_sha256")) {
-                                filters = removeElementFromArray(filters, "wasm_sha256");
-                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                performSqlQuery(sqlSelect).then((result) => {
-                                    joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
-                                    if (filters.length == 0) {
-                                        res.send(JSON.stringify(joey_response));
-                                    }
-                                });
-                            }
-                        }
-                        // We can join the simple objects i.e. char and just perform one select query for these
-                        if (filters.length >= 1) {
-                            var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                            performSqlQuery(sqlSelect).then((result) => {
-                                if (filters.includes("wasm_id")) {
-                                    joey_response["wasm_id"] = result[0].wasm_id;
-                                }
-                                if (filters.includes("wasm_description")) {
-                                    joey_response["wasm_description"] = result[0].wasm_description;
-                                }
-                                if (filters.includes("wasm_state")) {
-                                    joey_response["wasm_state"] = result[0].wasm_state;
-                                }
-                                if (filters.includes("wasm_callback_object")) {
-                                    joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
-                                }
-                                filters = [];
-                                if (filters.length == 0) {
-                                    res.send(JSON.stringify(joey_response));
-                                }
-                            });
-                        }
+                        var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        performSqlQuery(sqlSelect).then((result) => {
+                            joey_response["wasm_id"] = result[0].wasm_id;
+                            joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                            joey_response["wasm_description"] = result[0].wasm_description;
+                            joey_response["wasm_as_buffer"] = result[0].wasm_binary;
+                            joey_response["wasm_state"] = result[0].wasm_state;
+                            joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                            res.send(JSON.stringify(joey_response));
+                        });
                     }
-                }
-            } else {
-                var sqlSelect = "SELECT * from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                performSqlQuery(sqlSelect).then((result) => {
-                    joey_response["wasm_id"] = result[0].wasm_id;
-                    joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
-                    joey_response["wasm_description"] = result[0].wasm_description;
-                    joey_response["wasm_as_buffer"] = result[0].wasm_binary;
-                    joey_response["wasm_state"] = result[0].wasm_state;
-                    joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
                     res.send(JSON.stringify(joey_response));
-                });
-            }
+                }
+            });
         } else {
             joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
             res.send(JSON.stringify(joey_response));
