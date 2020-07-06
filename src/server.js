@@ -1,14 +1,18 @@
-// V1.1 Test
-// System
+
+/* Application dependencies & config - START */
+
 // Node Cache
 const NodeCache = require("node-cache");
 const myCache = new NodeCache();
+
 // UUID
 const {
     v4: uuidv4
 } = require('uuid');
+
 //File system
 const fs = require('fs');
+
 // HTTPS
 const https = require('https');
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/privkey.pem', 'utf8');
@@ -20,12 +24,15 @@ const credentials = {
     cert: certificate,
     ca: ca
 };
+
 // Buffer string to array
 const converter = require('buffer-string-to-array')
+
 // Express
 const express = require('express');
 const app = express();
 app.use(helmet());
+
 // Body parser
 var bodyParser = require('body-parser');
 app.use(bodyParser.text({
@@ -42,16 +49,20 @@ app.use(bodyParser.raw({
 
 // Config
 require('dotenv').config();
+
 //Port
 const port = process.env.port;
+
 // Data ser/des
 app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
+
 // CORS
 var cors = require('cors');
 app.use(cors());
+
 // Database
 console.log("Connecting to database, please wait ... ");
 const mysql = require('mysql');
@@ -85,14 +96,15 @@ app.use(function(req, res, next) {
 // Multipart form data
 const formidable = require('formidable');
 
-
 // SSVM
 var ssvm = require('ssvm');
 
 // Checksum
 const checksum = require('crypto');
 
-/* Startup */
+/* Application dependencies & config - END */
+
+/* Application startup - START */
 // Serve
 https.createServer(credentials, app).listen(port, process.env.host, () => {
     console.log(`Welcome to wasm-joey` + '\nHost:' + process.env.host + '\nPort: ' + port);
@@ -103,9 +115,10 @@ https.createServer(credentials, app).listen(port, process.env.host, () => {
     console.log("Database user: " + process.env.db_user);
     console.log("\n");
 });
-/* End Startup*/
 
-/* Utils */
+/* Application startup - END */
+
+/* Utils - START */
 function objectIsEmpty(_json) {
     return new Promise(function(resolve, reject) {
         for (var key in _json) {
@@ -431,13 +444,15 @@ class ReadyAtZero {
         return this.callback_already_set;
     }
 }
-/* Utils end */
+/* Utils - END */
 
-/* Ephemeral storage endpoints - cached in memory */
+/* Ephemeral storage endpoints - START */
+
+// Takes JSON and caches it in memory 
 // Default ephemeral storage lasts for 1 hour (3600 seconds)
 // TTL is refreshed back to 1 hour if the data us updated, otherwise is expires and is deleted
 
-// Post data to ephmeral storage location
+// Post data to ephmeral storage location ("Must be valid JSON")
 app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
     joey_response = {};
     if (req.is('application/json') == 'application/json') {
@@ -470,7 +485,7 @@ app.get('/api/ephemeral_storage/:key', (req, res) => {
         res.send(JSON.stringify(joey_response));
     }
 });
-// Update data at ephemeral storage location
+// Update data at ephemeral storage location ("Must be valid JSON")
 app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
     joey_response = {};
     if (req.is('application/json') == 'application/json') {
@@ -497,7 +512,9 @@ app.delete('/api/ephemeral_storage/:key', (req, res) => {
     res.send(JSON.stringify(joey_response));
 });
 
-/* Main application endpoints */
+/* Ephemeral storage endpoints - END */
+
+/* Putting, getting, updating and deleting Wasm executables - START */
 
 app.get('/', (req, res) => {
     joey_response = [{
@@ -667,8 +684,11 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
         }
     });
 });
-/* Running Wasm Functions */
-//
+
+/* Putting, getting, updating and deleting Wasm executables - END */
+
+/* Interacting with Wasm executables - START */
+
 // Run a function by calling with multi part form data (returns a string)
 app.post('/api/multipart/run/:wasm_id/:function_name', bodyParser.text(), (req, res, next) => {
     var joey_response = {};
@@ -981,7 +1001,6 @@ app.post('/api/run/:wasm_id/:function_name/arbitrary_binary', bodyParser.raw(), 
     });
 });
 
-
 // Run a function belonging to a Wasm executable -> returns a string Array (Uint8Array / Buffer)
 // This endpoint calls vm.RunUint8Array which returns a Uint8Array,
 // Each of these endpoints can only accept one type of data as the body i.e. the middleware can only parse raw OR json OR plain.,
@@ -1077,6 +1096,11 @@ app.post('/api/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res)
     });
 });
 
+/* Interacting with Wasm executables - END */
+
+/* Interacting with state - START */
+
+// State is set to blank when a new Wasm executable is put in the system. The following function allows you to update the state via REST
 app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     console.log("Request to update state into the database ...");
     executableExists(req.params.wasm_id).then((result, error) => {
@@ -1093,6 +1117,11 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     });
 });
 
+/* Interacting with state - END */
+
+/* Interacting with callbacks - START */
+
+// The callback object of a Wasm executable is set to blank in the DB at the outset. The following function allows you to update the callback object via REST
 app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
     joey_response = {};
     console.log("Request to update callback object in the database ...");
@@ -1119,6 +1148,10 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
         }
     });
 });
+
+/* Interacting with callbacks - END */
+
+/* Interacting with logs - START */
 
 // Get a set of records in relation to execution of callbacks for a particular wasm_id
 app.get('/api/log/:wasm_id', (req, res) => {
@@ -1216,3 +1249,6 @@ app.get('/api/log/:wasm_id', (req, res) => {
 
     });
 });
+
+
+/* Interacting with logs - END */
