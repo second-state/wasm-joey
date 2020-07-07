@@ -61,7 +61,7 @@ function calculateAverageTemp(data) {
             "timeout": 0,
             "headers": {
                 "Content-Type": "application/json",
-                "SSVM_Usage_Key": "415a1730-d871-410c-b5f8-ff960db3c28b"
+                "SSVM_Usage_Key": "12b45943-a6b8-4f85-a624-6a4eee2b5b23"
             },
             "data": data,
         };
