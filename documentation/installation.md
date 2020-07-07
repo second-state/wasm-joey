@@ -154,9 +154,15 @@ Create dir to house the database and update the default MySQL config
 ```bash
 mkdir /media/nvme/joey_database
 ```
-Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. Then Change the datadir line from the default to what is listed directly below this line
+Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
+
+Then change the datadir line from the default to what is listed directly below this line
 ```bash
 datadir = /media/nvme/joey_database
+```
+In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
+```
+max_allowed_packet = 100M
 ```
 Configure Ubuntu to allow new MySQL directory
 ```bash
