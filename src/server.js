@@ -1035,9 +1035,10 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
                                 console.log("Executing function");
                                 var return_value = vm.RunString(function_name, function_parameters);
                                 console.log("Successfully executed function with return value of : " + return_value);
-                            } catch (err) {
-                                res.send("Error: " + err);
-                            }
+                                } catch (err) {
+                                    joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    res.send(JSON.stringify(joey_response));
+                                }
                             if (process_callback == true) {
                                 isValidJSON(return_value).then((isCallbackJson, err) => {
                                     if (isCallbackJson == true) {
