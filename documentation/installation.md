@@ -61,6 +61,13 @@ Create dir to house the application
 mkdir /media/nvme/node_rpc
 ```
 
+# Rust
+Just a quick word about Rust, if you are planning on using Rust on this system it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
+```
+export CARGO_HOME="/media/nvme"
+export RUSTUP_HOME="/media/nvme"
+```
+
 # Application
 
 ## Install
@@ -273,6 +280,9 @@ https://www.npmjs.com/package/ssvm-napi#setup-for-ssvm-addon
 https://www.npmjs.com/package/ssvm#setup-for-rust-nodejs-and-ssvmup
 
 `npm install ssvm`
+
+`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
+`npm i -g ssvmup`
 
 ### Serve
 ```bash
