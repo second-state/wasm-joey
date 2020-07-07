@@ -162,7 +162,7 @@ datadir = /media/nvme/joey_database
 ```
 In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
 ```
-max_allowed_packet = 100M
+max_allowed_packet = 1000M
 ```
 Configure Ubuntu to allow new MySQL directory
 ```bash
