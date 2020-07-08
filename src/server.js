@@ -119,7 +119,7 @@ https.createServer(credentials, app).listen(port, process.env.host, () => {
 
 /* Utils - START */
 function objectIsEmpty(_json) {
-    if (typeof _json == "string"){
+    if (typeof _json == "string") {
         _json = JSON.parse(_json);
     }
     console.log("Processing JSON: " + JSON.stringify(_json));
@@ -129,7 +129,7 @@ function objectIsEmpty(_json) {
             console.log("Processing key: " + key);
             if (_json.hasOwnProperty(key)) {
                 console.log("*");
-                empty = false; 
+                empty = false;
                 break;
             }
         }
@@ -777,7 +777,7 @@ function executeSSVMForMultipart(_readyAtZero, _wasm_id, _function_name, _array_
                     }
                     var callback_object_for_processing = _readyAtZero.get_callback_object();
                     var return_value_as_object = JSON.parse(JSON.stringify(return_value));
-                    if (typeof callback_object_for_processing == "string"){
+                    if (typeof callback_object_for_processing == "string") {
                         callback_object_for_processing = JSON.parse(callback_object_for_processing);
                     }
                     callback_object_for_processing["body"] = return_value_as_object;
