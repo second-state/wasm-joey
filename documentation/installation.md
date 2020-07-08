@@ -207,6 +207,11 @@ GRANT ALL PRIVILEGES ON joeydb . * TO 'joey'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
+Request to use this newly created database
+```SQL
+use joeydb;
+```
+
 Create blank tables for the application to use
 ```SQL
 CREATE TABLE wasm_executables(
