@@ -205,12 +205,7 @@ function executeCallbackRequest(_original_id, _request_options) {
             });
         }
         var options = JSON.parse(_request_options);
-        var data = options.body;
-        if (typeof data == "object"){
-            data = JSON.stringify(data);
-        }
-        console.log("Data is type of: " + typeof data);
-        console.log("Data is : " + data);
+        const data = options.body;
         options["headers"]["Content-Length"] = data.length;
         delete options.body;
         const req = https.request(JSON.parse(JSON.stringify(options)), (res) => {
