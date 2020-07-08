@@ -119,15 +119,21 @@ https.createServer(credentials, app).listen(port, process.env.host, () => {
 
 /* Utils - START */
 function objectIsEmpty(_json) {
+    if (typeof _json == "string"){
+        _json = JSON.parse(_json);
+    }
     console.log("Processing JSON: " + JSON.stringify(_json));
+    var empty = true;
     return new Promise(function(resolve, reject) {
         for (var key in _json) {
             console.log("Processing key: " + key);
             if (_json.hasOwnProperty(key)) {
-                resolve(false);
+                console.log("*");
+                empty = false; 
+                break;
             }
         }
-        resolve(true);
+        resolve(empty);
     });
 }
 
@@ -187,8 +193,6 @@ function executionLogExists(wasm_id) {
 
 function executeCallbackRequest(_original_id, _request_options) {
     console.log("Callback request options" + _request_options);
-    //_request_options = _request_options.replace(/^"|"$/g, '');
-    //_request_options = _request_options.replace(/\\"/g, '');
     return new Promise(function(resolve, reject) {
         if (log_level == 1) {
             var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
@@ -201,7 +205,7 @@ function executeCallbackRequest(_original_id, _request_options) {
             });
         }
         var options = JSON.parse(_request_options);
-        const data = JSON.stringify(options.body);
+        const data = options.body;
         options["headers"]["Content-Length"] = data.length;
         delete options.body;
         const req = https.request(JSON.parse(JSON.stringify(options)), (res) => {
@@ -754,6 +758,51 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 /* Putting, getting, updating and deleting Wasm executables - END */
 
 /* Interacting with Wasm executables - START */
+function executeSSVMForMultipart(_readyAtZero, _wasm_id, _function_name, _array_of_parameters) {
+    var _joey_response = {};
+    return new Promise(function(resolve, reject) {
+        var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
+        performSqlQuery(sqlSelect).then((result2, error2) => {
+            var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
+            var vm = new ssvm.VM(uint8array);
+            objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                if (resultEmptyObject == false) {
+                    try {
+                        console.log("Executing function ...");
+                        var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                        console.log("Success!");
+                    } catch (err) {
+                        _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                        resolve(JSON.stringify(_joey_response));
+                    }
+                    var callback_object_for_processing = _readyAtZero.get_callback_object();
+                    var return_value_as_object = JSON.parse(JSON.stringify(return_value));
+                    if (typeof callback_object_for_processing == "string"){
+                        callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                    }
+                    callback_object_for_processing["body"] = return_value_as_object;
+                    executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                        _joey_response["return_value"] = callbackResult;
+                        resolve(JSON.stringify(_joey_response));
+                    });
+                } else {
+                    try {
+                        var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                    } catch (err) {
+                        _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                        resolve(JSON.stringify(_joey_response));
+                    }
+                    // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
+                    //return_value = return_value.replace(/^"|"$/g, '');
+                    return_value = return_value.replace(/\\"/g, '');
+                    _joey_response["return_value"] = return_value;
+                    resolve(JSON.stringify(_joey_response));
+                }
+            });
+        });
+    });
+}
+
 
 // Run a function by calling with multi part form data (returns a string)
 app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
@@ -784,94 +833,57 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                     const form = formidable({
                         multiples: true
                     });
-                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    performSqlQuery(sqlSelect).then((result2, error2) => {
-                        var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
-                        var function_name = req.params.function_name;
-                        form.parse(req, (err, fields, files) => {
-                            if (err) {
-                                next(err);
-                                joey_response["return_value"] = "Error reading multipart fields and/or files";
-                                res.send(JSON.stringify(joey_response));
-                                return;
-                            }
-                            // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
-                            var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                            parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
-                                if (!m_error) {
-                                    var in_progress = false;
-                                    while (true && in_progress == false) {
-                                        if (readyAtZero.isReady() == true) {
-                                            in_progress = true;
-                                            var ordered_overarching_container = {};
-                                            Object.keys(readyAtZero.container).sort().forEach(function(key) {
-                                                ordered_overarching_container[key] = readyAtZero.container[key];
-                                            });
-                                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                                array_of_parameters.push(`${value}`);
-                                            }
-                                            var vm = new ssvm.VM(uint8array);
-                                            // Callback
-                                            if (readyAtZero.callback_already_set == false) {
-                                                // No callback yet so we have to check the DB
-                                                var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                                performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
-                                                    readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                                    // We now have a callback object from the DB, blank or otherwise
-                                                    objectIsEmpty(JSON.parse(readyAtZero.get_callback_object())).then((resultEmptyObject, error) => {
-                                                        if (resultEmptyObject == false) {
-                                                            // Callback object is not empty so we need to perform it
-                                                            try {
-                                                                console.log("Executing function ...");
-                                                                var return_value = vm.RunString(function_name, ...array_of_parameters);
-                                                                console.log("Success!");
-                                                            } catch (err) {
-                                                                joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                                                                res.send(JSON.stringify(joey_response));
-                                                            }
-                                                            var callback_object_for_processing = JSON.parse(readyAtZero.get_callback_object());
-                                                            var return_value_as_object = JSON.parse(JSON.stringify(return_value));
 
-                                                            callback_object_for_processing["body"] = return_value_as_object;
-                                                            executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
-                                                                joey_response["return_value"] = callbackResult;
-                                                                console.log(joey_response);
-                                                                res.send(JSON.stringify(joey_response));
-                                                            });
-                                                        } else {
-                                                            // The callback object is empty so let's wrap this up
-                                                            try {
-                                                                var return_value = vm.RunString(function_name, ...array_of_parameters);
-                                                            } catch (err) {
-                                                                joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                                                                res.send(JSON.stringify(joey_response));
-                                                                res.end();
-                                                                //break;
-                                                            }
-                                                            // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                                                            joey_response["return_value"] = return_value;
-                                                            res.send(JSON.stringify(joey_response));
-                                                            res.end();
-                                                            //break;
-                                                        }
-                                                    });
-
-
-
+                    form.parse(req, (err, fields, files) => {
+                        if (err) {
+                            next(err);
+                            joey_response["return_value"] = "Error reading multipart fields and/or files";
+                            res.send(JSON.stringify(joey_response));
+                            return;
+                        }
+                        // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
+                        var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
+                        parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
+                            if (!m_error) {
+                                var in_progress = false;
+                                while (true && in_progress == false) {
+                                    if (readyAtZero.isReady() == true) {
+                                        in_progress = true;
+                                        var ordered_overarching_container = {};
+                                        Object.keys(readyAtZero.container).sort().forEach(function(key) {
+                                            ordered_overarching_container[key] = readyAtZero.container[key];
+                                        });
+                                        for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                                            array_of_parameters.push(`${value}`);
+                                        }
+                                        // Callback
+                                        if (readyAtZero.callback_already_set == false) {
+                                            // No callback yet so we have to check the DB
+                                            var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                            performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                                readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                                executeSSVMForMultipart(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm_result, error) => {
+                                                    res.send(esfm_result);
+                                                    res.end();
 
                                                 });
-                                            }
+                                            });
+                                        } else if (readyAtZero.callback_already_set == true) {
+                                            executeSSVMForMultipart(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm2_result, error) => {
+                                                res.send(esfm2_result);
+                                                res.end();
 
-
+                                            });
                                         }
                                     }
-
-                                } else {
-                                    console.log(m_error);
                                 }
-                            });
+
+                            } else {
+                                console.log(m_error);
+                            }
                         });
                     });
+
                 } else {
                     joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
                     res.send(JSON.stringify(joey_response));
@@ -883,109 +895,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
     });
 });
 
-// Run a function by calling with multi part form data (returns bytes)
-app.post('/api/multipart/run/:wasm_id/:function_name/bytes', bodyParser.text(), (req, res, next) => {
-    var joey_response = {};
-    var array_of_parameters = [];
-    // Perform logging
-    if (log_level == 1) {
-        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        performSqlQuery(sqlSelect).then((stateResult) => {
-            var logging_object = {};
-            logging_object["original_wasm_executables_id"] = req.params.wasm_id;
-            logging_object["data_payload"] = req.body;
-            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-            performSqlQuery(sqlInsert).then((resultInsert) => {});
-        });
-    }
-    executableExists(req.params.wasm_id).then((result, error) => {
-        if (result == 1) {
-            var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                // Set usage key
-                if (typeof header_usage_key === 'undefined') {
-                    header_usage_key = "00000000-0000-0000-0000-000000000000";
-                }
-                // Set usage key
-                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
-                    const form = formidable({
-                        multiples: true
-                    });
-                    var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    performSqlQuery(sqlSelect).then((result2, error2) => {
-                        var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
-                        var function_name = req.params.function_name;
-                        form.parse(req, (err, fields, files) => {
-                            if (err) {
-                                next(err);
-                                joey_response["return_value"] = "Error reading multipart fields and/or files";
-                                res.send(JSON.stringify(joey_response));
-                                return;
-                            }
-                            // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
-                            var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                            parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
-                                if (!m_error) {
-                                    while (true) {
-                                        if (readyAtZero.isReady() == true) {
-                                            var ordered_overarching_container = {};
-                                            Object.keys(readyAtZero.container).sort().forEach(function(key) {
-                                                ordered_overarching_container[key] = readyAtZero.container[key];
-                                            });
-                                            for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                                array_of_parameters.push(`${value}`);
-                                            }
-                                            var vm = new ssvm.VM(uint8array);
-                                            try {
-                                                var return_value = vm.RunUint8Array(function_name, ...array_of_parameters);
-                                            } catch (err) {
-                                                joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                                                res.send(JSON.stringify(joey_response));
-                                            }
-
-                                            // Callback
-                                            if (readyAtZero.callback_already_set == false) {
-                                                var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                                performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
-                                                    _readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                                });
-                                            }
-                                            objectIsEmpty(JSON.parse(readyAtZero.get_callback_object())).then((resultEmptyObject, error) => {
-                                                if (resultEmptyObject == false) {
-                                                    var callback_object_for_processing = readyAtZero.get_callback_object();
-                                                    var return_value_as_object = JSON.parse(return_value);
-                                                    callback_object_for_processing["body"] = return_value_as_object;
-                                                    executeCallbackRequest(req.params.wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
-                                                        joey_response["return_value"] = callbackResult;
-                                                        res.send(JSON.stringify(joey_response));
-                                                    });
-                                                } else {
-                                                    // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                                                    joey_response["return_value"] = return_value_as_object;
-                                                    res.send(JSON.stringify(joey_response));
-                                                }
-                                            });
-
-                                        }
-                                    }
-
-                                } else {
-                                    console.log(m_error);
-                                }
-                            });
-                        });
-                    });
-                } else {
-                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
-                    res.send(JSON.stringify(joey_response));
-                }
-            });
-        } else {
-            res.send(req.params.wasm_id + " does not exist");
-        }
-    });
-});
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
