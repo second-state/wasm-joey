@@ -402,14 +402,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                         resolve(JSON.stringify(_joey_response));
                     }
                     var callback_object_for_processing = _readyAtZero.get_callback_object();
+                    if (typeof return_value == "string") {
+                        var return_value_as_object = JSON.parse(return_value);
+                    } else if (typeof return_value == "object") {
+                        // Re-parse in case this needs cleaning up
+                        var return_value_as_object = JSON.parse(JSON.stringify(return_value));
+                    }
                     var return_value_as_object = JSON.parse(JSON.stringify(return_value));
                     if (typeof callback_object_for_processing == "string") {
                         callback_object_for_processing = JSON.parse(callback_object_for_processing);
                     }
                     callback_object_for_processing["body"] = return_value_as_object;
                     executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
-                        _joey_response["return_value"] = callbackResult;
-                        resolve(JSON.stringify(_joey_response));
+                        resolve(callbackResult);
                     });
                 } else {
                     try {
@@ -418,11 +423,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                         _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                         resolve(JSON.stringify(_joey_response));
                     }
-                    // The response is valid JSON but there is no callback so we just need to return the response to the original caller verbatim
-                    //return_value = return_value.replace(/^"|"$/g, '');
-                    return_value = return_value.replace(/\\"/g, '');
-                    _joey_response["return_value"] = return_value;
-                    resolve(JSON.stringify(_joey_response));
+                    resolve(return_value);
                 }
             });
         });
@@ -838,16 +839,25 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
                                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm_result, error) => {
                                                     readyAtZero.callback_has_executed();
+                                                    if (typeof esfm_result == "object"){
+                                                        res.send(JSON.stringify(esfm_result));
+                                                        res.end();
+                                                    } else if (typeof esfm_result == "string") {
                                                     res.send(esfm_result);
                                                     res.end();
-
+                                                }
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true && readyAtZero.callback_executed == false) {
                                             executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm2_result, error) => {
                                                 readyAtZero.callback_has_executed();
-                                                res.send(esfm2_result);
-                                                res.end();
+                                                    if (typeof esfm2_result == "object"){
+                                                        res.send(JSON.stringify(esfm2_result));
+                                                        res.end();
+                                                    } else if (typeof esfm2_result == "string") {
+                                                    res.send(esfm2_result);
+                                                    res.end();
+                                                }
 
                                             });
                                         }
