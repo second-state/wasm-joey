@@ -384,7 +384,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
     });
 }
 
-function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameters) {
+function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameters, _return_type) {
     var _joey_response = {};
     return new Promise(function(resolve, reject) {
         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
@@ -393,31 +393,38 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
             var vm = new ssvm.VM(uint8array);
             objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                 if (resultEmptyObject == false) {
+                    var callback_object_for_processing = _readyAtZero.get_callback_object();
+                    if (typeof callback_object_for_processing == "string") {
+                        callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                    }
                     try {
-                        console.log("Executing function ...");
-                        var return_value = vm.RunString(_function_name, ..._array_of_parameters);
-                        console.log("Success!");
+                        console.log("Executing function WITH a callback ...");
+                        if (_return_type == "string") {
+                            var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                            callback_object_for_processing["body"] = return_value;
+                            console.log("Success!");
+                        } else if (_return_type == "bytes") {
+                            var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                            console.log("Success!");
+                            callback_object_for_processing["body"] = return_value;
+                        }
                     } catch (err) {
                         _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
                         resolve(JSON.stringify(_joey_response));
                     }
-                    var callback_object_for_processing = _readyAtZero.get_callback_object();
-                    if (typeof return_value == "string") {
-                        var return_value_as_object = JSON.parse(return_value);
-                    } else if (typeof return_value == "object") {
-                        // Re-parse in case this needs cleaning up
-                        var return_value_as_object = JSON.parse(JSON.stringify(return_value));
-                    }
-                    var return_value_as_object = JSON.parse(JSON.stringify(return_value));
-                    if (typeof callback_object_for_processing == "string") {
-                        callback_object_for_processing = JSON.parse(callback_object_for_processing);
-                    }
-                    callback_object_for_processing["body"] = return_value_as_object;
+
                     executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
                         resolve(callbackResult);
                     });
                 } else {
                     try {
+                        console.log("Executing function WITHOUT a callback...");
+                        if (_return_type == "string") {
+                            console.log("Success!");
+                        } else if (_return_type == "bytes") {
+                            var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                            console.log("Success!");
+                        }
                         var return_value = vm.RunString(_function_name, ..._array_of_parameters);
                     } catch (err) {
                         _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
@@ -837,24 +844,24 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm_result, error) => {
+                                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                                     readyAtZero.callback_has_executed();
-                                                    if (typeof esfm_result == "object"){
+                                                    if (typeof esfm_result == "object") {
                                                         res.send(JSON.stringify(esfm_result));
                                                         res.end();
                                                     } else if (typeof esfm_result == "string") {
-                                                    res.send(esfm_result);
-                                                    res.end();
-                                                }
+                                                        res.send(esfm_result);
+                                                        res.end();
+                                                    }
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true && readyAtZero.callback_executed == false) {
-                                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm2_result, error) => {
+                                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                                 readyAtZero.callback_has_executed();
-                                                    if (typeof esfm2_result == "object"){
-                                                        res.send(JSON.stringify(esfm2_result));
-                                                        res.end();
-                                                    } else if (typeof esfm2_result == "string") {
+                                                if (typeof esfm2_result == "object") {
+                                                    res.send(JSON.stringify(esfm2_result));
+                                                    res.end();
+                                                } else if (typeof esfm2_result == "string") {
                                                     res.send(esfm2_result);
                                                     res.end();
                                                 }
@@ -963,14 +970,14 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
                                     readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
                                     console.log("Function name: " + req.params.function_name);
                                     console.log("Parameters: " + array_of_parameters);
-                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm_result, error) => {
+                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                         readyAtZero.callback_has_executed();
                                         res.send(esfm_result);
                                         res.end();
                                     });
                                 });
                             } else if (readyAtZero.callback_already_set == true && readyAtZero.callback_executed == false) {
-                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters).then((esfm2_result, error) => {
+                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                     readyAtZero.callback_has_executed();
                                     res.send(esfm2_result);
                                     res.end();
