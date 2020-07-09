@@ -14,9 +14,9 @@ const fs = require('fs');
 
 // HTTPS
 const https = require('https');
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/fullchain.pem', 'utf8');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/dev.rpc.ssvm.secondstate.io/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/dev.rpc.ssvm.secondstate.io/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/dev.rpc.ssvm.secondstate.io/fullchain.pem', 'utf8');
 const helmet = require("helmet");
 const credentials = {
     key: privateKey,
