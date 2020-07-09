@@ -972,15 +972,25 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
                                     console.log("Parameters: " + array_of_parameters);
                                     executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                         readyAtZero.callback_has_executed();
-                                        res.send(esfm_result);
-                                        res.end();
+                                        if (typeof esfm_result == "object") {
+                                            res.send(JSON.stringify(esfm_result));
+                                            res.end();
+                                        } else if (typeof esfm_result == "string") {
+                                            res.send(esfm_result);
+                                            res.end();
+                                        }
                                     });
                                 });
                             } else if (readyAtZero.callback_already_set == true && readyAtZero.callback_executed == false) {
                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                     readyAtZero.callback_has_executed();
-                                    res.send(esfm2_result);
-                                    res.end();
+                                    if (typeof esfm2_result == "object") {
+                                        res.send(JSON.stringify(esfm2_result));
+                                        res.end();
+                                    } else if (typeof esfm2_result == "string") {
+                                        res.send(esfm2_result);
+                                        res.end();
+                                    }
                                 });
                             }
                         }
