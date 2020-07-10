@@ -593,8 +593,8 @@ app.put('/api/keys/:wasm_id/usage_key', (req, res) => {
             var usage_key = uuidv4();
             var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlInsert).then((resultInsertKey) => {
-            joey_response["usage_key"] = usage_key;
-            res.send(joey_response);
+                joey_response["usage_key"] = usage_key;
+                res.send(joey_response);
             });
         } else {
             joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
@@ -611,9 +611,10 @@ app.delete('/api/keys/:wasm_id/usage_key', (req, res) => {
         if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
             var usage_key = "00000000-0000-0000-0000-000000000000";
             var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+            console.log("SQL: " + sqlInsert);
             performSqlQuery(sqlInsert).then((resultInsertKey) => {
-            joey_response["usage_key"] = usage_key;
-            res.send(joey_response);
+                joey_response["usage_key"] = usage_key;
+                res.send(joey_response);
             });
         } else {
             joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
