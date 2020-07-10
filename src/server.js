@@ -923,34 +923,33 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                     if (content_type == "application/octet-stream") {
+                        console.log("Request body is an octet stream ...");
                         function_parameters = new Uint8Array(req.body);
                     } else if (content_type == "application/json" || content_type == "text/plain") {
                         if (typeof req.body == "object") {
+                            console.log("1");
                             function_parameters = JSON.stringify(req.body);
                         } else if (typeof req.body == "string") {
                             function_parameters = req.body;
+                            console.log("2");
                         }
                         isValidJSON(function_parameters).then((isBodyJson, err) => {
-                            console.log("Testing for JSON");
                             if (isBodyJson == true) {
-                                console.log("Is JSON");
+                                console.log("3");
                                 // Parse the request body 
                                 function_parameters = JSON.parse(function_parameters);
                                 // Check for callback object
                                 if (function_parameters.hasOwnProperty('SSVM_Callback')) {
                                     readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
                                     delete function_parameters.SSVM_Callback;
-                                    console.log("Deleted SSVM_Callback ..." + JSON.stringify(function_parameters));
                                 }
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
                                     console.log("TODO perform the request here");
                                 }
                                 function_parameters = JSON.stringify(function_parameters);
-                                console.log("2222222222 ..." + JSON.stringify(function_parameters));
                             } else if (isBodyJson == false) {
-                                console.log()
+                                console.log("4");
                                 function_parameters = req.body;
-                                console.log("NOT ..." + JSON.stringify(function_parameters));
                             }
 
 
