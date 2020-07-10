@@ -898,7 +898,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     console.log("/api/run/:wasm_id/:function_name ...");
     var readyAtZero = new ReadyAtZero(1);
     var content_type = req.headers['content-type'];
-    coneole.log("Request Content-Type: " + content_type);
+    console.log("Request Content-Type: " + content_type);
     var function_parameters;
     // Perform logging
     if (log_level == 1) {
