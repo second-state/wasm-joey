@@ -894,7 +894,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
-app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
+app.post('/api/run/:wasm_id/:function_name', (req, res) => {
+    console.log("/api/run/:wasm_id/:function_name ...");
     var readyAtZero = new ReadyAtZero(1);
     var content_type = req.headers['content-type'];
     var function_parameters;
