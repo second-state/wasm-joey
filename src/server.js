@@ -963,7 +963,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                     }
                     var in_progress = false;
                     console.log("TTTTTTTTTTTTTTTTTTTTT");
-                    while (true && in_progress == false) {
+                    //while (true && in_progress == false) {
                         if (readyAtZero.isReady() == true) {
                             console.log("Ready ...");
                             in_progress = true;
@@ -999,7 +999,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 });
                             }
                         }
-                    }
+                   // }
                 } else {
                     joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
                     res.send(JSON.stringify(joey_response));
