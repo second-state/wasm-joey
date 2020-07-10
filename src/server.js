@@ -916,8 +916,6 @@ app.post('/api/run/:wasm_id/:function_name', bodyParser.text(), (req, res) => {
                     header_usage_key = "00000000-0000-0000-0000-000000000000";
                 }
                 // Set usage key
-                console.log("Comparing usage keys:  " + header_usage_key);
-                console.log("Comparing usage keys:  " + resultCheckKey[0].usage_key.toString());
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                     // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                     if (content_type == "application/octet-stream") {
