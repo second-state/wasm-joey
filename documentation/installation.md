@@ -171,6 +171,11 @@ In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`)
 ```
 max_allowed_packet = 1000M
 ```
+Configure the database port, in (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`) in our case port 8080 as set in the `src/.env` file next to the `/src/server.js` file
+```bash
+port = 8080
+```
+
 Configure Ubuntu to allow new MySQL directory
 ```bash
 sudo vi /etc/apparmor.d/tunables/alias
