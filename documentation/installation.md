@@ -239,6 +239,19 @@ CREATE TABLE wasm_execution_log(
 );
 ```
 
+## MySQL repair (Ubuntu)
+```bash
+sudo apt-get remove — purge mysql*
+sudo rm -rf /etc/mysql /var/lib/mysql
+sudo apt-get autoremove
+sudo apt-get autoclean
+sudo apt install mysql-server
+sudo /etc/init.d/mysql start
+
+sudo mysql_secure_installation
+```
+Then fetch a backed up sql file to restore the data, as per the instructions below.
+
 ## MySQL backup and restore
 Install automysqlbackup
 ```bash
