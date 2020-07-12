@@ -1083,6 +1083,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 //console.log("Parameters: " + array_of_parameters);
                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
                                     var result_as_bytes = Uint8Array.from(esfm_result);
+                                    console.log(result_as_bytes);
                                     res.send(result_as_bytes);
                                     res.end();
 
@@ -1091,7 +1092,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                         } else if (readyAtZero.callback_already_set == true) {
                             executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
                                 var result_as_bytes = Uint8Array.from(esfm2_result);
-                                console.log("*");
+                                console.log(result_as_bytes);
                                 res.send(result_as_bytes);
                                 res.end();
                             });
