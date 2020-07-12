@@ -171,10 +171,6 @@ In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`)
 ```
 max_allowed_packet = 1000M
 ```
-Configure the database port, in (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`) in our case port 8080 as set in the `src/.env` file next to the `/src/server.js` file
-```bash
-port = 8080
-```
 
 Configure Ubuntu to allow new MySQL directory
 ```bash
@@ -241,7 +237,7 @@ CREATE TABLE wasm_execution_log(
 
 ## MySQL repair (Ubuntu)
 ```bash
-sudo apt-get remove — purge mysql*
+sudo apt-get -y remove --purge mysql*
 sudo rm -rf /etc/mysql /var/lib/mysql
 sudo apt-get autoremove
 sudo apt-get autoclean
@@ -250,6 +246,18 @@ sudo /etc/init.d/mysql start
 
 sudo mysql_secure_installation
 ```
+
+Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
+
+Then change the datadir line from the default to what is listed directly below this line
+```bash
+datadir = /media/nvme/joey_database
+```
+In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
+```
+max_allowed_packet = 1000M
+```
+
 Then fetch a backed up sql file to restore the data, as per the instructions below.
 
 ## MySQL backup and restore
