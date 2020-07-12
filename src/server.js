@@ -1043,7 +1043,9 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                     // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                     if (content_type == "application/octet-stream") {
                         console.log("Request body is an octet stream ...");
-                        function_parameters = new Uint8Array(req.body);
+                        // Pass in body "as is" when it is an octet-stream
+                        //function_parameters = new Uint8Array(req.body);
+                        function_parameters = req.body;
                     } else if (content_type == "application/json" || content_type == "text/plain") {
                         if (typeof req.body == "object") {
                             function_parameters = JSON.stringify(req.body);
@@ -1082,18 +1084,20 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 //console.log("Function name: " + req.params.function_name);
                                 //console.log("Parameters: " + array_of_parameters);
                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
-                                    var result_as_bytes = Uint8Array.from(esfm_result);
-                                    console.log(result_as_bytes);
-                                    res.send(result_as_bytes);
+                                    // Pass results "as is"
+                                    //var result_as_bytes = Uint8Array.from(esfm_result);
+                                    console.log(esfm_result);
+                                    res.send(esfm_result);
                                     res.end();
 
                                 });
                             });
                         } else if (readyAtZero.callback_already_set == true) {
                             executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
-                                var result_as_bytes = Uint8Array.from(esfm2_result);
-                                console.log(result_as_bytes);
-                                res.send(result_as_bytes);
+                                // Pass results "as is"
+                                //var result_as_bytes = Uint8Array.from(esfm2_result);
+                                console.log(esfm2_result);
+                                res.send(esfm2_result);
                                 res.end();
                             });
                         }
