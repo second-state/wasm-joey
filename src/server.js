@@ -927,7 +927,9 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                     // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                     if (content_type == "application/octet-stream") {
                         console.log("Request body is an octet stream ...");
-                        function_parameters = new Uint8Array(req.body);
+                        // Pass in body "as is" when it is an octet-stream
+                        //function_parameters = new Uint8Array(req.body);
+                        function_parameters = req.body;
                     } else if (content_type == "application/json" || content_type == "text/plain") {
                         if (typeof req.body == "object") {
                             function_parameters = JSON.stringify(req.body);
