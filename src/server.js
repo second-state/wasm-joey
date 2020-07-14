@@ -1228,6 +1228,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             array_of_parameters.push(function_parameters);
                             readyAtZero.decrease();
                         }
+                        console.log("Array of parameters is now set: " + array_of_parameters);
                         // end 20200714
 
                         // Callback
