@@ -244,12 +244,12 @@ function executeMultipartRequest(_original_id, _request_options) {
             performSqlQuery(sqlSelect).then((stateResult) => {
                 var logging_object = {};
                 logging_object["original_wasm_executables_id"] = _original_id;
-                logging_object["callback_request_options"] = _request_options[1];
+                logging_object["callback_request_options"] = _request_options;
                 var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
                 performSqlQuery(sqlInsert).then((resultInsert) => {});
             });
         }
-        var options = JSON.parse(_request_options[1]);
+        var options = JSON.parse(_request_options);
         const data = JSON.stringify(options["body"]);
         delete options.body;
         options["headers"]["Content-Length"] = data.length;
@@ -258,17 +258,13 @@ function executeMultipartRequest(_original_id, _request_options) {
             res.on('data', (chunk) => {
                 data += chunk;
             });
-
             res.on("end", () => {
                 try {
-                    var dict_return = {};
-                    dict_return[_request_options[0]] = data;
-                    resolve(JSON.stringify(dict_return));
+                    resolve(data);
                 } catch (error) {
                     console.error(error.message);
                 };
             });
-
         }).on("error", (err) => {
             console.log("Error: ", err.message);
         });
@@ -347,11 +343,11 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         }
                     });
                 } else {
-                    executeMultipartRequest(_req.params.wasm_id, field).then((fetched_result2, error) => {
+                    executeMultipartRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
                         fetched_result_object2 = JSON.parse(fetched_result2);
-                        const _string_position2 = Object.keys(fetched_result_object2)[0].lastIndexOf("_");
-                        const index_key2 = Object.keys(fetched_result_object2)[0].slice(_string_position2 + 1, Object.keys(fetched_result_object2)[0].length);
-                        _readyAtZero.container[index_key2] = JSON.stringify(fetched_result_object2[Object.keys(fetched_result_object2)[0]]);
+                        const _string_position2 = field[0].lastIndexOf("_");
+                        const index_key2 = field[0].slice(_string_position2 + 1, field[0].length);
+                        _readyAtZero.container[index_key2] = JSON.stringify(fetched_result_object2);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -391,7 +387,99 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
         performSqlQuery(sqlSelect).then((result2, error2) => {
             var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
             var vm = new ssvm.VM(uint8array);
-            if (_array_of_parameters.length == 0) {
+            if (_readyAtZero.fetchable_already_set == true) {
+                var fetchable_object = _readyAtZero.get_fetchable_object();
+                if (fetchable_object.hasOwnProperty("GET")) {
+                    fetchUsingGet(fetchable_object["GET"]).then((fetched_result, error) => {
+                        objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                            if (resultEmptyObject == false) {
+                                var callback_object_for_processing = _readyAtZero.get_callback_object();
+                                if (typeof callback_object_for_processing == "string") {
+                                    callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                                }
+                                try {
+                                    console.log("Executing function WITH a callback ...");
+                                    if (_return_type == "string") {
+                                        var return_value = vm.RunString(_function_name, fetched_result);
+                                        callback_object_for_processing["body"] = return_value;
+                                        console.log("Success!");
+                                    } else if (_return_type == "bytes") {
+                                        var return_value = vm.RunUint8Array(_function_name, fetched_result);
+                                        console.log("Success!");
+                                        callback_object_for_processing["body"] = return_value;
+                                    }
+                                } catch (err) {
+                                    _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    resolve(JSON.stringify(_joey_response));
+                                }
+                                executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                                    resolve(callbackResult);
+                                });
+                            } else {
+                                try {
+                                    console.log("Executing function WITHOUT a callback...");
+                                    if (_return_type == "string") {
+                                        var return_value = vm.RunString(_function_name, fetched_result);
+                                        console.log("Success!");
+                                    } else if (_return_type == "bytes") {
+                                        var return_value = vm.RunUint8Array(_function_name, fetched_result);
+                                        console.log("Success!");
+                                    }
+                                } catch (err) {
+                                    _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    resolve(JSON.stringify(_joey_response));
+                                }
+                                resolve(return_value);
+                            }
+                        });
+                    });
+                } else if (fetchable_object.hasOwnProperty("POST")) {
+                    executeMultipartRequest(_wasm_id, fetchable_object["POST"]).then((fetched_result2, error) => {
+                        objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                            if (resultEmptyObject == false) {
+                                var callback_object_for_processing = _readyAtZero.get_callback_object();
+                                if (typeof callback_object_for_processing == "string") {
+                                    callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                                }
+                                try {
+                                    console.log("Executing function WITH a callback ...");
+                                    if (_return_type == "string") {
+                                        var return_value = vm.RunString(_function_name, fetched_result2);
+                                        callback_object_for_processing["body"] = return_value;
+                                        console.log("Success!");
+                                    } else if (_return_type == "bytes") {
+                                        var return_value = vm.RunUint8Array(_function_name, fetched_result2);
+                                        console.log("Success!");
+                                        callback_object_for_processing["body"] = return_value;
+                                    }
+                                } catch (err) {
+                                    _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    resolve(JSON.stringify(_joey_response));
+                                }
+
+                                executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                                    resolve(callbackResult);
+                                });
+                            } else {
+                                try {
+                                    console.log("Executing function WITHOUT a callback...");
+                                    if (_return_type == "string") {
+                                        var return_value = vm.RunString(_function_name, fetched_result2);
+                                        console.log("Success!");
+                                    } else if (_return_type == "bytes") {
+                                        var return_value = vm.RunUint8Array(_function_name, fetched_result2);
+                                        console.log("Success!");
+                                    }
+                                } catch (err) {
+                                    _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    resolve(JSON.stringify(_joey_response));
+                                }
+                                resolve(return_value);
+                            }
+                        });
+                    });
+                }
+            } else if (_array_of_parameters.length == 0) {
                 objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                     if (resultEmptyObject == false) {
                         var callback_object_for_processing = _readyAtZero.get_callback_object();
@@ -1118,8 +1206,12 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                     delete function_parameters.SSVM_Callback;
                                 }
                             }
-                            if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                console.log("TODO perform the request here");
+                            if (readyAtZero.fetchable_already_set == false) {
+                                if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
+                                    console.log("Fetchable information found in the body");
+                                    readyAtZero.set_fetchable_object(function_parameters["SSVM_Fetch"]);
+                                    delete function_parameters.SSVM_Fetch;
+                                }
                             }
                             function_parameters = JSON.stringify(function_parameters);
                         } else if (isBodyJson == false) {
@@ -1267,8 +1359,12 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                     delete function_parameters.SSVM_Callback;
                                 }
                             }
-                            if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                console.log("TODO perform the request here");
+                            if (readyAtZero.fetchable_already_set == false) {
+                                if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
+                                    console.log("Fetchable information found in the body");
+                                    readyAtZero.set_fetchable_object(function_parameters["SSVM_Fetch"]);
+                                    delete function_parameters.SSVM_Fetch;
+                                }
                             }
                             function_parameters = JSON.stringify(function_parameters);
                         } else if (isBodyJson == false) {
