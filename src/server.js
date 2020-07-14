@@ -278,23 +278,20 @@ function executeMultipartRequest(_original_id, _request_options) {
     });
 }
 
-function fetchUsingGet(_info) {
+function fetchUsingGet(_value) {
     return new Promise(function(resolve, reject) {
-        https.get(_info[1], (res) => {
+        https.get(_value, (res) => {
             let body = "";
             res.on("data", (chunk) => {
                 body += chunk;
             });
             res.on("end", () => {
                 try {
-                    var dict_return = {};
-                    dict_return[_info[0]] = body;
-                    resolve(JSON.stringify(dict_return));
+                    resolve(body);
                 } catch (error) {
                     console.error(error.message);
                 };
             });
-
         }).on("error", (error) => {
             console.error(error.message);
         });
@@ -337,8 +334,10 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
         for (var field of Object.entries(_fields)) {
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
-                    fetchUsingGet(field).then((fetched_result, error) => {
-                        fetched_result_object = JSON.parse(fetched_result);
+                    fetchUsingGet(field[1]).then((fetched_result, error) => {
+                        var dict_return = {};
+                        dict_return[field[0]] = fetched_result;
+                        fetched_result_object = JSON.parse(dict_return);
                         const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
                         const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
                         _readyAtZero.container[index_key] = JSON.stringify(fetched_result_object[Object.keys(fetched_result_object)[0]]);
@@ -392,48 +391,183 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
         performSqlQuery(sqlSelect).then((result2, error2) => {
             var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
             var vm = new ssvm.VM(uint8array);
-            objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
-                if (resultEmptyObject == false) {
-                    var callback_object_for_processing = _readyAtZero.get_callback_object();
-                    if (typeof callback_object_for_processing == "string") {
-                        callback_object_for_processing = JSON.parse(callback_object_for_processing);
-                    }
-                    try {
-                        console.log("Executing function WITH a callback ...");
-                        if (_return_type == "string") {
-                            var return_value = vm.RunString(_function_name, ..._array_of_parameters);
-                            callback_object_for_processing["body"] = return_value;
-                            console.log("Success!");
-                        } else if (_return_type == "bytes") {
-                            var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
-                            console.log("Success!");
-                            callback_object_for_processing["body"] = return_value;
+            if (_array_of_parameters.length == 0) {
+                objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                    if (resultEmptyObject == false) {
+                        var callback_object_for_processing = _readyAtZero.get_callback_object();
+                        if (typeof callback_object_for_processing == "string") {
+                            callback_object_for_processing = JSON.parse(callback_object_for_processing);
                         }
-                    } catch (err) {
-                        _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                        resolve(JSON.stringify(_joey_response));
-                    }
+                        try {
+                            console.log("Executing function WITH a callback ...");
+                            if (_return_type == "string") {
+                                var return_value = vm.RunString(_function_name);
+                                callback_object_for_processing["body"] = return_value;
+                                console.log("Success!");
+                            } else if (_return_type == "bytes") {
+                                var return_value = vm.RunUint8Array(_function_name);
+                                console.log("Success!");
+                                callback_object_for_processing["body"] = return_value;
+                            }
+                        } catch (err) {
+                            _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                            resolve(JSON.stringify(_joey_response));
+                        }
 
-                    executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
-                        resolve(callbackResult);
-                    });
-                } else {
-                    try {
-                        console.log("Executing function WITHOUT a callback...");
-                        if (_return_type == "string") {
-                            var return_value = vm.RunString(_function_name, ..._array_of_parameters);
-                            console.log("Success!");
-                        } else if (_return_type == "bytes") {
-                            var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
-                            console.log("Success!");
+                        executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                            resolve(callbackResult);
+                        });
+                    } else {
+                        try {
+                            console.log("Executing function WITHOUT a callback...");
+                            if (_return_type == "string") {
+                                var return_value = vm.RunString(_function_name);
+                                console.log("Success!");
+                            } else if (_return_type == "bytes") {
+                                var return_value = vm.RunUint8Array(_function_name);
+                                console.log("Success!");
+                            }
+                        } catch (err) {
+                            _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                            resolve(JSON.stringify(_joey_response));
                         }
-                    } catch (err) {
-                        _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
-                        resolve(JSON.stringify(_joey_response));
+                        resolve(return_value);
                     }
-                    resolve(return_value);
-                }
-            });
+                });
+            } else if (_array_of_parameters.length == 1 && typeof _array_of_parameters[0] == "object") {
+                objectIsEmpty(_array_of_parameters[0]).then((resultEmptyParameter, error) => {
+                    if (resultEmptyParameter == true) {
+                        objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                            if (resultEmptyObject == false) {
+                                var callback_object_for_processing = _readyAtZero.get_callback_object();
+                                if (typeof callback_object_for_processing == "string") {
+                                    callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                                }
+                                try {
+                                    console.log("Executing function WITH a callback ...");
+                                    if (_return_type == "string") {
+                                        var return_value = vm.RunString(_function_name);
+                                        callback_object_for_processing["body"] = return_value;
+                                        console.log("Success!");
+                                    } else if (_return_type == "bytes") {
+                                        var return_value = vm.RunUint8Array(_function_name);
+                                        console.log("Success!");
+                                        callback_object_for_processing["body"] = return_value;
+                                    }
+                                } catch (err) {
+                                    _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    resolve(JSON.stringify(_joey_response));
+                                }
+
+                                executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                                    resolve(callbackResult);
+                                });
+                            } else {
+                                try {
+                                    console.log("Executing function WITHOUT a callback...");
+                                    if (_return_type == "string") {
+                                        var return_value = vm.RunString(_function_name);
+                                        console.log("Success!");
+                                    } else if (_return_type == "bytes") {
+                                        var return_value = vm.RunUint8Array(_function_name);
+                                        console.log("Success!");
+                                    }
+                                } catch (err) {
+                                    _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                                    resolve(JSON.stringify(_joey_response));
+                                }
+                                resolve(return_value);
+                            }
+                        });
+                    }
+                });
+            } else if (_array_of_parameters.length == 1) {
+                objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                    if (resultEmptyObject == false) {
+                        var callback_object_for_processing = _readyAtZero.get_callback_object();
+                        if (typeof callback_object_for_processing == "string") {
+                            callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                        }
+                        try {
+                            console.log("Executing function WITH a callback ...");
+                            if (_return_type == "string") {
+                                var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                callback_object_for_processing["body"] = return_value;
+                                console.log("Success!");
+                            } else if (_return_type == "bytes") {
+                                var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                console.log("Success!");
+                                callback_object_for_processing["body"] = return_value;
+                            }
+                        } catch (err) {
+                            _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                            resolve(JSON.stringify(_joey_response));
+                        }
+
+                        executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                            resolve(callbackResult);
+                        });
+                    } else {
+                        try {
+                            console.log("Executing function WITHOUT a callback...");
+                            if (_return_type == "string") {
+                                var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                console.log("Success!");
+                            } else if (_return_type == "bytes") {
+                                var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                console.log("Success!");
+                            }
+                        } catch (err) {
+                            _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                            resolve(JSON.stringify(_joey_response));
+                        }
+                        resolve(return_value);
+                    }
+                });
+            } else if (_array_of_parameters.length > 1) {
+                objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
+                    if (resultEmptyObject == false) {
+                        var callback_object_for_processing = _readyAtZero.get_callback_object();
+                        if (typeof callback_object_for_processing == "string") {
+                            callback_object_for_processing = JSON.parse(callback_object_for_processing);
+                        }
+                        try {
+                            console.log("Executing function WITH a callback ...");
+                            if (_return_type == "string") {
+                                var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                callback_object_for_processing["body"] = return_value;
+                                console.log("Success!");
+                            } else if (_return_type == "bytes") {
+                                var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                console.log("Success!");
+                                callback_object_for_processing["body"] = return_value;
+                            }
+                        } catch (err) {
+                            _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                            resolve(JSON.stringify(_joey_response));
+                        }
+
+                        executeCallbackRequest(_wasm_id, JSON.stringify(callback_object_for_processing)).then((callbackResult, error) => {
+                            resolve(callbackResult);
+                        });
+                    } else {
+                        try {
+                            console.log("Executing function WITHOUT a callback...");
+                            if (_return_type == "string") {
+                                var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                console.log("Success!");
+                            } else if (_return_type == "bytes") {
+                                var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                console.log("Success!");
+                            }
+                        } catch (err) {
+                            _joey_response["return_value"] = "Error executing this function, please check function name, input parameters, return parameter for correctness";
+                            resolve(JSON.stringify(_joey_response));
+                        }
+                        resolve(return_value);
+                    }
+                });
+            }
         });
 
     });
@@ -448,6 +582,8 @@ class ReadyAtZero {
         this.container = {};
         this.callback_object = {};
         this.callback_already_set = false;
+        this.fetchable_object = {};
+        this.fetchable_already_set = false;
     }
     decrease() {
         this.value = this.value - 1;
@@ -469,11 +605,21 @@ class ReadyAtZero {
         this.callback_object = _callback_object;
         this.callback_already_set = true;
     }
-    get_callback_object(_callback_object) {
+    get_callback_object() {
         return this.callback_object;
     }
     callback_already_set() {
         return this.callback_already_set;
+    }
+    set_fetchable_object(_fetchable_object) {
+        this.fetchable_object = _fetchable_object;
+        this.fetchable_already_set = true;
+    }
+    get_fetchable_object() {
+        return this.fetchable_object;
+    }
+    fetchable_already_set() {
+        return this.fetchable_already_set;
     }
 
 }
@@ -918,6 +1064,27 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                 console.log("Callback found in the header keys");
                 readyAtZero.set_callback_object(JSON.parse(header_callback_object));
             }
+            // start 20200714
+            // Implement fetchable object (where server-side fetches the body for the request)
+            var header_fetchable_object = req.header('SSVM_Fetch');
+            if (typeof header_fetchable_object === 'undefined') {
+                console.log("No fetchable information found in the header keys");
+            } else {
+                console.log("Fetchable information found in the header keys");
+                if (header_fetchable_object.startsWith("http")) {
+                    console.log("This is a URL");
+                    var temp_obj = {};
+                    temp_obj["GET"] = header_fetchable_object;
+                    readyAtZero.set_fetchable_object(JSON.parse(temp_obj));
+                } else {
+                    console.log("This is a POST object");
+                    var temp_obj = {};
+                    temp_obj["POST"] = header_fetchable_object;
+                    readyAtZero.set_fetchable_object(JSON.parse(temp_obj));
+                }
+            }
+            // end 20200714
+
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
@@ -960,8 +1127,17 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                         }
 
                         var array_of_parameters = [];
-                        array_of_parameters.push(function_parameters);
-                        readyAtZero.decrease();
+
+                        // start 20200714
+                        if (readyAtZero.fetchable_already_set == true) {
+                            array_of_parameters.push(ReadyAtZero.get_fetchable_object());
+                            readyAtZero.decrease();
+                        } else {
+                            array_of_parameters.push(function_parameters);
+                            readyAtZero.decrease();
+                        }
+                        // end 20200714
+
                         // Callback
                         if (readyAtZero.callback_already_set == false) {
                             // No callback yet so we have to check the DB
@@ -1036,6 +1212,28 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                 console.log("Callback found in the header keys");
                 readyAtZero.set_callback_object(JSON.parse(header_callback_object));
             }
+
+            // start 20200714
+            // Implement fetchable object (where server-side fetches the body for the request)
+            var header_fetchable_object = req.header('SSVM_Fetch');
+            if (typeof header_fetchable_object === 'undefined') {
+                console.log("No fetchable information found in the header keys");
+            } else {
+                console.log("Fetchable information found in the header keys");
+                if (header_fetchable_object.startsWith("http")) {
+                    console.log("This is a URL");
+                    var temp_obj = {};
+                    temp_obj["GET"] = header_fetchable_object;
+                    readyAtZero.set_fetchable_object(JSON.parse(temp_obj));
+                } else {
+                    console.log("This is a POST object");
+                    var temp_obj = {};
+                    temp_obj["POST"] = header_fetchable_object;
+                    readyAtZero.set_fetchable_object(JSON.parse(temp_obj));
+                }
+            }
+            // end 20200714
+
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
@@ -1078,8 +1276,18 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                         }
 
                         var array_of_parameters = [];
-                        array_of_parameters.push(function_parameters);
-                        readyAtZero.decrease();
+
+                        // start 20200714
+                        if (readyAtZero.fetchable_already_set == true) {
+                            array_of_parameters.push(ReadyAtZero.get_fetchable_object());
+                            readyAtZero.decrease();
+                        } else {
+                            array_of_parameters.push(function_parameters);
+                            readyAtZero.decrease();
+                        }
+                        // end 20200714
+
+
                         // Callback
                         if (readyAtZero.callback_already_set == false) {
                             // No callback yet so we have to check the DB
