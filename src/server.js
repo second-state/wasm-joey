@@ -1163,12 +1163,12 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                     console.log("This is a URL");
                     var temp_obj = {};
                     temp_obj["GET"] = header_fetchable_object;
-                    readyAtZero.set_fetchable_object(JSON.parse(temp_obj));
+                    readyAtZero.set_fetchable_object(temp_obj);
                 } else {
                     console.log("This is a POST object");
                     var temp_obj = {};
                     temp_obj["POST"] = header_fetchable_object;
-                    readyAtZero.set_fetchable_object(JSON.parse(temp_obj));
+                    readyAtZero.set_fetchable_object(temp_obj);
                 }
             }
             // end 20200714
