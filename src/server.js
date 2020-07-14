@@ -1209,7 +1209,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             if (readyAtZero.fetchable_already_set == false) {
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
                                     console.log("Fetchable information found in the body");
-                                    readyAtZero.set_fetchable_object(function_parameters["SSVM_Fetch"]);
+                                    readyAtZero.set_fetchable_object(JSON.stringify(function_parameters["SSVM_Fetch"]));
                                     delete function_parameters.SSVM_Fetch;
                                 }
                             }
@@ -1362,7 +1362,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                             if (readyAtZero.fetchable_already_set == false) {
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
                                     console.log("Fetchable information found in the body");
-                                    readyAtZero.set_fetchable_object(function_parameters["SSVM_Fetch"]);
+                                    readyAtZero.set_fetchable_object(JSON.stringify(function_parameters["SSVM_Fetch"]));
                                     delete function_parameters.SSVM_Fetch;
                                 }
                             }
