@@ -1222,7 +1222,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 
                         // start 20200714
                         if (readyAtZero.fetchable_already_set == true) {
-                            array_of_parameters.push(ReadyAtZero.get_fetchable_object());
+                            array_of_parameters.push(readyAtZero.get_fetchable_object());
                             readyAtZero.decrease();
                         } else {
                             array_of_parameters.push(function_parameters);
