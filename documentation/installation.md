@@ -244,9 +244,10 @@ CREATE TABLE wasm_execution_log(
 ```bash
 sudo apt-get -y remove --purge mysql*
 sudo rm -rf /etc/mysql /var/lib/mysql
-sudo apt-get autoremove
-sudo apt-get autoclean
-sudo apt install mysql-server
+sudo apt-get -y autoremove
+sudo apt-get -y autoclean
+sudo apt install -y mysql-server
+
 sudo /etc/init.d/mysql start
 
 sudo mysql_secure_installation

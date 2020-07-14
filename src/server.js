@@ -1,5 +1,8 @@
 /* Application dependencies & config - START */
 
+// Config
+require('dotenv').config();
+
 // Node Cache
 const NodeCache = require("node-cache");
 const myCache = new NodeCache();
@@ -12,11 +15,14 @@ const {
 //File system
 const fs = require('fs');
 
+
+// Server name for keys
+const server_name = process.env.server_name;
 // HTTPS
 const https = require('https');
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/rpc.ssvm.secondstate.io/fullchain.pem', 'utf8');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/' + server_name + '/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/' + server_name + '/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/' + server_name + '/fullchain.pem', 'utf8');
 const helmet = require("helmet");
 const credentials = {
     key: privateKey,
@@ -45,9 +51,6 @@ app.use(bodyParser.raw({
     type: "application/octet-stream",
     limit: 100000000
 }));
-
-// Config
-require('dotenv').config();
 
 //Port
 const port = process.env.port;
@@ -1090,7 +1093,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                     //var result_as_bytes = Uint8Array.from(esfm_result);
                                     console.log(esfm_result);
                                     res.send(esfm_result);
-                                    res.end();
 
                                 });
                             });
@@ -1100,7 +1102,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 //var result_as_bytes = Uint8Array.from(esfm2_result);
                                 console.log(esfm2_result);
                                 res.send(esfm2_result);
-                                res.end();
                             });
                         }
 
