@@ -1,5 +1,4 @@
 /* Application dependencies & config - START */
-
 // Config
 require('dotenv').config();
 
@@ -275,6 +274,9 @@ function executeMultipartRequest(_original_id, _request_options) {
 }
 
 function fetchUsingGet(_value) {
+    if (_value.charAt(0) == '"' && _value.charAt(_value.length - 1) == '"'){
+        _value = _value.substr(1, _value.length - 2)
+    }
     return new Promise(function(resolve, reject) {
         https.get(_value, (res) => {
             let body = "";
@@ -1207,8 +1209,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             }
                             if (readyAtZero.fetchable_already_set == false) {
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                    console.log("Fetchable information found in the body");
-                                    if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http")) {
+                                    if (JSON.stringify(JSON.parse(JSON.stringify(function_parameters["SSVM_Fetch"])).startsWith("http"))) {
                                         console.log("This is a URL");
                                         var temp_obj = {};
                                         temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
