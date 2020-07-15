@@ -390,6 +390,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
             if (_readyAtZero.fetchable_already_set == true) {
                 var fetchable_object = _readyAtZero.get_fetchable_object();
                 if (fetchable_object.hasOwnProperty("GET")) {
+                    console.log("Performing GET request for SSVM_Fetch");
                     fetchUsingGet(fetchable_object["GET"]).then((fetched_result, error) => {
                         objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                             if (resultEmptyObject == false) {
@@ -434,6 +435,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                         });
                     });
                 } else if (fetchable_object.hasOwnProperty("POST")) {
+                    console.log("Performing POST request for SSVM_Fetch");
                     executeMultipartRequest(_wasm_id, fetchable_object["POST"]).then((fetched_result2, error) => {
                         objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                             if (resultEmptyObject == false) {
@@ -1152,7 +1154,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                 console.log("Callback found in the header keys");
                 readyAtZero.set_callback_object(JSON.parse(header_callback_object));
             }
-            // start 20200714
             // Implement fetchable object (where server-side fetches the body for the request)
             var header_fetchable_object = req.header('SSVM_Fetch');
             if (typeof header_fetchable_object === 'undefined') {
@@ -1171,8 +1172,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                     readyAtZero.set_fetchable_object(temp_obj);
                 }
             }
-            // end 20200714
-
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
@@ -1209,7 +1208,17 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             if (readyAtZero.fetchable_already_set == false) {
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
                                     console.log("Fetchable information found in the body");
-                                    readyAtZero.set_fetchable_object(JSON.stringify(function_parameters["SSVM_Fetch"]));
+                                    if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http")) {
+                                        console.log("This is a URL");
+                                        var temp_obj = {};
+                                        temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                        readyAtZero.set_fetchable_object(temp_obj);
+                                        } else {
+                                            console.log("This is a POST object");
+                                            var temp_obj = {};
+                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
+                                    }
                                     delete function_parameters.SSVM_Fetch;
                                 }
                             }
@@ -1220,7 +1229,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 
                         var array_of_parameters = [];
 
-                        // start 20200714
                         if (readyAtZero.fetchable_already_set == true) {
                             array_of_parameters.push(readyAtZero.get_fetchable_object());
                             readyAtZero.decrease();
@@ -1229,7 +1237,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             readyAtZero.decrease();
                         }
                         console.log("Array of parameters is now set: " + array_of_parameters);
-                        // end 20200714
 
                         // Callback
                         if (readyAtZero.callback_already_set == false) {
@@ -1306,7 +1313,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                 readyAtZero.set_callback_object(JSON.parse(header_callback_object));
             }
 
-            // start 20200714
             // Implement fetchable object (where server-side fetches the body for the request)
             var header_fetchable_object = req.header('SSVM_Fetch');
             if (typeof header_fetchable_object === 'undefined') {
@@ -1325,8 +1331,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                     readyAtZero.set_fetchable_object(temp_obj);
                 }
             }
-            // end 20200714
-
             var header_usage_key = req.header('SSVM_Usage_Key');
             var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
@@ -1363,7 +1367,17 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                             if (readyAtZero.fetchable_already_set == false) {
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
                                     console.log("Fetchable information found in the body");
-                                    readyAtZero.set_fetchable_object(JSON.stringify(function_parameters["SSVM_Fetch"]));
+                                    if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http")) {
+                                        console.log("This is a URL");
+                                        var temp_obj = {};
+                                        temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                        readyAtZero.set_fetchable_object(temp_obj);
+                                        } else {
+                                            console.log("This is a POST object");
+                                            var temp_obj = {};
+                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
+                                    }
                                     delete function_parameters.SSVM_Fetch;
                                 }
                             }
@@ -1374,16 +1388,14 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
 
                         var array_of_parameters = [];
 
-                        // start 20200714
                         if (readyAtZero.fetchable_already_set == true) {
-                            array_of_parameters.push(ReadyAtZero.get_fetchable_object());
+                            array_of_parameters.push(readyAtZero.get_fetchable_object());
                             readyAtZero.decrease();
                         } else {
                             array_of_parameters.push(function_parameters);
                             readyAtZero.decrease();
                         }
-                        // end 20200714
-
+                        console.log("Array of parameters is now set: " + array_of_parameters);
 
                         // Callback
                         if (readyAtZero.callback_already_set == false) {
