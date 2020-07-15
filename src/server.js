@@ -1209,7 +1209,8 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             }
                             if (readyAtZero.fetchable_already_set == false) {
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                    if (JSON.stringify(JSON.parse(JSON.stringify(function_parameters["SSVM_Fetch"]))).startsWith("http")) {
+                                    console.log("CHAR AT: " + JSON.stringify(JSON.parse(JSON.stringify(function_parameters["SSVM_Fetch"]))).charAt(1));
+                                    if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
                                         console.log("This is a URL");
                                         var temp_obj = {};
                                         temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
@@ -1367,7 +1368,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                             }
                             if (readyAtZero.fetchable_already_set == false) {
                                 if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                    if (JSON.stringify(JSON.parse(JSON.stringify(function_parameters["SSVM_Fetch"]))).startsWith("http")) {
+                                    if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
                                         console.log("This is a URL");
                                         var temp_obj = {};
                                         temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
