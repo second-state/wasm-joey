@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-
+  
 #[derive(Debug)]
 struct Pixel {
     r: u8,
@@ -19,9 +19,9 @@ pub fn watermark_single_image(_image_width: u32, _image_height: u32, mut _image_
         height = _image_height - _watermark_pos_height;
     }
     for w_h in 0..height{
-        let height_start_pixel = ((width * 4) * w_h);
+        let height_start_pixel = (width * 4) * w_h;
         for w_w in 0..width{
-            let width_start_pixel_at_byte = (height_start_pixel + (w_w * 4));
+            let width_start_pixel_at_byte = height_start_pixel + (w_w * 4);
             let temp_pixel = Pixel {r: _watermark_pixels[width_start_pixel_at_byte as usize], g:_watermark_pixels[width_start_pixel_at_byte as usize + 1], b:_watermark_pixels[width_start_pixel_at_byte as usize + 2], t:_watermark_pixels[width_start_pixel_at_byte as usize + 3]};
             let watermark_key = format!("{}{}{}", w_w.to_string(), "_".to_string(), w_h.to_string());
             pixels.insert(watermark_key, temp_pixel);
@@ -32,9 +32,9 @@ pub fn watermark_single_image(_image_width: u32, _image_height: u32, mut _image_
     let height_limit = _watermark_pos_height + height;
     let width_limit = _watermark_pos_width + width;
     for i_h in _watermark_pos_height..height_limit {
-        let height_start_pixel_2 = ((_image_width * 4) * i_h);
+        let height_start_pixel_2 = (_image_width * 4) * i_h;
         for i_w in _watermark_pos_width..width_limit {
-            let width_start_pixel_at_byte_2 = (height_start_pixel_2 + (i_w * 4));
+            let width_start_pixel_at_byte_2 = height_start_pixel_2 + (i_w * 4);
             let image_key = format!("{}{}{}", w_counter.to_string(), "_".to_string(), h_counter.to_string());
             match pixels.get(&image_key) {
                 Some(pixel) => {
