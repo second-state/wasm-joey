@@ -121,3 +121,19 @@ pub fn watermark_single_image(_image_width: u32, _image_height: u32, mut _image_
     _image_pixels.clone()
 }
 ```
+Build using `ssvmup build`
+```
+ssvmup build
+```
+Deploy to Joey
+```
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
+--header 'Content-Type: application/octet-stream' \
+--header 'SSVM_Description: watermark' \
+--data-binary '@/Users/tpmccallum/watermark_bg.wasm'
+```
+Returns
+```
+{"wasm_id":23,"wasm_sha256":"0x0b64a86946a4e578f6968de020534ed936fb08305fa9138acf218fff0b86a50c","SSVM_Usage_Key":"00000000-0000-0000-0000-000000000000","SSVM_Admin_Key":"bbfd10e2-be2b-430a-b779-a88df608f979"}
+```
+```
