@@ -67,6 +67,7 @@ wasm-bindgen = "=0.2.61"
 Edit the `src/lib.rs` source code file (add the following code)
 ```
 use std::collections::HashMap;
+use wasm_bindgen::prelude::*;
   
 #[derive(Debug)]
 struct Pixel {
