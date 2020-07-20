@@ -41,3 +41,8 @@ Explaination of the parametersis as follows:
 If `_watermark_pos_width` is set to `1` and `_watermark_pos_height` is set to `1` then the watermark would be place in the top left corner like this.
 ![]("images/watermark_example.jpg)
 
+Image attribution 
+```
+NASA/GSFC/Reto Stöckli, Nazmi El Saleous, and Marit Jentoft-Nilsen / Public domain
+```
+
