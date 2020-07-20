@@ -38,7 +38,10 @@ Explaination of the parametersis as follows:
 
 - _watermark_pos_width, the horizontal position of where the watermark should start to be overlaid i.e. pixel 1
 - _watermark_pos_height, the vertical position of where the watermark should start to be overlaid i.e. pixel 1
+
+
 If `_watermark_pos_width` is set to `1` and `_watermark_pos_height` is set to `1` then the watermark would be place in the top left corner like this.
+
 
 ![](images/watermarked.png)
 
