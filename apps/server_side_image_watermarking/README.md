@@ -54,12 +54,15 @@ Create a new Rust project
 ```
 cargo new --lib watermark
 ```
-Edit the Cargo.toml file (add the lib section as per the following example)
+Edit the Cargo.toml file (add the **lib** and **dependencies** sections as per the following example)
 ```
 [lib]
 name = "watermark"
 path = "src/lib.rs"
 crate-type =["cdylib"]
+
+[dependencies]
+wasm-bindgen = "=0.2.61"
 ```
 Edit the `src/lib.rs` source code file (add the following code)
 ```
