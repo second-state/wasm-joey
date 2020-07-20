@@ -81,7 +81,7 @@ cd /media/nvme/node_rpc/wasm-joey/src
 # Node.js on the system
 Fetch
 ```bash
-curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 ```
 Install Node.js on the system
 ```bash
