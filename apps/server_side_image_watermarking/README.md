@@ -72,7 +72,7 @@ struct Pixel {
     b: u8,
     t: u8,
 }
-
+#[wasm_bindgen]
 pub fn watermark_single_image(_image_width: u32, _image_height: u32, mut _image_pixels: Vec<u8>, _watermark_width: u32, _watermark_height: u32, mut _watermark_pixels: Vec<u8>, _watermark_pos_width: u32, _watermark_pos_height: u32) -> Vec<u8> {
     let mut pixels = HashMap::new();
     let mut width: u32 = _watermark_width;
