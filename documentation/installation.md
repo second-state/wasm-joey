@@ -196,7 +196,10 @@ sudo chown -R mysql:mysql /media/nvme/joey_database/
 sudo chmod 750 /media/nvme/joey_database/
 bin/mysqld --initialize --user=mysql
 ```
-
+## Start MySQL
+```bash
+sudo /etc/init.d/mysql
+```
 ## MySQL setup for application
 Access MySQL console use the following
 ```bash
