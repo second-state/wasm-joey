@@ -58,7 +58,7 @@ sudo chown -R ubuntu:ubuntu /media/nvme/
 
 Create dir to house the application 
 ```bash
-mkdir /media/nvme/node_rpc
+sudo mkdir /media/nvme/node_rpc
 ```
 
 # Rust
