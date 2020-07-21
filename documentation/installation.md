@@ -200,7 +200,7 @@ sudo mysql_secure_installation utility
 ```bash
 sudo chown -R mysql:mysql /media/nvme/joey_database/
 sudo chmod 750 /media/nvme/joey_database/
-mysqld --initialize --user=mysql
+sudo mysqld --initialize --user=mysql
 ```
 ## Start MySQL
 ```bash
