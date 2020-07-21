@@ -263,8 +263,8 @@ npm install helmet
 sudo apt-get install certbot
 sudo certbot certonly --manual
 ```
-Place the file locations of the above command in the server.js file
-Run the following command to enable sufficient permissions
+
+Run the following command to enable sufficient permissions for the files that certbot created on our behalf
 ```bash
 sudo chown $USER:$USER -R /etc/letsencrypt
 ```
