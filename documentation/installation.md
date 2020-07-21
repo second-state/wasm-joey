@@ -51,14 +51,16 @@ After the reboot, see the mounted ~300Gb NVMe SSD using the df command
 df -h
 /dev/nvme0n1    275G   65M  260G   1% /media/nvme
 ```
+
+Ensure that the /media/nvme directory is owned by ubuntu by typing ls -la /media/nvme If it is not then type the following command
+
 ```bash
-#ensure that the /media/nvme directory is owned by ubuntu by typing ls -la /media/nvme If it is not then type the following command
 sudo chown -R ubuntu:ubuntu /media/nvme/
 ```
 
 Create dir to house the application 
 ```bash
-sudo mkdir /media/nvme/node_rpc
+mkdir /media/nvme/node_rpc
 ```
 
 # Rust
@@ -116,7 +118,8 @@ cd /media/nvme/node_rpc/wasm-joey/src
 npm install express
 ```
 Body parser
-```
+```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install body-parser
 ```
 MySQL driver
@@ -131,13 +134,16 @@ npm install cors
 ```
 HTTPS
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install https
 ```
 Formidable
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install formidable
 ```
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install buffer-string-to-array
 ```
 
