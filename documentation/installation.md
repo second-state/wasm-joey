@@ -190,11 +190,13 @@ Tighten MySQL security
 ```bash
 sudo mysql_secure_installation utility
 ```
-## MySQL startup
-Autostart MySQL on reboot
+## Init MySQL data dir
 ```bash
-sudo systemctl enable mysql
+sudo chown -R mysql:mysql /media/nvme/joey_database/
+sudo chmod 750 /media/nvme/joey_database/
+bin/mysqld --initialize --user=mysql
 ```
+
 ## MySQL setup for application
 Access MySQL console use the following
 ```bash
