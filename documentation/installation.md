@@ -327,6 +327,19 @@ export CXX=g++-9
 ```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi
 ```
+### Hostname config
+Open the `.env` file and ensure that the base domain name is correct i.e.
+```bash
+vi /media/nvme/node_rpc/wasm-joey/src/.env
+```
+```bash
+server_name=dev.rpc.ssvm.secondstate.io
+```
+Or
+```bash
+server_name=rpc.ssvm.secondstate.io
+```
+etc.
 
 ### Serve
 ```bash
