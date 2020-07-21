@@ -257,7 +257,7 @@ sudo mysql_secure_installation
 Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
 
 Then change the datadir line from the default to what is listed directly below this line
-```bash
+```
 datadir = /media/nvme/joey_database
 ```
 In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
@@ -308,14 +308,63 @@ sudo chown $USER:$USER -R /etc/letsencrypt
 ```
 
 ### SSVM
-https://www.npmjs.com/package/ssvm-napi#setup-for-ssvm-addon
-
-https://www.npmjs.com/package/ssvm#setup-for-rust-nodejs-and-ssvmup
-
-`npm install ssvm`
-
-`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
-`npm i -g ssvmup`
+```bash
+cd ~
+```
+```bash
+git clone https://github.com/second-state/SSVM.git
+```
+```bash
+cd SSVM
+```
+```bash
+git checkout 0.6.1
+```
+```bash
+sudo apt install -y \
+	software-properties-common \
+	cmake \
+	libboost-all-dev
+```
+```bash
+sudo apt install -y \
+	llvm-dev \
+	liblld-10-dev
+```
+```bash
+sudo apt install -y gcc g++
+```
+```bash
+mkdir -p build && cd build
+```
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON .. && make
+```
+### SSVM Nodejs add-on
+```bash
+sudo apt-get install libboost-all-dev
+```
+```bash
+sudo apt-get install -y llvm
+```
+```bash
+sudo apt-get install -y liblld-10-dev
+```
+```bash
+sudo apt-get install -y libstdc++6
+```
+```bash
+sudo apt-get install -y g++
+```
+```bash
+cd /media/nvme/node_rpc/wasm-joey/src
+```
+```bash
+export CXX=g++-9
+```
+```bash
+npm install --build-from-source https://github.com/second-state/ssvm-napi
+```
 
 ### Serve
 ```bash
