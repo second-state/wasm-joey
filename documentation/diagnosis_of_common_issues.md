@@ -61,7 +61,7 @@ Perform the following command
 ```
 ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here'
 ```
-## Error:
+## ERROR 1698 (28000): Access denied for user 'root'@'localhost'
 
 ```bash
 sudo mysql
