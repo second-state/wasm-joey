@@ -12,6 +12,8 @@ sudo apt install -y mysql-server
 
 sudo /etc/init.d/mysql start
 
+sudo mysqld --initialize --user=mysql
+
 sudo mysql_secure_installation
 ```
 
@@ -58,4 +60,12 @@ If you get an error like this, when trying to start server.js via node command, 
 Perform the following command 
 ```
 ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here'
+```
+## Error:
+
+```bash
+sudo mysql
+```
+```SQL
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
 ```
