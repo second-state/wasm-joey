@@ -60,6 +60,8 @@ If you get an error like this, when trying to start server.js via node command, 
 Perform the following command 
 ```
 ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here'
+FLUSH PRIVILEGES;
+
 ```
 ## ERROR 1698 (28000): Access denied for user 'root'@'localhost'
 
@@ -68,4 +70,6 @@ sudo mysql
 ```
 ```SQL
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
+FLUSH PRIVILEGES;
+
 ```
