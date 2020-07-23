@@ -70,6 +70,8 @@ export CARGO_HOME="/media/nvme"
 export RUSTUP_HOME="/media/nvme"
 ```
 
+Then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install)
+
 # Application
 
 ## Install
