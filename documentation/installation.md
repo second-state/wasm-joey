@@ -340,8 +340,9 @@ cd /media/nvme/node_rpc/wasm-joey/src
 nodejs server.js
 ```
 
-### Testing it out
-# Rust
+# Testing it out
+
+## Rust
 Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
 ```
 export CARGO_HOME="/media/nvme"
@@ -351,10 +352,13 @@ Once you have performed the config above, please then follow [these official Rus
 
 You can install the following software that will enable you to compile your Rust to Wasm (and then deploy it on Joey)
 
+## wasm32-wasi
 First of all, install the wasm32-wasi target
 ```bash
 rustup target add wasm32-wasi
 ```
+
+## ssvmup
 Then install ssvmup
 ```bash
  curl https://raw.githubusercontent.com/second-state/ssvmup/master/installer/init.sh -sSf | sh
