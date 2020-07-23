@@ -399,24 +399,24 @@ cd hello
 ssvmup build
 ```
 Then deploy this Wasm executable to Joey via HTTP request
-```
+```bash
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
 --header 'Content-Type: application/octet-stream' \
 --header 'SSVM-Description: say hello' \
 --data-binary @'pkg/hello_bg.wasm'
 ```
 The above command will return the following JSON object
-```
+```bash
 {"wasm_id":21,"wasm_sha256":"0x544031db56e706a151c056f6f673abfb1f8f158389e51a77cc99a53b849e1c14","SSVM_Usage_Key":"00000000-0000-0000-0000-000000000000","SSVM_Admin_Key":"b14ce42c-8eea-4d4c-9b05-74a785d5fa4e"}
 ```
 To execute the function that you wrote above, please use the following HTTP request
-```
+```bash
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/21/say' \
 --header 'Content-Type: text/plain' \
 --data-raw 'World'
 ```
 Returns
-```
+```bash
 hello World
 ```
 
