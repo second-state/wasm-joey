@@ -54,16 +54,20 @@ Create a new Rust project
 ```
 cargo new --lib watermark
 ```
-Edit the Cargo.toml file (add the lib section as per the following example)
+Edit the Cargo.toml file (add the **lib** and **dependencies** sections as per the following example)
 ```
 [lib]
 name = "watermark"
 path = "src/lib.rs"
 crate-type =["cdylib"]
+
+[dependencies]
+wasm-bindgen = "=0.2.61"
 ```
 Edit the `src/lib.rs` source code file (add the following code)
 ```
 use std::collections::HashMap;
+use wasm_bindgen::prelude::*;
   
 #[derive(Debug)]
 struct Pixel {
@@ -72,7 +76,7 @@ struct Pixel {
     b: u8,
     t: u8,
 }
-
+#[wasm_bindgen]
 pub fn watermark_single_image(_image_width: u32, _image_height: u32, mut _image_pixels: Vec<u8>, _watermark_width: u32, _watermark_height: u32, mut _watermark_pixels: Vec<u8>, _watermark_pos_width: u32, _watermark_pos_height: u32) -> Vec<u8> {
     let mut pixels = HashMap::new();
     let mut width: u32 = _watermark_width;
@@ -117,4 +121,20 @@ pub fn watermark_single_image(_image_width: u32, _image_height: u32, mut _image_
     }
     _image_pixels.clone()
 }
+```
+Build using `ssvmup build`
+```
+ssvmup build
+```
+Deploy to Joey
+```
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
+--header 'Content-Type: application/octet-stream' \
+--header 'SSVM_Description: watermark' \
+--data-binary '@/Users/tpmccallum/watermark_bg.wasm'
+```
+Returns
+```
+{"wasm_id":23,"wasm_sha256":"0x0b64a86946a4e578f6968de020534ed936fb08305fa9138acf218fff0b86a50c","SSVM_Usage_Key":"00000000-0000-0000-0000-000000000000","SSVM_Admin_Key":"bbfd10e2-be2b-430a-b779-a88df608f979"}
+```
 ```

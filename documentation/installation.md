@@ -51,21 +51,16 @@ After the reboot, see the mounted ~300Gb NVMe SSD using the df command
 df -h
 /dev/nvme0n1    275G   65M  260G   1% /media/nvme
 ```
+
+Ensure that the /media/nvme directory is owned by ubuntu by typing ls -la /media/nvme If it is not then type the following command
+
 ```bash
-#ensure that the /media/nvme directory is owned by ubuntu by typing ls -la /media/nvme If it is not then type the following command
 sudo chown -R ubuntu:ubuntu /media/nvme/
 ```
 
 Create dir to house the application 
 ```bash
 mkdir /media/nvme/node_rpc
-```
-
-# Rust
-Just a quick word about Rust, if you are planning on using Rust on this system it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
-```
-export CARGO_HOME="/media/nvme"
-export RUSTUP_HOME="/media/nvme"
 ```
 
 # Application
@@ -81,7 +76,7 @@ cd /media/nvme/node_rpc/wasm-joey/src
 # Node.js on the system
 Fetch
 ```bash
-curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 ```
 Install Node.js on the system
 ```bash
@@ -116,7 +111,8 @@ cd /media/nvme/node_rpc/wasm-joey/src
 npm install express
 ```
 Body parser
-```
+```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install body-parser
 ```
 MySQL driver
@@ -131,13 +127,16 @@ npm install cors
 ```
 HTTPS
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install https
 ```
 Formidable
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install formidable
 ```
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
 npm install buffer-string-to-array
 ```
 
@@ -190,10 +189,15 @@ Tighten MySQL security
 ```bash
 sudo mysql_secure_installation utility
 ```
-## MySQL startup
-Autostart MySQL on reboot
+## Init MySQL data dir
 ```bash
-sudo systemctl enable mysql
+sudo chown -R mysql:mysql /media/nvme/joey_database/
+sudo chmod 750 /media/nvme/joey_database/
+sudo mysqld --initialize --user=mysql
+```
+## Start MySQL
+```bash
+sudo /etc/init.d/mysql
 ```
 ## MySQL setup for application
 Access MySQL console use the following
@@ -241,55 +245,6 @@ CREATE TABLE wasm_execution_log(
 );
 ```
 
-## MySQL repair (Ubuntu)
-```bash
-sudo apt-get -y remove --purge mysql*
-sudo rm -rf /etc/mysql /var/lib/mysql
-sudo apt-get -y autoremove
-sudo apt-get -y autoclean
-sudo apt install -y mysql-server
-
-sudo /etc/init.d/mysql start
-
-sudo mysql_secure_installation
-```
-
-Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
-
-Then change the datadir line from the default to what is listed directly below this line
-```bash
-datadir = /media/nvme/joey_database
-```
-In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
-```
-max_allowed_packet = 1000M
-```
-
-Then fetch a backed up sql file to restore the data, as per the instructions below.
-
-## MySQL backup and restore
-Install automysqlbackup
-```bash
-sudo apt-get install automysqlbackup
-```
-Start backup
-```bash
-sudo automysqlbackup
-```
-Backed up files are stored at
-```bash
-/var/lib/automysqlbackup
-```
-To restore, use the following to decompress the database backup
-```bash
-gzip -d /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql.gz
-# creates /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql
-```
-The run the following command to restore MySQL to this particular database backup
-```bash
-mysql -u joey -p joeydb < /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql
-```
-
 ## Deployment
 
 ### SSL
@@ -301,21 +256,83 @@ npm install helmet
 sudo apt-get install certbot
 sudo certbot certonly --manual
 ```
-Place the file locations of the above command in the server.js file
-Run the following command to enable sufficient permissions
+
+Run the following command to enable sufficient permissions for the files that certbot created on our behalf
 ```bash
 sudo chown $USER:$USER -R /etc/letsencrypt
 ```
 
 ### SSVM
-https://www.npmjs.com/package/ssvm-napi#setup-for-ssvm-addon
-
-https://www.npmjs.com/package/ssvm#setup-for-rust-nodejs-and-ssvmup
-
-`npm install ssvm`
-
-`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
-`npm i -g ssvmup`
+```bash
+cd ~
+```
+```bash
+git clone https://github.com/second-state/SSVM.git
+```
+```bash
+cd SSVM
+```
+```bash
+git checkout 0.6.1
+```
+```bash
+sudo apt install -y \
+	software-properties-common \
+	cmake \
+	libboost-all-dev
+```
+```bash
+sudo apt install -y \
+	llvm-dev \
+	liblld-10-dev
+```
+```bash
+sudo apt install -y gcc g++
+```
+```bash
+mkdir -p build && cd build
+```
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON .. && make
+```
+### SSVM Nodejs add-on
+```bash
+sudo apt-get install libboost-all-dev
+```
+```bash
+sudo apt-get install -y llvm
+```
+```bash
+sudo apt-get install -y liblld-10-dev
+```
+```bash
+sudo apt-get install -y libstdc++6
+```
+```bash
+sudo apt-get install -y g++
+```
+```bash
+cd /media/nvme/node_rpc/wasm-joey/src
+```
+```bash
+export CXX=g++-9
+```
+```bash
+npm install --build-from-source https://github.com/second-state/ssvm-napi
+```
+### Hostname config
+Open the `.env` file and ensure that the base domain name is correct i.e.
+```bash
+vi /media/nvme/node_rpc/wasm-joey/src/.env
+```
+```bash
+server_name=dev.rpc.ssvm.secondstate.io
+```
+Or
+```bash
+server_name=rpc.ssvm.secondstate.io
+```
+etc.
 
 ### Serve
 ```bash
@@ -323,7 +340,85 @@ cd /media/nvme/node_rpc/wasm-joey/src
 nodejs server.js
 ```
 
+# Testing it out
 
+## Rust
+Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
+```
+export CARGO_HOME="/media/nvme"
+export RUSTUP_HOME="/media/nvme"
+```
+Once you have performed the config above, please then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install) to install Rust.
+
+You can install the following software that will enable you to compile your Rust to Wasm (and then deploy it on Joey)
+
+## wasm32-wasi
+First of all, install the wasm32-wasi target
+```bash
+rustup target add wasm32-wasi
+```
+
+## ssvmup
+Then install ssvmup
+```bash
+ curl https://raw.githubusercontent.com/second-state/ssvmup/master/installer/init.sh -sSf | sh
+```
+Then create a simple Rust application
+```bash
+cargo new --lib hello
+```
+Edit the source file
+```bash
+vi hello/src/lib.rs
+```
+Adding the following code to the `lib.rs` file that you now have open
+```Rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn say(s: &str) -> String {
+  let r = String::from("hello ");
+  return r + s;
+}
+```
+Edit the Cargo.toml file
+```bash
+vi hello/Cargo.toml
+```
+Appending the following code to the end of the `Cargo.toml` file
+```
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "=0.2.61"
+```
+The compile this Rust to Wasm
+```bash
+cd hello
+ssvmup build
+```
+Then deploy this Wasm executable to Joey via HTTP request
+```bash
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
+--header 'Content-Type: application/octet-stream' \
+--header 'SSVM-Description: say hello' \
+--data-binary @'pkg/hello_bg.wasm'
+```
+The above command will return the following JSON object
+```bash
+{"wasm_id":21,"wasm_sha256":"0x544031db56e706a151c056f6f673abfb1f8f158389e51a77cc99a53b849e1c14","SSVM_Usage_Key":"00000000-0000-0000-0000-000000000000","SSVM_Admin_Key":"b14ce42c-8eea-4d4c-9b05-74a785d5fa4e"}
+```
+To execute the function that you wrote above, please use the following HTTP request
+```bash
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/21/say' \
+--header 'Content-Type: text/plain' \
+--data-raw 'World'
+```
+Returns
+```bash
+hello World
+```
 
 
 
