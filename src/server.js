@@ -816,6 +816,8 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
             joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
             joey_response["SSVM_Usage_Key"] = usage_key;
             joey_response["SSVM_Admin_Key"] = admin_key;
+            console.log(joey_response["wasm_sha256"]);
+            console.log(typeof joey_response["wasm_sha256"]);
             if (joey_response["wasm_sha256"] == "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"){
                 joey_response["error"] = "Wasm executable is blank, please check your HTTP request syntax, the wasm file location and also the contents of the wasm file and try again.";
                 res.send(JSON.stringify(joey_response));
