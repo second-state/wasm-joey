@@ -63,15 +63,6 @@ Create dir to house the application
 mkdir /media/nvme/node_rpc
 ```
 
-# Rust
-Just a quick word about Rust, if you are planning on using Rust on this system it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
-```
-export CARGO_HOME="/media/nvme"
-export RUSTUP_HOME="/media/nvme"
-```
-
-Then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install)
-
 # Application
 
 ## Install
@@ -349,7 +340,81 @@ cd /media/nvme/node_rpc/wasm-joey/src
 nodejs server.js
 ```
 
+### Testing it out
+# Rust
+Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
+```
+export CARGO_HOME="/media/nvme"
+export RUSTUP_HOME="/media/nvme"
+```
+Once you have performed the config above, please then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install) to install Rust.
 
+You can install the following software that will enable you to compile your Rust to Wasm (and then deploy it on Joey)
+
+First of all, install the wasm32-wasi target
+```bash
+rustup target add wasm32-wasi
+```
+Then install ssvmup
+```bash
+ curl https://raw.githubusercontent.com/second-state/ssvmup/master/installer/init.sh -sSf | sh
+```
+Then create a simple Rust application
+```bash
+cargo new --lib hello
+```
+Edit the source file
+```bash
+vi hello/src/lib.rs
+```
+Adding the following code to the `lib.rs` file that you now have open
+```Rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn say(s: &str) -> String {
+  let r = String::from("hello ");
+  return r + s;
+}
+```
+Edit the Cargo.toml file
+```bash
+vi hello/Cargo.toml
+```
+Appending the following code to the end of the `Cargo.toml` file
+```
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "=0.2.61"
+```
+The compile this Rust to Wasm
+```bash
+cd hello
+ssvmup build
+```
+Then deploy this Wasm executable to Joey via HTTP request
+```
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \
+--header 'Content-Type: application/octet-stream' \
+--header 'SSVM-Description: say hello' \
+--data-binary @'pkg/hello_bg.wasm'
+```
+The above command will return the following JSON object
+```
+{"wasm_id":21,"wasm_sha256":"0x544031db56e706a151c056f6f673abfb1f8f158389e51a77cc99a53b849e1c14","SSVM_Usage_Key":"00000000-0000-0000-0000-000000000000","SSVM_Admin_Key":"b14ce42c-8eea-4d4c-9b05-74a785d5fa4e"}
+```
+To execute the function that you wrote above, please use the following HTTP request
+```
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/21/say' \
+--header 'Content-Type: text/plain' \
+--data-raw 'World'
+```
+Returns
+```
+hello World
+```
 
 
 
