@@ -71,5 +71,10 @@ sudo mysql
 ```SQL
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
 FLUSH PRIVILEGES;
+```
 
+## Blank Wasm executable loaded into Joey
+If you ever notice that the sha256 (wasm_sha256) of your wasm executable is `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` this is because it is blank. The most common cause of this is that when you ran the command to upload it, there was an issue. For example 
+```
+curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header 'Content-Type: application/octet-stream' --header 'SSVM-Description: say hello' --data-binary @'pkg/file_that_does_not_exist'
 ```
