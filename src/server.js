@@ -274,7 +274,7 @@ function executeMultipartRequest(_original_id, _request_options) {
 }
 
 function fetchUsingGet(_value) {
-    if (_value.charAt(0) == '"' && _value.charAt(_value.length - 1) == '"'){
+    if (_value.charAt(0) == '"' && _value.charAt(_value.length - 1) == '"') {
         _value = _value.substr(1, _value.length - 2)
     }
     return new Promise(function(resolve, reject) {
@@ -801,29 +801,29 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
     joey_response = {};
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
-        // Logic for creating keys
-        var usage_key = "00000000-0000-0000-0000-000000000000";
-        if (typeof req.header('SSVM_Create_Usage_Key') !== 'undefined') {
-            if (req.header('SSVM_Create_Usage_Key') == "true" || req.header('SSVM_Create_Usage_Key') == "True") {
-                usage_key = uuidv4();
+        wasm_sha256 = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
+        if (wasm_sha256 == "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") {
+            joey_response = {};
+            joey_response["error"] = "Wasm executable is blank, please check your HTTP request syntax, the wasm file location and also the contents of the wasm file and try again.";
+            res.send(JSON.stringify(joey_response));
+        } else {
+            // Logic for creating keys
+            var usage_key = "00000000-0000-0000-0000-000000000000";
+            if (typeof req.header('SSVM_Create_Usage_Key') !== 'undefined') {
+                if (req.header('SSVM_Create_Usage_Key') == "true" || req.header('SSVM_Create_Usage_Key') == "True") {
+                    usage_key = uuidv4();
+                }
             }
+            var admin_key = uuidv4();
+            var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "');";
+            performSqlQuery(sqlInsert).then((resultInsert) => {
+                console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
+                joey_response["wasm_id"] = resultInsert.insertId;
+                joey_response["wasm_sha256"] = wasm_sha256;
+                joey_response["SSVM_Usage_Key"] = usage_key;
+                joey_response["SSVM_Admin_Key"] = admin_key;
+            });
         }
-        var admin_key = uuidv4();
-        var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "');";
-        performSqlQuery(sqlInsert).then((resultInsert) => {
-            console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
-            joey_response["wasm_id"] = resultInsert.insertId;
-            joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
-            joey_response["SSVM_Usage_Key"] = usage_key;
-            joey_response["SSVM_Admin_Key"] = admin_key;
-            if (joey_response["wasm_sha256"] == "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"){
-                joey_response = {};
-                joey_response["error"] = "Wasm executable is blank, please check your HTTP request syntax, the wasm file location and also the contents of the wasm file and try again.";
-                res.send(JSON.stringify(joey_response));
-            } else {
-                res.send(JSON.stringify(joey_response));
-            }
-        });
     }
 });
 
@@ -984,16 +984,23 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
                 if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
                     if (req.is('application/octet-stream') == 'application/octet-stream') {
                         var wasm_as_buffer = Uint8Array.from(req.body);
-                        var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-                        performSqlQuery(sqlUpdate).then((result) => {
-                            joey_response["wasm_id"] = req.params.wasm_id;
-                            joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
+                        wasm_sha256 = "0x" + checksum.createHash('sha256').update(wasm_as_buffer.toString()).digest('hex');
+                        if (wasm_sha256 == "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") {
+                            joey_response = {};
+                            joey_response["error"] = "Wasm executable is blank, please check your HTTP request syntax, the wasm file location and also the contents of the wasm file and try again.";
                             res.send(JSON.stringify(joey_response));
-                        });
+                        } else {
+                            var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            performSqlQuery(sqlUpdate).then((result) => {
+                                joey_response["wasm_id"] = req.params.wasm_id;
+                                joey_response["wasm_sha256"] = wasm_sha256;
+                                res.send(JSON.stringify(joey_response));
+                            });
+                        }
+                    } else {
+                        joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
+                        res.send(JSON.stringify(joey_response));
                     }
-                } else {
-                    joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
-                    res.send(JSON.stringify(joey_response));
                 }
             });
         } else {
@@ -1221,11 +1228,11 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                         var temp_obj = {};
                                         temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
                                         readyAtZero.set_fetchable_object(temp_obj);
-                                        } else {
-                                            console.log("This is a POST object");
-                                            var temp_obj = {};
-                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                            readyAtZero.set_fetchable_object(temp_obj);
+                                    } else {
+                                        console.log("This is a POST object");
+                                        var temp_obj = {};
+                                        temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                        readyAtZero.set_fetchable_object(temp_obj);
                                     }
                                     delete function_parameters.SSVM_Fetch;
                                 }
@@ -1379,11 +1386,11 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                         var temp_obj = {};
                                         temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
                                         readyAtZero.set_fetchable_object(temp_obj);
-                                        } else {
-                                            console.log("This is a POST object");
-                                            var temp_obj = {};
-                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                            readyAtZero.set_fetchable_object(temp_obj);
+                                    } else {
+                                        console.log("This is a POST object");
+                                        var temp_obj = {};
+                                        temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                        readyAtZero.set_fetchable_object(temp_obj);
                                     }
                                     delete function_parameters.SSVM_Fetch;
                                 }
