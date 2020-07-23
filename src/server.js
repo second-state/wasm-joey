@@ -822,6 +822,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
                 joey_response["wasm_sha256"] = wasm_sha256;
                 joey_response["SSVM_Usage_Key"] = usage_key;
                 joey_response["SSVM_Admin_Key"] = admin_key;
+                res.send(JSON.stringify(joey_response));
             });
         }
     }
