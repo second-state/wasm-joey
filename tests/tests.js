@@ -750,6 +750,84 @@ function getDataFromEphemeralStorage2() {
     });
 }
 
+// ************************************************************************************************
+// Delete the wasm executable (clean up after tests)
+function deleteDataFromEphemeralStorage() {
+    console.log("Processing: deleteDataFromEphemeralStorage() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var path_to_delete_wasm = "/api/executables/" + wasm_object.get_wasm_id();
+            var admin_key_required_for_deletion = wasm_object.get_SSVM_Admin_Key();
+            var options = {
+                'method': 'DELETE',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
+                'headers': {},
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    printMessage(body.toString()).then((printResult) => {});
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            req.end();
+        } catch {
+            console.log("\x1b[31m", "Error: deleteDataFromEphemeralStorage failed");
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Add data to ephemeral storage
+function getDataFromEphemeralStorage3() {
+    console.log("\x1b[32m", "Processing: getDataFromEphemeralStorage3() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'GET',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
+                'headers': {},
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log(body.toString());
+                    if (body.toString().includes("Key not found")) {
+                        printMessage("Success, the data is not available").then((printResult) => {});
+                    } else {
+                        printMessage("Error, data from getDataFromEphemeralStorage3 test is not correct: " + body.toString()).then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
 
 // ************************************************************************************************
 // Delete the wasm executable (clean up after tests)
@@ -810,7 +888,11 @@ loadExecutable().then((loadExecutableResult) => {
                                                 getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
                                                     updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
                                                         getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
-                                                            deleteExecutable().then((deleteExecutableResult) => {});
+                                                            deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
+                                                                getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
+                                                                    deleteExecutable().then((deleteExecutableResult) => {});
+                                                                });
+                                                            });
                                                         });
                                                     });
                                                 });
