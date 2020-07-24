@@ -142,8 +142,7 @@ function updateExecutable() {
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
                     var res_object = JSON.parse(body.toString());
-                    printMessage(body.toString()).then((printResult) => {
-                    });
+                    printMessage(body.toString()).then((printResult) => {});
                     wasm_object.set_wasm_sha256(res_object["wasm_sha256"]);
                     resolve();
                 });
@@ -189,12 +188,10 @@ function updateExecutableAdminKey() {
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
                     var res_object = JSON.parse(body.toString());
-                    if (body.toString().includes("Wrong admin key")){
-                        printMessage("Success: Joey detected that this requires an Admin Key").then((printResult) => {
-                        });
+                    if (body.toString().includes("Wrong admin key")) {
+                        printMessage("Success: Joey detected that this requires an Admin Key").then((printResult) => {});
                     } else {
-                        printMessage("Error: Joey was supposed to fail due to the wrong Admin Key").then((printResult) => {
-                        });
+                        printMessage("Error: Joey was supposed to fail due to the wrong Admin Key").then((printResult) => {});
                     }
                     resolve();
                 });
@@ -342,6 +339,62 @@ function getExecutableFilterBySha256() {
         }
     });
 }
+
+// ************************************************************************************************
+// Execute a wasm executable's function
+function executeExecutablesFunction() {
+    var id_to_use = wasm_object.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunction() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/run/' + id_to_use + '/say',
+                'headers': {
+                    'Content-Type': 'text/plain',
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (body.toString().includes("hello Tim")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunction() test").then((printResult) => {});
+                    }
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = "Tim";
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+var options = {
+    'method': 'POST',
+    'hostname': 'rpc.ssvm.secondstate.io',
+    'port': 8081,
+    'path': '/api/run/21/reverse',
+    'headers': {
+        'Content-Type': 'text/plain'
+    },
+    'maxRedirects': 20
+};
+
+
 // ************************************************************************************************
 // Delete the wasm executable (clean up after tests)
 function deleteExecutable() {
@@ -391,7 +444,9 @@ loadExecutable().then((loadExecutableResult) => {
             getExecutable().then((getExecutableResult) => {
                 getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
                     getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                        deleteExecutable().then((deleteExecutableResult) => {});
+                        executeExecutablesFunction().then((getExecutableFilterBySha256Result) => {
+                            deleteExecutable().then((deleteExecutableResult) => {});
+                        });
                     });
                 });
             });
@@ -402,3 +457,13 @@ loadExecutable().then((loadExecutableResult) => {
 // Checks for writing tests
 // Are headers correct in the request?
 // Are the correct REST verbs being used i.e GET vs POST
+
+// TODO 
+// STATE (string JSON etc.) - Must be string
+// POST bytes
+// Flush Usage key to 0
+// Recreate Usage key
+// fetch in header
+// fetch in body
+// callback
+// multipart
