@@ -809,9 +809,8 @@ function getDataFromEphemeralStorage3() {
                 });
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
-                    console.log(body.toString());
                     if (body.toString().includes("Key not found")) {
-                        printMessage("Success, the data is not available").then((printResult) => {});
+                        printMessage("Success, the data is not available (because we just deleted it for this test)").then((printResult) => {});
                     } else {
                         printMessage("Error, data from getDataFromEphemeralStorage3 test is not correct: " + body.toString()).then((printResult) => {});
                     }
@@ -828,6 +827,100 @@ function getDataFromEphemeralStorage3() {
     });
 }
 
+// ************************************************************************************************
+// Add data to ephemeral storage
+function refreshUsageKeys() {
+    console.log("\x1b[32m", "Processing: refreshUsageKeys() ...");
+    var id_to_use = wasm_object.get_wasm_id();
+    var original_ssvm_usage_key = wasm_object.get_SSVM_Usage_Key();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+              'method': 'PUT',
+              'hostname': 'rpc.ssvm.secondstate.io',
+              'port': 8081,
+              'path': '/api/keys/' + id_to_use + '/usage_key',
+              'headers': {
+                'SSVM_Admin_Key': wasm_object.get_SSVM_Admin_Key(),
+              },
+              'maxRedirects': 20
+            };
+            var req = https.request(options, function (res) {
+              var chunks = [];
+              res.on("data", function (chunk) {
+                chunks.push(chunk);
+              });
+              res.on("end", function (chunk) {
+                var body = Buffer.concat(chunks);
+                    var o = JSON.parse(body.toString());
+                    wasm_object.set_SSVM_Usage_Key(o["SSVM_Usage_Key"]);
+                    if (wasm_object.get_SSVM_Usage_Key() != original_ssvm_usage_key) {
+                        printMessage("Success, we have updated the usage key from " + original_ssvm_usage_key + " to " + wasm_object.get_SSVM_Usage_Key()).then((printResult) => {});
+                    } else if (wasm_object.get_SSVM_Usage_Key() == original_ssvm_usage_key) {
+                        printMessage("Error, the  " + wasm_object.get_SSVM_Usage_Key() + " was not updated").then((printResult) => {});
+                    }
+                    resolve();
+              });
+              res.on("error", function (error) {
+                console.error(error);
+              });
+            });
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Add data to ephemeral storage
+function zeroUsageKeys() {
+    console.log("\x1b[32m", "Processing: zeroUsageKeys() ...");
+    var id_to_use = wasm_object.get_wasm_id();
+    var original_ssvm_usage_key = wasm_object.get_SSVM_Usage_Key();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+              'method': 'DELETE',
+              'hostname': 'rpc.ssvm.secondstate.io',
+              'port': 8081,
+              'path': '/api/keys/' + id_to_use + '/usage_key',
+              'headers': {
+                'SSVM_Admin_key': wasm_object.get_SSVM_Admin_Key(),
+              },
+              'maxRedirects': 20
+            };
+
+            var req = https.request(options, function (res) {
+              var chunks = [];
+
+              res.on("data", function (chunk) {
+                chunks.push(chunk);
+              });
+
+              res.on("end", function (chunk) {
+                var body = Buffer.concat(chunks);
+                    var o = JSON.parse(body.toString());
+                    wasm_object.set_SSVM_Usage_Key(o["SSVM_Usage_Key"]);
+                    console.log(body.toString());
+                    if (wasm_object.get_SSVM_Usage_Key() != original_ssvm_usage_key) {
+                        printMessage("Success, we have updated the usage key from " + original_ssvm_usage_key + " to " + wasm_object.get_SSVM_Usage_Key()).then((printResult) => {});
+                    } else if (wasm_object.get_SSVM_Usage_Key() == original_ssvm_usage_key) {
+                        printMessage("Error, the  " + wasm_object.get_SSVM_Usage_Key() + " was not updated").then((printResult) => {});
+                    }
+                    resolve();
+              });
+              res.on("error", function (error) {
+                console.error(error);
+              });
+            });
+
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
 
 // ************************************************************************************************
 // Delete the wasm executable (clean up after tests)
@@ -890,7 +983,11 @@ loadExecutable().then((loadExecutableResult) => {
                                                         getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
                                                             deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
                                                                 getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
-                                                                    deleteExecutable().then((deleteExecutableResult) => {});
+                                                                    refreshUsageKeys().then((refreshUsageKeysResult) => {
+                                                                        zeroUsageKeys().then((refreshUsageKeysResult) => {
+                                                                            deleteExecutable().then((deleteExecutableResult) => {});
+                                                                        });
+                                                                    });
                                                                 });
                                                             });
                                                         });

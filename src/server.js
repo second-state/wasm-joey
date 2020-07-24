@@ -856,7 +856,7 @@ app.delete('/api/keys/:wasm_id/usage_key', (req, res) => {
             var usage_key = "00000000-0000-0000-0000-000000000000";
             var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlInsert).then((resultInsertKey) => {
-                joey_response["usage_key"] = usage_key;
+                joey_response["SSVM_Usage_Key"] = usage_key;
                 res.send(joey_response);
             });
         } else {
