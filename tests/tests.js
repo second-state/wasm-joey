@@ -116,6 +116,104 @@ function loadExecutable() {
 }
 
 // ************************************************************************************************
+// Update a new wasm executable
+function updateExecutable() {
+    console.log("\x1b[32m", "Processing: updateExecutable() ...");
+    var id_to_update = wasm_object.get_wasm_id();
+    var admin_key = wasm_object.get_SSVM_Admin_Key();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/update_wasm_binary/' + id_to_update,
+                'headers': {
+                    'Content-Type': 'application/octet-stream',
+                    'SSVM_Admin_Key': admin_key
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    var res_object = JSON.parse(body.toString());
+                    printMessage(body.toString()).then((printResult) => {
+                    });
+                    wasm_object.set_wasm_sha256(res_object["wasm_sha256"]);
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = fs.readFileSync('./hello_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Update a new wasm executable
+function updateExecutableAdminKey() {
+    console.log("\x1b[32m", "Processing: updateExecutableAdminKey() ...");
+    var id_to_update = wasm_object.get_wasm_id();
+    var admin_key = wasm_object.get_SSVM_Admin_Key() + "WRONG ADMIN KEY";
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/update_wasm_binary/' + id_to_update,
+                'headers': {
+                    'Content-Type': 'application/octet-stream',
+                    'SSVM_Admin_Key': admin_key
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    var res_object = JSON.parse(body.toString());
+                    if (body.toString().includes("Wrong admin key")){
+                        printMessage("Success: Joey detected that this requires an Admin Key").then((printResult) => {
+                        });
+                    } else {
+                        printMessage("Error: Joey was supposed to fail due to the wrong Admin Key").then((printResult) => {
+                        });
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = fs.readFileSync('./hello_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
 // Get a wasm executable
 function getExecutable() {
     console.log("Processing: getExecutable() ...");
@@ -138,8 +236,6 @@ function getExecutable() {
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
                     var res_object = JSON.parse(body.toString());
-                    //console.log("Body:" + body.toString());
-                    //TODO read results and check
                     if (wasm_object.get_wasm_id() == res_object["wasm_id"]) {
                         printMessage("Success: " + wasm_object.get_wasm_id()).then((printResult) => {});
                     } else {
@@ -183,8 +279,6 @@ function getExecutableFilterByDescription() {
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
                     var res_object = JSON.parse(body.toString());
-                    //console.log("Body:" + body.toString());
-                    //TODO read results and check
                     if (res_object["wasm_description"] == "Hello") {
                         printMessage("Wasm description:: " + res_object["wasm_description"]).then((printResult) => {});
                     } else {
@@ -229,8 +323,6 @@ function getExecutableFilterBySha256() {
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
                     var res_object = JSON.parse(body.toString());
-                    //console.log("Body:" + body.toString());
-                    //TODO read results and check
                     if (res_object["wasm_sha256"] == wasm_object.get_wasm_sha256()) {
                         printMessage("Wasm sha256:: " + res_object["wasm_sha256"]).then((printResult) => {});
                     } else {
@@ -294,11 +386,13 @@ function deleteExecutable() {
 // ************************************************************************************************
 // Execute the tests
 loadExecutable().then((loadExecutableResult) => {
-    getExecutable().then((getExecutableResult) => {
-        getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
-            getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                deleteExecutable().then((deleteExecutableResult) => {
-
+    updateExecutable().then((loadExecutableResult) => {
+        updateExecutableAdminKey().then((loadExecutableResult) => {
+            getExecutable().then((getExecutableResult) => {
+                getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
+                    getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
+                        deleteExecutable().then((deleteExecutableResult) => {});
+                    });
                 });
             });
         });
