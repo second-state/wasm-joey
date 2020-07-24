@@ -823,7 +823,7 @@ function getDataFromEphemeralStorage3() {
             req.end();
         } catch {
             reject();
-        }
+        }  
     });
 }
 
