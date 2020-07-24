@@ -391,16 +391,198 @@ function executeExecutablesFunction() {
     });
 }
 
-var options = {
-    'method': 'POST',
-    'hostname': 'rpc.ssvm.secondstate.io',
-    'port': 8081,
-    'path': '/api/run/21/reverse',
-    'headers': {
-        'Content-Type': 'text/plain'
-    },
-    'maxRedirects': 20
-};
+// ************************************************************************************************
+// Execute a wasm executable's function
+function executeExecutablesFunctionWithHeaderFetch() {
+    var id_to_use = wasm_object.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionWithHeaderFetch() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/run/' + id_to_use + '/say',
+                'headers': {
+                    'SSVM_Fetch': 'https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim2.txt',
+                    'Content-Type': 'application/json'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (body.toString().includes("hello Tim2")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionWithHeaderFetch() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = JSON.stringify({
+                "SSVM_Fetch": "https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt"
+            });
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function
+function executeExecutablesFunctionWithBodyFetch() {
+    var id_to_use = wasm_object.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionWithBodyFetch() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/run/' + id_to_use + '/say',
+                'headers': {
+                    'Content-Type': 'application/json'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (body.toString().includes("hello Tim")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionWithBodyFetch() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = JSON.stringify({
+                "SSVM_Fetch": "https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt"
+            });
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+
+// ************************************************************************************************
+// Execute a wasm executable's function
+function executeExecutablesFunctionWithHeaderCallback() {
+    var id_to_use = wasm_object.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionWithHeaderCallback() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/run/' + id_to_use + '/say',
+                'headers': {
+                    'SSVM_Callback': '{"hostname": "rpc.ssvm.secondstate.io","path": "/api/run/' + id_to_use + '/say","method": "POST","port": 8081,"headers":{"Content-Type": "text/plain"}}',
+                    'Content-Type': 'text/plain'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (body.toString().includes("hello hello Tim")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionWithHeaderCallback() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = "Tim";
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function
+function executeExecutablesFunctionWithBodyCallback() {
+    var id_to_use = wasm_object.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionWithHeaderCallback() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/run/' + id_to_use + '/say',
+                'headers': {
+                    'Content-Type': 'application/json'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (body.toString().includes("hello hello {}")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionWithBodyCallback() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = JSON.stringify({
+                "SSVM_Callback": {
+                    "hostname": "rpc.ssvm.secondstate.io",
+                    "path": '/api/run/' + id_to_use + '/say',
+                    "method": "POST",
+                    "port": 8081,
+                    "headers": {
+                        "Content-Type": "text/plain"
+                    }
+                }
+            });
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
 
 // ************************************************************************************************
 // Add data to ephemeral storage
@@ -620,11 +802,19 @@ loadExecutable().then((loadExecutableResult) => {
                 getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
                     getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
                         executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
-                            addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
-                                getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
-                                    updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
-                                        getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
-                                            deleteExecutable().then((deleteExecutableResult) => {});
+                            executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
+                                executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
+                                    executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
+                                        executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
+                                            addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
+                                                getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
+                                                    updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
+                                                        getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
+                                                            deleteExecutable().then((deleteExecutableResult) => {});
+                                                        });
+                                                    });
+                                                });
+                                            });
                                         });
                                     });
                                 });
