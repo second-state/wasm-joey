@@ -15,6 +15,7 @@ class WasmObject {
         this.SSVM_Admin_Key;
         this.SSVM_Usage_Key;
         this.wasm_sha256;
+        this.ephemeral_storage_key;
     }
 
     set_wasm_id(_wasm_id) {
@@ -46,6 +47,12 @@ class WasmObject {
     }
     get_wasm_sha256() {
         return this.wasm_sha256;
+    }
+    set_ephemeral_storage_key(_ephemeral_storage_key) {
+        this.ephemeral_storage_key = _ephemeral_storage_key;
+    }
+    get_ephemeral_storage_key() {
+        return this.ephemeral_storage_key;
     }
 
 }
@@ -369,6 +376,7 @@ function executeExecutablesFunction() {
                     } else {
                         printMessage("Error: Function not executed correctly via the executeExecutablesFunction() test").then((printResult) => {});
                     }
+                    resolve();
                 });
                 res.on("error", function(error) {
                     console.error(error);
@@ -393,6 +401,172 @@ var options = {
     },
     'maxRedirects': 20
 };
+
+// ************************************************************************************************
+// Add data to ephemeral storage
+function addDataToEphemeralStorage() {
+    console.log("\x1b[32m", "Processing: addDataToEphemeralStorage() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/ephemeral_storage',
+                'headers': {
+                    'Content-Type': 'application/json'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (JSON.parse(body.toString()).hasOwnProperty('key')) {
+                        wasm_object.set_ephemeral_storage_key(JSON.parse(body.toString())["key"]);
+                        printMessage("Success, key is: " + wasm_object.get_ephemeral_storage_key()).then((printResult) => {});
+                    } else {
+                        printMessage("Error: " + body.toString()).then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = JSON.stringify({
+                "asdf": 25
+            });
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Add data to ephemeral storage
+function getDataFromEphemeralStorage() {
+    console.log("\x1b[32m", "Processing: getDataFromEphemeralStorage() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'GET',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
+                'headers': {},
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (body.toString().includes("25")) {
+                        printMessage("Success, data is: " + body.toString()).then((printResult) => {});
+                    } else {
+                        printMessage("Error, data from getDataFromEphemeralStorage test is not correct: " + body.toString()).then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Add data to ephemeral storage
+function updateDataToEphemeralStorage() {
+    console.log("\x1b[32m", "Processing: updateDataToEphemeralStorage() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
+                'headers': {
+                    'Content-Type': 'application/json'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log(body.toString());
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = JSON.stringify({
+                "asdf": 88888888
+            });
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Add data to ephemeral storage
+function getDataFromEphemeralStorage2() {
+    console.log("\x1b[32m", "Processing: getDataFromEphemeralStorage2() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'GET',
+                'hostname': 'rpc.ssvm.secondstate.io',
+                'port': 8081,
+                'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
+                'headers': {},
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    if (body.toString().includes("88888888")) {
+                        printMessage("Success, the data is: " + body.toString()).then((printResult) => {});
+                    } else {
+                        printMessage("Error, data from getDataFromEphemeralStorage2 test is not correct: " + body.toString()).then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
 
 
 // ************************************************************************************************
@@ -436,6 +610,7 @@ function deleteExecutable() {
     });
 }
 
+
 // ************************************************************************************************
 // Execute the tests
 loadExecutable().then((loadExecutableResult) => {
@@ -444,8 +619,16 @@ loadExecutable().then((loadExecutableResult) => {
             getExecutable().then((getExecutableResult) => {
                 getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
                     getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                        executeExecutablesFunction().then((getExecutableFilterBySha256Result) => {
-                            deleteExecutable().then((deleteExecutableResult) => {});
+                        executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
+                            addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
+                                getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
+                                    updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
+                                        getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
+                                            deleteExecutable().then((deleteExecutableResult) => {});
+                                        });
+                                    });
+                                });
+                            });
                         });
                     });
                 });
