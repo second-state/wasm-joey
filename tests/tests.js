@@ -1176,6 +1176,7 @@ loadExecutable().then((loadExecutableResult) => {
 });
 
 // TODO 
+// Native storage
 // STATE (string JSON etc.) - Must be string
 // POST bytes
 // callback
