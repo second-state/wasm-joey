@@ -1086,6 +1086,100 @@ function zeroUsageKeys() {
 }
 
 // ************************************************************************************************
+// Add data to ephemeral storage
+function updateCallbackObject() {
+    console.log("\x1b[32m", "Processing: updateCallbackObject() ...");
+    var id_to_use = wasm_object.get_wasm_id();
+    var admin_key_required_for_update = wasm_object.get_SSVM_Admin_Key();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+              'method': 'PUT',
+              'hostname': 'rpc.ssvm.secondstate.io',
+              'port': 8081,
+              'path': '/api/callback/' + id_to_use,
+              'headers': {
+                'Content-Type': 'application/json',
+                'SSVM_Admin_Key': admin_key_required_for_update
+              },
+              'maxRedirects': 20
+            };
+            var req = https.request(options, function (res) {
+              var chunks = [];
+              res.on("data", function (chunk) {
+                chunks.push(chunk);
+              });
+              res.on("end", function (chunk) {
+                var body = Buffer.concat(chunks);
+                    if (body.toString().includes("Not allowed to store a callback to the rpc.ssvm.secondstate.io hostname")) {
+                        printMessage("Success, we have confirmed that callbacks to this server can not be stored in the DB").then((printResult) => {});
+                    } else {
+                        printMessage("Error, we should not be allowed to store this type of callback object").then((printResult) => {});
+                    }
+                    resolve();
+              });
+              res.on("error", function (error) {
+                console.error(error);
+              });
+            });
+            var postData = JSON.stringify({"hostname":"rpc.ssvm.secondstate.io","path":"/api/run/5/reverse/bytes","method":"POST","port":8081,"headers":{"Content-Type":"application/octet-stream"}});
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Add data to ephemeral storage
+function updateCallbackObject2() {
+    console.log("\x1b[32m", "Processing: updateCallbackObject2() ...");
+    var id_to_use = wasm_object.get_wasm_id();
+    var admin_key_required_for_update = wasm_object.get_SSVM_Admin_Key();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+              'method': 'PUT',
+              'hostname': 'rpc.ssvm.secondstate.io',
+              'port': 8081,
+              'path': '/api/callback/' + id_to_use,
+              'headers': {
+                'Content-Type': 'application/json',
+                'SSVM_Admin_Key': admin_key_required_for_update
+              },
+              'maxRedirects': 20
+            };
+            var req = https.request(options, function (res) {
+              var chunks = [];
+              res.on("data", function (chunk) {
+                chunks.push(chunk);
+              });
+              res.on("end", function (chunk) {
+                var body = Buffer.concat(chunks);
+                console.log(body.toString());
+                    if (body.toString().includes(id_to_use)) {
+                        printMessage("Success, we have updated the callback object which is stored in the DB").then((printResult) => {});
+                    } else {
+                        printMessage("Error, we should not be allowed to store this type of callback object").then((printResult) => {});
+                    }
+                    resolve();
+              });
+              res.on("error", function (error) {
+                console.error(error);
+              });
+            });
+            // Just adding a blank object for testing
+            var postData = JSON.stringify({});
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
 // Delete the wasm executable (clean up after tests)
 function deleteExecutable() {
     console.log("Processing: deleteExecutable() ...");
@@ -1151,7 +1245,11 @@ loadExecutable().then((loadExecutableResult) => {
                                                                             getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
                                                                                 refreshUsageKeys().then((refreshUsageKeysResult) => {
                                                                                     zeroUsageKeys().then((zeroUsageKeysResult) => {
-                                                                                        deleteExecutable().then((deleteExecutableResult) => {});
+                                                                                        updateCallbackObject().then((zeroUsageKeysResult) => {
+                                                                                            updateCallbackObject2().then((zeroUsageKeysResult) => {
+                                                                                                deleteExecutable().then((deleteExecutableResult) => {});
+                                                                                            });
+                                                                                        });
                                                                                     });
                                                                                 });
                                                                             });
