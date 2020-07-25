@@ -1178,6 +1178,5 @@ loadExecutable().then((loadExecutableResult) => {
 // TODO 
 // Native storage
 // STATE (string JSON etc.) - Must be string
-// POST bytes
-// callback
-// multipart
+// POST bytes (including callbacks in header and body)
+// multipart (including fetch, get, post and callbacks as parts)
