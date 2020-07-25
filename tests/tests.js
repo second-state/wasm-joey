@@ -57,6 +57,8 @@ class WasmObject {
 
 }
 var wasm_object = new WasmObject();
+var wasm_object_average = new WasmObject();
+var wasm_object_c_to_f = new WasmObject();
 
 // ************************************************************************************************
 // Helper functions
@@ -114,6 +116,106 @@ function loadExecutable() {
                 });
             });
             var postData = fs.readFileSync('./hello_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Load a new wasm executable
+function loadExecutableAverage() {
+    console.log("\x1b[32m", "Processing: loadExecutableAverage() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/executables',
+                'headers': {
+                    'Content-Type': 'application/octet-stream',
+                    'SSVM_Description': 'Average'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    var res_object = JSON.parse(body.toString());
+                    wasm_object_average.set_wasm_id(res_object["wasm_id"]);
+                    wasm_object_average.set_SSVM_Admin_Key(res_object["SSVM_Admin_Key"]);
+                    wasm_object_average.set_SSVM_Usage_Key(res_object["SSVM_Usage_Key"]);
+                    wasm_object_average.set_wasm_sha256(res_object["wasm_sha256"]);
+                    console.log("\x1b[32m", "wasm_id:" + wasm_object_average.get_wasm_id());
+                    console.log("\x1b[32m", "SSVM_Admin_Key:" + wasm_object_average.get_SSVM_Admin_Key());
+                    console.log("\x1b[32m", "SSVM_Usage_Key:" + wasm_object_average.get_SSVM_Usage_Key());
+                    console.log("\x1b[32m", "wasm_sha256:" + wasm_object_average.get_wasm_sha256());
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = fs.readFileSync('./average_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Load a new wasm executable
+function loadExecutableCF() {
+    console.log("\x1b[32m", "Processing: loadExecutableCF() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/executables',
+                'headers': {
+                    'Content-Type': 'application/octet-stream',
+                    'SSVM_Description': 'Celsius to Fahrenheit'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    var res_object = JSON.parse(body.toString());
+                    wasm_object_c_to_f.set_wasm_id(res_object["wasm_id"]);
+                    wasm_object_c_to_f.set_SSVM_Admin_Key(res_object["SSVM_Admin_Key"]);
+                    wasm_object_c_to_f.set_SSVM_Usage_Key(res_object["SSVM_Usage_Key"]);
+                    wasm_object_c_to_f.set_wasm_sha256(res_object["wasm_sha256"]);
+                    console.log("\x1b[32m", "wasm_id:" + wasm_object_c_to_f.get_wasm_id());
+                    console.log("\x1b[32m", "SSVM_Admin_Key:" + wasm_object_c_to_f.get_SSVM_Admin_Key());
+                    console.log("\x1b[32m", "SSVM_Usage_Key:" + wasm_object_c_to_f.get_SSVM_Usage_Key());
+                    console.log("\x1b[32m", "wasm_sha256:" + wasm_object_c_to_f.get_wasm_sha256());
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = fs.readFileSync('./c_to_f_bg.wasm');
             req.write(postData);
             req.end();
         } catch {
@@ -400,7 +502,7 @@ function executeExecutablesFunctionWithHeaderFetch() {
         try {
             var options = {
                 'method': 'POST',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/run/' + id_to_use + '/say',
                 'headers': {
@@ -447,7 +549,7 @@ function executeExecutablesFunctionWithBodyFetch() {
         try {
             var options = {
                 'method': 'POST',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/run/' + id_to_use + '/say',
                 'headers': {
@@ -494,7 +596,7 @@ function executeExecutablesFunctionWithHeaderCallback() {
         try {
             var options = {
                 'method': 'POST',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/run/' + id_to_use + '/say',
                 'headers': {
@@ -534,12 +636,12 @@ function executeExecutablesFunctionWithHeaderCallback() {
 // Execute a wasm executable's function
 function executeExecutablesFunctionWithBodyCallback() {
     var id_to_use = wasm_object.get_wasm_id();
-    console.log("\x1b[32m", "Processing: executeExecutablesFunctionWithHeaderCallback() ...");
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionWithBodyCallback() ...");
     return new Promise(function(resolve, reject) {
         try {
             var options = {
                 'method': 'POST',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/run/' + id_to_use + '/say',
                 'headers': {
@@ -567,7 +669,7 @@ function executeExecutablesFunctionWithBodyCallback() {
             });
             var postData = JSON.stringify({
                 "SSVM_Callback": {
-                    "hostname": "rpc.ssvm.secondstate.io",
+                    "hostname": joey_instance,
                     "path": '/api/run/' + id_to_use + '/say',
                     "method": "POST",
                     "port": 8081,
@@ -585,6 +687,67 @@ function executeExecutablesFunctionWithBodyCallback() {
 }
 
 // ************************************************************************************************
+// Execute a wasm executable's function
+function executeExecutablesFunctionWithBodyCallback2() {
+    var id_to_use = wasm_object_average.get_wasm_id();
+    var id_to_callback = wasm_object_c_to_f.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionWithBodyCallback2() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            // This is the HTTPS Request options
+            var options = {
+                "hostname": joey_instance,
+                "path": '/api/run/' + id_to_use + '/calculate_average_temperature',
+                "method": "POST",
+                'port': 8081,
+                "timeout": 0,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                'maxRedirects': 20
+            };
+            // This is the body of the HTTPS Request (Note the callback object, as well as the data called individual_temperatures co-exist at the top level of the JSON body object)
+            var postData = JSON.stringify({
+                "SSVM_Callback": {
+                    "hostname": joey_instance,
+                    "path": "/api/run/" + id_to_callback + "/convert_celsius_to_fahrenheit",
+                    "method": "POST",
+                    "port": 8081,
+                    "headers": {
+                        "Content-Type": "text/plain"
+                    }
+                },
+                "individual_temperatures": [25, 25, 25, 25, 25]
+            });
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    // Check that 125 Degrees Celsius has been converted to 77 Degrees Fahrenheit
+                    if (body.toString().includes("77.0")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionWithBodyCallback2() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            req.write(postData);
+            req.end();
+        } catch {
+            reject();
+        }
+    });
+}
+
+
+// ************************************************************************************************
 // Add data to ephemeral storage
 function addDataToEphemeralStorage() {
     console.log("\x1b[32m", "Processing: addDataToEphemeralStorage() ...");
@@ -592,7 +755,7 @@ function addDataToEphemeralStorage() {
         try {
             var options = {
                 'method': 'POST',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/ephemeral_storage',
                 'headers': {
@@ -639,7 +802,7 @@ function getDataFromEphemeralStorage() {
         try {
             var options = {
                 'method': 'GET',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
                 'headers': {},
@@ -678,7 +841,7 @@ function updateDataToEphemeralStorage() {
         try {
             var options = {
                 'method': 'PUT',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
                 'headers': {
@@ -719,7 +882,7 @@ function getDataFromEphemeralStorage2() {
         try {
             var options = {
                 'method': 'GET',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
                 'headers': {},
@@ -760,7 +923,7 @@ function deleteDataFromEphemeralStorage() {
             var admin_key_required_for_deletion = wasm_object.get_SSVM_Admin_Key();
             var options = {
                 'method': 'DELETE',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
                 'headers': {},
@@ -796,7 +959,7 @@ function getDataFromEphemeralStorage3() {
         try {
             var options = {
                 'method': 'GET',
-                'hostname': 'rpc.ssvm.secondstate.io',
+                'hostname': joey_instance,
                 'port': 8081,
                 'path': '/api/ephemeral_storage/' + wasm_object.get_ephemeral_storage_key(),
                 'headers': {},
@@ -823,7 +986,7 @@ function getDataFromEphemeralStorage3() {
             req.end();
         } catch {
             reject();
-        }  
+        }
     });
 }
 
@@ -836,22 +999,22 @@ function refreshUsageKeys() {
     return new Promise(function(resolve, reject) {
         try {
             var options = {
-              'method': 'PUT',
-              'hostname': 'rpc.ssvm.secondstate.io',
-              'port': 8081,
-              'path': '/api/keys/' + id_to_use + '/usage_key',
-              'headers': {
-                'SSVM_Admin_Key': wasm_object.get_SSVM_Admin_Key(),
-              },
-              'maxRedirects': 20
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/keys/' + id_to_use + '/usage_key',
+                'headers': {
+                    'SSVM_Admin_Key': wasm_object.get_SSVM_Admin_Key(),
+                },
+                'maxRedirects': 20
             };
-            var req = https.request(options, function (res) {
-              var chunks = [];
-              res.on("data", function (chunk) {
-                chunks.push(chunk);
-              });
-              res.on("end", function (chunk) {
-                var body = Buffer.concat(chunks);
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
                     var o = JSON.parse(body.toString());
                     wasm_object.set_SSVM_Usage_Key(o["SSVM_Usage_Key"]);
                     if (wasm_object.get_SSVM_Usage_Key() != original_ssvm_usage_key) {
@@ -860,10 +1023,10 @@ function refreshUsageKeys() {
                         printMessage("Error, the  " + wasm_object.get_SSVM_Usage_Key() + " was not updated").then((printResult) => {});
                     }
                     resolve();
-              });
-              res.on("error", function (error) {
-                console.error(error);
-              });
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
             });
             req.end();
         } catch {
@@ -881,25 +1044,25 @@ function zeroUsageKeys() {
     return new Promise(function(resolve, reject) {
         try {
             var options = {
-              'method': 'DELETE',
-              'hostname': 'rpc.ssvm.secondstate.io',
-              'port': 8081,
-              'path': '/api/keys/' + id_to_use + '/usage_key',
-              'headers': {
-                'SSVM_Admin_key': wasm_object.get_SSVM_Admin_Key(),
-              },
-              'maxRedirects': 20
+                'method': 'DELETE',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/keys/' + id_to_use + '/usage_key',
+                'headers': {
+                    'SSVM_Admin_key': wasm_object.get_SSVM_Admin_Key(),
+                },
+                'maxRedirects': 20
             };
 
-            var req = https.request(options, function (res) {
-              var chunks = [];
+            var req = https.request(options, function(res) {
+                var chunks = [];
 
-              res.on("data", function (chunk) {
-                chunks.push(chunk);
-              });
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
 
-              res.on("end", function (chunk) {
-                var body = Buffer.concat(chunks);
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
                     var o = JSON.parse(body.toString());
                     wasm_object.set_SSVM_Usage_Key(o["SSVM_Usage_Key"]);
                     console.log(body.toString());
@@ -909,10 +1072,10 @@ function zeroUsageKeys() {
                         printMessage("Error, the  " + wasm_object.get_SSVM_Usage_Key() + " was not updated").then((printResult) => {});
                     }
                     resolve();
-              });
-              res.on("error", function (error) {
-                console.error(error);
-              });
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
             });
 
             req.end();
@@ -967,25 +1130,31 @@ function deleteExecutable() {
 // ************************************************************************************************
 // Execute the tests
 loadExecutable().then((loadExecutableResult) => {
-    updateExecutable().then((loadExecutableResult) => {
-        updateExecutableAdminKey().then((loadExecutableResult) => {
-            getExecutable().then((getExecutableResult) => {
-                getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
-                    getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                        executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
-                            executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
-                                executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
-                                    executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
-                                        executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
-                                            addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
-                                                getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
-                                                    updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
-                                                        getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
-                                                            deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
-                                                                getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
-                                                                    refreshUsageKeys().then((refreshUsageKeysResult) => {
-                                                                        zeroUsageKeys().then((refreshUsageKeysResult) => {
-                                                                            deleteExecutable().then((deleteExecutableResult) => {});
+    loadExecutableAverage().then((loadExecutableAverageResult) => {
+        loadExecutableCF().then((loadExecutableCFResult) => {
+            updateExecutable().then((loadExecutableResult) => {
+                updateExecutableAdminKey().then((loadExecutableResult) => {
+                    getExecutable().then((getExecutableResult) => {
+                        getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
+                            getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
+                                executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
+                                    executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
+                                        executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
+                                            executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
+                                                executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
+                                                    executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
+                                                        addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
+                                                            getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
+                                                                updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
+                                                                    getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
+                                                                        deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
+                                                                            getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
+                                                                                refreshUsageKeys().then((refreshUsageKeysResult) => {
+                                                                                    zeroUsageKeys().then((zeroUsageKeysResult) => {
+                                                                                        deleteExecutable().then((deleteExecutableResult) => {});
+                                                                                    });
+                                                                                });
+                                                                            });
                                                                         });
                                                                     });
                                                                 });
@@ -1006,16 +1175,8 @@ loadExecutable().then((loadExecutableResult) => {
     });
 });
 
-// Checks for writing tests
-// Are headers correct in the request?
-// Are the correct REST verbs being used i.e GET vs POST
-
 // TODO 
 // STATE (string JSON etc.) - Must be string
 // POST bytes
-// Flush Usage key to 0
-// Recreate Usage key
-// fetch in header
-// fetch in body
 // callback
 // multipart
