@@ -4,17 +4,16 @@ The following file has a few methods of recovering from common issues with Nodej
 ## MySQL repair (Ubuntu)
 
 ```bash
+#!/bin/bash
 sudo apt-get -y remove --purge mysql*
 sudo rm -rf /etc/mysql /var/lib/mysql
 sudo apt-get -y autoremove
 sudo apt-get -y autoclean
 sudo apt install -y mysql-server
-
-sudo /etc/init.d/mysql start
-
+echo 'datadir = /media/nvme/joey_database' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo mysqld --initialize --user=mysql
-
-sudo mysql_secure_installation
+sudo /etc/init.d/mysql start
+sudo mysql
 ```
 
 Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
@@ -26,6 +25,11 @@ datadir = /media/nvme/joey_database
 In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
 ```
 max_allowed_packet = 1000M
+```
+Init MySQL and start
+```
+sudo mysqld --initialize --user=mysql
+sudo /etc/init.d/mysql start
 ```
 
 Then fetch a backed up sql file to restore the data, as per the instructions below.
@@ -77,4 +81,9 @@ FLUSH PRIVILEGES;
 If you ever notice that the sha256 (wasm_sha256) of your wasm executable is `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` this is because it is blank. The most common cause of this is that when you ran the command to upload it, there was an issue. For example 
 ```
 curl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' --header 'Content-Type: application/octet-stream' --header 'SSVM-Description: say hello' --data-binary @'pkg/file_that_does_not_exist'
+```
+## Security
+Secure DB
+```
+sudo mysql_secure_installation
 ```
