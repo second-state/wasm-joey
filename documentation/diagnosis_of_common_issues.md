@@ -16,21 +16,14 @@ sudo mysqld --initialize --user=mysql
 sudo /etc/init.d/mysql start
 sudo mysql
 ```
-
-Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
-
-Then change the datadir line from the default to what is listed directly below this line
-```
-datadir = /media/nvme/joey_database
-```
-In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
-```
-max_allowed_packet = 1000M
-```
-Init MySQL and start
-```
-sudo mysqld --initialize --user=mysql
-sudo /etc/init.d/mysql start
+Then add the joey user
+```mysql
+CREATE DATABASE joeydb;
+CREATE USER 'joey'@'localhost' IDENTIFIED BY 'your_password_here';
+GRANT ALL PRIVILEGES ON joeydb . * TO 'joey'@'localhost';
+FLUSH PRIVILEGES;
+ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here'
+FLUSH PRIVILEGES;
 ```
 
 Then fetch a backed up sql file to restore the data, as per the instructions below.
