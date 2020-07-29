@@ -600,11 +600,12 @@ function executeExecutablesFunctionWithHeaderCallback() {
                 'port': 8081,
                 'path': '/api/run/' + id_to_use + '/say',
                 'headers': {
-                    'SSVM_Callback': '{"hostname": "rpc.ssvm.secondstate.io","path": "/api/run/' + id_to_use + '/say","method": "POST","port": 8081,"headers":{"Content-Type": "text/plain"}}',
+                    'SSVM_Callback': '{"hostname": "' + joey_instance + '","path": "/api/run/' + id_to_use + '/say","method": "POST","port": 8081,"headers":{"Content-Type": "text/plain"}}',
                     'Content-Type': 'text/plain'
                 },
                 'maxRedirects': 20
             };
+            console.log(options);
             var req = https.request(options, function(res) {
                 var chunks = [];
                 res.on("data", function(chunk) {
@@ -1095,7 +1096,7 @@ function updateCallbackObject() {
         try {
             var options = {
               'method': 'PUT',
-              'hostname': 'rpc.ssvm.secondstate.io',
+              'hostname': joey_instance,
               'port': 8081,
               'path': '/api/callback/' + id_to_use,
               'headers': {
@@ -1141,7 +1142,7 @@ function updateCallbackObject2() {
         try {
             var options = {
               'method': 'PUT',
-              'hostname': 'rpc.ssvm.secondstate.io',
+              'hostname': joey_instance,
               'port': 8081,
               'path': '/api/callback/' + id_to_use,
               'headers': {

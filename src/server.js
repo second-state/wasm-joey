@@ -1207,7 +1207,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                     } else if (content_type == "application/json" || content_type == "text/plain") {
                         if (typeof req.body == "object") {
                             function_parameters = JSON.stringify(req.body);
-                        } else if (typeof req.body == "string") {
+                        } else if (typeof req.body == "string" || typeof req.body == "number") {
                             function_parameters = req.body;
                         }
                     }
@@ -1366,7 +1366,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                     } else if (content_type == "application/json" || content_type == "text/plain") {
                         if (typeof req.body == "object") {
                             function_parameters = JSON.stringify(req.body);
-                        } else if (typeof req.body == "string") {
+                        } else if (typeof req.body == "string" || typeof req.body == "number") {
                             function_parameters = req.body;
                         }
                     }
