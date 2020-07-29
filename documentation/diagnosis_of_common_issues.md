@@ -22,7 +22,7 @@ CREATE DATABASE joeydb;
 CREATE USER 'joey'@'localhost' IDENTIFIED BY 'your_password_here';
 GRANT ALL PRIVILEGES ON joeydb . * TO 'joey'@'localhost';
 FLUSH PRIVILEGES;
-ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here'
+ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
 FLUSH PRIVILEGES;
 ```
 
