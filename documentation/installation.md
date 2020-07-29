@@ -267,10 +267,10 @@ sudo chown $USER:$USER -R /etc/letsencrypt
 cd ~
 ```
 ```bash
-git clone https://github.com/second-state/SSVM.git
+git clone https://github.com/second-state/ssvm-napi-storage.git
 ```
 ```bash
-cd SSVM
+cd ssvm-napi-storage
 ```
 ```bash
 git checkout 0.6.1
