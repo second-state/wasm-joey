@@ -317,8 +317,22 @@ cd /media/nvme/node_rpc/wasm-joey/src
 ```bash
 export CXX=g++-9
 ```
+The following `ssvm-napi-storage` allows the SSVM runtime to access permanent storage.
+You will need to alter the Git configuration on the machine where this installation procedure is being performed. Reason being, this machine will not have the SSH keys to communicate with git@github. If you add the following config, you will be able to successfully run the `npm install --build-from-source ...` below.
 ```bash
-npm install --build-from-source https://github.com/second-state/ssvm-napi
+git config --global url."https://github.com/".insteadOf git@github.com:
+git config --global url."https://".insteadOf git://
+```
+You can check that this config worked by typing 
+```bash
+git config -l
+```
+You can reverse/revert this Git config by typing `git config --global --edit` and then commenting out the appropriate sections.
+
+#### Install SSVM Nodejs add-on from source
+
+```bash
+npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
 ```
 ### Hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
