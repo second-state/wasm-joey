@@ -1,6 +1,6 @@
-const joey_instance = "rpc.ssvm.secondstate.io";
+//const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-//const joey_instance = "dev.rpc.ssvm.secondstate.io";
+const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');
@@ -8,7 +8,7 @@ var fs = require('fs');
 
 
 function executeExecutablesIntFunction() {
-    var id_to_use = 23;
+    var id_to_use = 61;
     console.log("\x1b[32m", "Processing: executeExecutablesIntFunction() ...");
     return new Promise(function(resolve, reject) {
         try {
@@ -36,7 +36,7 @@ function executeExecutablesIntFunction() {
                     console.error(error);
                 });
             });
-            var postData = 2;
+            var postData = '2';
             req.write(postData);
             req.end();
         } catch {

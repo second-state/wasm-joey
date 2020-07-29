@@ -999,11 +999,11 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
                             });
                         }
                     }
-                    } else {
-                        joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
-                        res.send(JSON.stringify(joey_response));
-                    }
-                
+                } else {
+                    joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
+                    res.send(JSON.stringify(joey_response));
+                }
+
             });
         } else {
             joey_response["error"] = "wasm_id of " + req.params.wasm_id + " does not exist";
@@ -1028,7 +1028,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
                     });
                 } else {
                     joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be deleted.";
-                    res.send(JSON.stringify(joey_response));  
+                    res.send(JSON.stringify(joey_response));
                 }
             });
         } else {
@@ -1145,313 +1145,325 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', (req, res) => {
-    console.log("/api/run/:wasm_id/:function_name ...");
-    var readyAtZero = new ReadyAtZero(1);
-    var content_type = req.headers['content-type'];
-    console.log("Request Content-Type: " + content_type);
-    var function_parameters;
-    // Perform logging
-    if (log_level == 1) {
-        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        performSqlQuery(sqlSelect).then((stateResult) => {
-            console.log("Creating log object");
-            var logging_object = {};
-            logging_object["original_wasm_executables_id"] = req.params.wasm_id;
-            logging_object["data_payload"] = req.body;
-            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-            performSqlQuery(sqlInsert).then((resultInsert) => {});
-        });
-    }
-    executableExists(req.params.wasm_id).then((result2, error) => {
-        if (result2 == 1) {
-            var header_callback_object = req.header('SSVM_Callback');
-            if (typeof header_callback_object === 'undefined') {
-                console.log("No callback found in the header keys");
-            } else {
-                console.log("Callback found in the header keys");
-                readyAtZero.set_callback_object(JSON.parse(header_callback_object));
-            }
-            // Implement fetchable object (where server-side fetches the body for the request)
-            var header_fetchable_object = req.header('SSVM_Fetch');
-            if (typeof header_fetchable_object === 'undefined') {
-                console.log("No fetchable information found in the header keys");
-            } else {
-                console.log("Fetchable information found in the header keys");
-                if (header_fetchable_object.startsWith("http")) {
-                    console.log("This is a URL");
-                    var temp_obj = {};
-                    temp_obj["GET"] = header_fetchable_object;
-                    readyAtZero.set_fetchable_object(temp_obj);
+    if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
+        console.log("/api/run/:wasm_id/:function_name ...");
+        var readyAtZero = new ReadyAtZero(1);
+        var content_type = req.headers['content-type'];
+        console.log("Request Content-Type: " + content_type);
+        var function_parameters;
+        // Perform logging
+        if (log_level == 1) {
+            var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlSelect).then((stateResult) => {
+                console.log("Creating log object");
+                var logging_object = {};
+                logging_object["original_wasm_executables_id"] = req.params.wasm_id;
+                logging_object["data_payload"] = req.body;
+                var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+                performSqlQuery(sqlInsert).then((resultInsert) => {});
+            });
+        }
+        executableExists(req.params.wasm_id).then((result2, error) => {
+            if (result2 == 1) {
+                var header_callback_object = req.header('SSVM_Callback');
+                if (typeof header_callback_object === 'undefined') {
+                    console.log("No callback found in the header keys");
                 } else {
-                    console.log("This is a POST object");
-                    var temp_obj = {};
-                    temp_obj["POST"] = header_fetchable_object;
-                    readyAtZero.set_fetchable_object(temp_obj);
+                    console.log("Callback found in the header keys");
+                    readyAtZero.set_callback_object(JSON.parse(header_callback_object));
                 }
-            }
-            var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                // Set usage key
-                if (typeof header_usage_key === 'undefined') {
-                    header_usage_key = "00000000-0000-0000-0000-000000000000";
-                }
-                // Set usage key
-                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
-                    // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
-                    if (content_type == "application/octet-stream") {
-                        console.log("Request body is an octet stream ...");
-                        // Pass in body "as is" when it is an octet-stream
-                        //function_parameters = new Uint8Array(req.body);
-                        function_parameters = req.body;
-                    } else if (content_type == "application/json" || content_type == "text/plain") {
-                        if (typeof req.body == "object") {
-                            function_parameters = JSON.stringify(req.body);
-                        } else if (typeof req.body == "string" || typeof req.body == "number") {
-                            function_parameters = req.body;
-                        }
+                // Implement fetchable object (where server-side fetches the body for the request)
+                var header_fetchable_object = req.header('SSVM_Fetch');
+                if (typeof header_fetchable_object === 'undefined') {
+                    console.log("No fetchable information found in the header keys");
+                } else {
+                    console.log("Fetchable information found in the header keys");
+                    if (header_fetchable_object.startsWith("http")) {
+                        console.log("This is a URL");
+                        var temp_obj = {};
+                        temp_obj["GET"] = header_fetchable_object;
+                        readyAtZero.set_fetchable_object(temp_obj);
+                    } else {
+                        console.log("This is a POST object");
+                        var temp_obj = {};
+                        temp_obj["POST"] = header_fetchable_object;
+                        readyAtZero.set_fetchable_object(temp_obj);
                     }
-                    isValidJSON(function_parameters).then((isBodyJson, err) => {
-                        if (isBodyJson == true) {
-                            // Parse the request body 
-                            function_parameters = JSON.parse(function_parameters);
-                            // Check for callback object
-                            if (readyAtZero.callback_already_set == false) {
-                                if (function_parameters.hasOwnProperty('SSVM_Callback')) {
-                                    readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
-                                    delete function_parameters.SSVM_Callback;
-                                }
-                            }
-                            if (readyAtZero.fetchable_already_set == false) {
-                                if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                    console.log("CHAR AT: " + JSON.stringify(JSON.parse(JSON.stringify(function_parameters["SSVM_Fetch"]))).charAt(1));
-                                    if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
-                                        console.log("This is a URL");
-                                        var temp_obj = {};
-                                        temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                        readyAtZero.set_fetchable_object(temp_obj);
-                                    } else {
-                                        console.log("This is a POST object");
-                                        var temp_obj = {};
-                                        temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                        readyAtZero.set_fetchable_object(temp_obj);
-                                    }
-                                    delete function_parameters.SSVM_Fetch;
-                                }
-                            }
-                            function_parameters = JSON.stringify(function_parameters);
-                        } else if (isBodyJson == false) {
+                }
+                var header_usage_key = req.header('SSVM_Usage_Key');
+                var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                    // Set usage key
+                    if (typeof header_usage_key === 'undefined') {
+                        header_usage_key = "00000000-0000-0000-0000-000000000000";
+                    }
+                    // Set usage key
+                    if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                        // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
+                        if (content_type == "application/octet-stream") {
+                            console.log("Request body is an octet stream ...");
+                            // Pass in body "as is" when it is an octet-stream
+                            //function_parameters = new Uint8Array(req.body);
                             function_parameters = req.body;
+                        } else if (content_type == "application/json" || content_type == "text/plain") {
+                            if (typeof req.body == "object") {
+                                function_parameters = JSON.stringify(req.body);
+                            } else if (typeof req.body == "string") {
+                                function_parameters = req.body;
+                            }
                         }
+                        isValidJSON(function_parameters).then((isBodyJson, err) => {
+                            if (isBodyJson == true) {
+                                // Parse the request body 
+                                function_parameters = JSON.parse(function_parameters);
+                                // Check for callback object
+                                if (readyAtZero.callback_already_set == false) {
+                                    if (function_parameters.hasOwnProperty('SSVM_Callback')) {
+                                        readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
+                                        delete function_parameters.SSVM_Callback;
+                                    }
+                                }
+                                if (readyAtZero.fetchable_already_set == false) {
+                                    if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
+                                        console.log("CHAR AT: " + JSON.stringify(JSON.parse(JSON.stringify(function_parameters["SSVM_Fetch"]))).charAt(1));
+                                        if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
+                                            console.log("This is a URL");
+                                            var temp_obj = {};
+                                            temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
+                                        } else {
+                                            console.log("This is a POST object");
+                                            var temp_obj = {};
+                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
+                                        }
+                                        delete function_parameters.SSVM_Fetch;
+                                    }
+                                }
+                                function_parameters = JSON.stringify(function_parameters);
+                            } else if (isBodyJson == false) {
+                                function_parameters = req.body;
+                            }
 
-                        var array_of_parameters = [];
+                            var array_of_parameters = [];
 
-                        if (readyAtZero.fetchable_already_set == true) {
-                            array_of_parameters.push(readyAtZero.get_fetchable_object());
-                            readyAtZero.decrease();
-                        } else {
-                            array_of_parameters.push(function_parameters);
-                            readyAtZero.decrease();
-                        }
-                        console.log("Array of parameters is now set: " + array_of_parameters);
+                            if (readyAtZero.fetchable_already_set == true) {
+                                array_of_parameters.push(readyAtZero.get_fetchable_object());
+                                readyAtZero.decrease();
+                            } else {
+                                array_of_parameters.push(function_parameters);
+                                readyAtZero.decrease();
+                            }
+                            console.log("Array of parameters is now set: " + array_of_parameters);
 
-                        // Callback
-                        if (readyAtZero.callback_already_set == false) {
-                            // No callback yet so we have to check the DB
-                            var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                            performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
-                                readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                //console.log("Function name: " + req.params.function_name);
-                                //console.log("Parameters: " + array_of_parameters);
-                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
-                                    if (typeof esfm_result == "object") {
-                                        res.send(JSON.stringify(esfm_result));
+                            // Callback
+                            if (readyAtZero.callback_already_set == false) {
+                                // No callback yet so we have to check the DB
+                                var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                    readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                    //console.log("Function name: " + req.params.function_name);
+                                    //console.log("Parameters: " + array_of_parameters);
+                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
+                                        if (typeof esfm_result == "object") {
+                                            res.send(JSON.stringify(esfm_result));
+                                            res.end();
+                                        } else if (typeof esfm_result == "string") {
+                                            res.send(esfm_result);
+                                            res.end();
+                                        }
+                                    });
+                                });
+                            } else if (readyAtZero.callback_already_set == true) {
+                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
+                                    if (typeof esfm2_result == "object") {
+                                        res.send(JSON.stringify(esfm2_result));
                                         res.end();
-                                    } else if (typeof esfm_result == "string") {
-                                        res.send(esfm_result);
+                                    } else if (typeof esfm2_result == "string") {
+                                        res.send(esfm2_result);
                                         res.end();
                                     }
                                 });
-                            });
-                        } else if (readyAtZero.callback_already_set == true) {
-                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
-                                if (typeof esfm2_result == "object") {
-                                    res.send(JSON.stringify(esfm2_result));
-                                    res.end();
-                                } else if (typeof esfm2_result == "string") {
-                                    res.send(esfm2_result);
-                                    res.end();
-                                }
-                            });
-                        }
+                            }
 
-                    });
+                        });
 
-                } else {
-                    var joey_response = {};
-                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
-                    res.send(JSON.stringify(joey_response));
-                }
+                    } else {
+                        var joey_response = {};
+                        joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                        res.send(JSON.stringify(joey_response));
+                    }
 
-            });
+                });
 
-        } else {
-            res.send(req.params.wasm_id + " does not exist");
-        }
-    });
+            } else {
+                res.send(req.params.wasm_id + " does not exist");
+            }
+        });
+    } else {
+        var joey_response = {};
+        joey_response["error"] = "Request body must be plain text, valid JSON string, or byte array";
+        res.send(JSON.stringify(joey_response));
+    }
 });
 
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
-    console.log("/api/run/:wasm_id/:function_name/bytes ...");
-    var readyAtZero = new ReadyAtZero(1);
-    var content_type = req.headers['content-type'];
-    console.log("Request Content-Type: " + content_type);
-    var function_parameters;
-    // Perform logging
-    if (log_level == 1) {
-        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-        performSqlQuery(sqlSelect).then((stateResult) => {
-            console.log("Creating log object");
-            var logging_object = {};
-            logging_object["original_wasm_executables_id"] = req.params.wasm_id;
-            logging_object["data_payload"] = req.body;
-            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-            performSqlQuery(sqlInsert).then((resultInsert) => {});
-        });
-    }
-    executableExists(req.params.wasm_id).then((result2, error) => {
-        if (result2 == 1) {
-            var header_callback_object = req.header('SSVM_Callback');
-            if (typeof header_callback_object === 'undefined') {
-                console.log("No callback found in the header keys");
-            } else {
-                console.log("Callback found in the header keys");
-                readyAtZero.set_callback_object(JSON.parse(header_callback_object));
-            }
-
-            // Implement fetchable object (where server-side fetches the body for the request)
-            var header_fetchable_object = req.header('SSVM_Fetch');
-            if (typeof header_fetchable_object === 'undefined') {
-                console.log("No fetchable information found in the header keys");
-            } else {
-                console.log("Fetchable information found in the header keys");
-                if (header_fetchable_object.startsWith("http")) {
-                    console.log("This is a URL");
-                    var temp_obj = {};
-                    temp_obj["GET"] = header_fetchable_object;
-                    readyAtZero.set_fetchable_object(temp_obj);
-                } else {
-                    console.log("This is a POST object");
-                    var temp_obj = {};
-                    temp_obj["POST"] = header_fetchable_object;
-                    readyAtZero.set_fetchable_object(temp_obj);
-                }
-            }
-            var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                // Set usage key
-                if (typeof header_usage_key === 'undefined') {
-                    header_usage_key = "00000000-0000-0000-0000-000000000000";
-                }
-                // Set usage key
-                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
-                    // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
-                    if (content_type == "application/octet-stream") {
-                        console.log("Request body is an octet stream ...");
-                        // Pass in body "as is" when it is an octet-stream
-                        //function_parameters = new Uint8Array(req.body);
-                        function_parameters = req.body;
-                    } else if (content_type == "application/json" || content_type == "text/plain") {
-                        if (typeof req.body == "object") {
-                            function_parameters = JSON.stringify(req.body);
-                        } else if (typeof req.body == "string" || typeof req.body == "number") {
-                            function_parameters = req.body;
-                        }
-                    }
-                    isValidJSON(function_parameters).then((isBodyJson, err) => {
-                        if (isBodyJson == true) {
-                            // Parse the request body 
-                            function_parameters = JSON.parse(function_parameters);
-                            // Check for callback object
-                            if (readyAtZero.callback_already_set == false) {
-                                if (function_parameters.hasOwnProperty('SSVM_Callback')) {
-                                    readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
-                                    delete function_parameters.SSVM_Callback;
-                                }
-                            }
-                            if (readyAtZero.fetchable_already_set == false) {
-                                if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                    if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
-                                        console.log("This is a URL");
-                                        var temp_obj = {};
-                                        temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                        readyAtZero.set_fetchable_object(temp_obj);
-                                    } else {
-                                        console.log("This is a POST object");
-                                        var temp_obj = {};
-                                        temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                        readyAtZero.set_fetchable_object(temp_obj);
-                                    }
-                                    delete function_parameters.SSVM_Fetch;
-                                }
-                            }
-                            function_parameters = JSON.stringify(function_parameters);
-                        } else if (isBodyJson == false) {
-                            function_parameters = req.body;
-                        }
-
-                        var array_of_parameters = [];
-
-                        if (readyAtZero.fetchable_already_set == true) {
-                            array_of_parameters.push(readyAtZero.get_fetchable_object());
-                            readyAtZero.decrease();
-                        } else {
-                            array_of_parameters.push(function_parameters);
-                            readyAtZero.decrease();
-                        }
-                        console.log("Array of parameters is now set: " + array_of_parameters);
-
-                        // Callback
-                        if (readyAtZero.callback_already_set == false) {
-                            // No callback yet so we have to check the DB
-                            var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                            performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
-                                readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                //console.log("Function name: " + req.params.function_name);
-                                //console.log("Parameters: " + array_of_parameters);
-                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
-                                    // Pass results "as is"
-                                    //var result_as_bytes = Uint8Array.from(esfm_result);
-                                    console.log(esfm_result);
-                                    res.send(esfm_result);
-
-                                });
-                            });
-                        } else if (readyAtZero.callback_already_set == true) {
-                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
-                                // Pass results "as is"
-                                //var result_as_bytes = Uint8Array.from(esfm2_result);
-                                console.log(esfm2_result);
-                                res.send(esfm2_result);
-                            });
-                        }
-
-                    });
-
-                } else {
-                    var joey_response = {};
-                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
-                    res.send(JSON.stringify(joey_response));
-                }
-
+    if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
+        console.log("/api/run/:wasm_id/:function_name/bytes ...");
+        var readyAtZero = new ReadyAtZero(1);
+        var content_type = req.headers['content-type'];
+        console.log("Request Content-Type: " + content_type);
+        var function_parameters;
+        // Perform logging
+        if (log_level == 1) {
+            var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlSelect).then((stateResult) => {
+                console.log("Creating log object");
+                var logging_object = {};
+                logging_object["original_wasm_executables_id"] = req.params.wasm_id;
+                logging_object["data_payload"] = req.body;
+                var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + JSON.stringify(stateResult[0].wasm_state) + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+                performSqlQuery(sqlInsert).then((resultInsert) => {});
             });
-
-        } else {
-            res.send(req.params.wasm_id + " does not exist");
         }
-    });
+        executableExists(req.params.wasm_id).then((result2, error) => {
+            if (result2 == 1) {
+                var header_callback_object = req.header('SSVM_Callback');
+                if (typeof header_callback_object === 'undefined') {
+                    console.log("No callback found in the header keys");
+                } else {
+                    console.log("Callback found in the header keys");
+                    readyAtZero.set_callback_object(JSON.parse(header_callback_object));
+                }
+
+                // Implement fetchable object (where server-side fetches the body for the request)
+                var header_fetchable_object = req.header('SSVM_Fetch');
+                if (typeof header_fetchable_object === 'undefined') {
+                    console.log("No fetchable information found in the header keys");
+                } else {
+                    console.log("Fetchable information found in the header keys");
+                    if (header_fetchable_object.startsWith("http")) {
+                        console.log("This is a URL");
+                        var temp_obj = {};
+                        temp_obj["GET"] = header_fetchable_object;
+                        readyAtZero.set_fetchable_object(temp_obj);
+                    } else {
+                        console.log("This is a POST object");
+                        var temp_obj = {};
+                        temp_obj["POST"] = header_fetchable_object;
+                        readyAtZero.set_fetchable_object(temp_obj);
+                    }
+                }
+                var header_usage_key = req.header('SSVM_Usage_Key');
+                var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                    // Set usage key
+                    if (typeof header_usage_key === 'undefined') {
+                        header_usage_key = "00000000-0000-0000-0000-000000000000";
+                    }
+                    // Set usage key
+                    if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                        // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
+                        if (content_type == "application/octet-stream") {
+                            console.log("Request body is an octet stream ...");
+                            // Pass in body "as is" when it is an octet-stream
+                            //function_parameters = new Uint8Array(req.body);
+                            function_parameters = req.body;
+                        } else if (content_type == "application/json" || content_type == "text/plain") {
+                            if (typeof req.body == "object") {
+                                function_parameters = JSON.stringify(req.body);
+                            } else if (typeof req.body == "string") {
+                                function_parameters = req.body;
+                            }
+                        }
+                        isValidJSON(function_parameters).then((isBodyJson, err) => {
+                            if (isBodyJson == true) {
+                                // Parse the request body 
+                                function_parameters = JSON.parse(function_parameters);
+                                // Check for callback object
+                                if (readyAtZero.callback_already_set == false) {
+                                    if (function_parameters.hasOwnProperty('SSVM_Callback')) {
+                                        readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
+                                        delete function_parameters.SSVM_Callback;
+                                    }
+                                }
+                                if (readyAtZero.fetchable_already_set == false) {
+                                    if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
+                                        if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
+                                            console.log("This is a URL");
+                                            var temp_obj = {};
+                                            temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
+                                        } else {
+                                            console.log("This is a POST object");
+                                            var temp_obj = {};
+                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
+                                        }
+                                        delete function_parameters.SSVM_Fetch;
+                                    }
+                                }
+                                function_parameters = JSON.stringify(function_parameters);
+                            } else if (isBodyJson == false) {
+                                function_parameters = req.body;
+                            }
+
+                            var array_of_parameters = [];
+
+                            if (readyAtZero.fetchable_already_set == true) {
+                                array_of_parameters.push(readyAtZero.get_fetchable_object());
+                                readyAtZero.decrease();
+                            } else {
+                                array_of_parameters.push(function_parameters);
+                                readyAtZero.decrease();
+                            }
+                            console.log("Array of parameters is now set: " + array_of_parameters);
+
+                            // Callback
+                            if (readyAtZero.callback_already_set == false) {
+                                // No callback yet so we have to check the DB
+                                var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                    readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                    //console.log("Function name: " + req.params.function_name);
+                                    //console.log("Parameters: " + array_of_parameters);
+                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
+                                        // Pass results "as is"
+                                        //var result_as_bytes = Uint8Array.from(esfm_result);
+                                        console.log(esfm_result);
+                                        res.send(esfm_result);
+
+                                    });
+                                });
+                            } else if (readyAtZero.callback_already_set == true) {
+                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
+                                    // Pass results "as is"
+                                    //var result_as_bytes = Uint8Array.from(esfm2_result);
+                                    console.log(esfm2_result);
+                                    res.send(esfm2_result);
+                                });
+                            }
+
+                        });
+
+                    } else {
+                        var joey_response = {};
+                        joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                        res.send(JSON.stringify(joey_response));
+                    }
+
+                });
+
+            } else {
+                res.send(req.params.wasm_id + " does not exist");
+            }
+        });
+    } else {
+        var joey_response = {};
+        joey_response["error"] = "Request body must be plain text, valid JSON string, or byte array";
+        res.send(JSON.stringify(joey_response));
+    }
 });
 
 
