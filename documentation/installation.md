@@ -267,13 +267,9 @@ sudo chown $USER:$USER -R /etc/letsencrypt
 cd ~
 ```
 ```bash
-git clone https://github.com/second-state/ssvm-napi-storage.git
-```
-```bash
-cd ssvm-napi-storage
-```
-```bash
-git checkout 0.6.1
+git clone git@github.com:second-state/SSVM.git
+cd SSVM
+git checkout 0.6.3
 ```
 ```bash
 sudo apt install -y \
