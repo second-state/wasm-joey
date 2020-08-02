@@ -291,6 +291,10 @@ mkdir -p build && cd build
 ```bash
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON .. && make
 ```
+
+### Permanent storage
+
+Create the infrastructure for the permanent storage by following [these rust_native_storage_library instructions](https://github.com/second-state/rust_native_storage_library#installing-database-rocksdb)
 ### SSVM Nodejs add-on
 ```bash
 sudo apt-get install libboost-all-dev

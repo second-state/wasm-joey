@@ -383,12 +383,13 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 }
 
 function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameters, _return_type) {
+    var wasi = {"args":[],"env":{},"preopens":{}};
     var _joey_response = {};
     return new Promise(function(resolve, reject) {
         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
         performSqlQuery(sqlSelect).then((result2, error2) => {
             var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
-            var vm = new ssvm.VM(uint8array);
+            var vm = new ssvm.VM(uint8array, wasi);
             if (_readyAtZero.fetchable_already_set == true) {
                 var fetchable_object = _readyAtZero.get_fetchable_object();
                 if (fetchable_object.hasOwnProperty("GET")) {
