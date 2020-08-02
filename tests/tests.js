@@ -1,8 +1,8 @@
 // ************************************************************************************************
 // Joey production instance
-//const joey_instance = "rpc.ssvm.secondstate.io";
+const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-const joey_instance = "dev.rpc.ssvm.secondstate.io";
+//const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');
@@ -118,7 +118,7 @@ function loadExecutable() {
             var postData = fs.readFileSync('./hello_bg.wasm');
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -168,7 +168,7 @@ function loadExecutableAverage() {
             var postData = fs.readFileSync('./average_bg.wasm');
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -218,7 +218,7 @@ function loadExecutableCF() {
             var postData = fs.readFileSync('./c_to_f_bg.wasm');
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -264,7 +264,7 @@ function updateExecutable() {
             var postData = fs.readFileSync('./hello_bg.wasm');
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -313,7 +313,7 @@ function updateExecutableAdminKey() {
             var postData = fs.readFileSync('./hello_bg.wasm');
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -356,7 +356,7 @@ function getExecutable() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -399,7 +399,7 @@ function getExecutableFilterByDescription() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -443,7 +443,7 @@ function getExecutableFilterBySha256() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -487,7 +487,7 @@ function executeExecutablesFunction() {
             var postData = "Tim";
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -534,7 +534,7 @@ function executeExecutablesFunctionWithHeaderFetch() {
             });
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -580,7 +580,7 @@ function executeExecutablesFunctionWithBodyFetch() {
             });
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -627,7 +627,7 @@ function executeExecutablesFunctionWithHeaderCallback() {
             var postData = "Tim";
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -681,7 +681,7 @@ function executeExecutablesFunctionWithBodyCallback() {
             });
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -741,7 +741,7 @@ function executeExecutablesFunctionWithBodyCallback2() {
             });
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -789,7 +789,7 @@ function addDataToEphemeralStorage() {
             });
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -828,7 +828,7 @@ function getDataFromEphemeralStorage() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -869,7 +869,7 @@ function updateDataToEphemeralStorage() {
             });
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -908,7 +908,7 @@ function getDataFromEphemeralStorage2() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -945,7 +945,7 @@ function deleteDataFromEphemeralStorage() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             console.log("\x1b[31m", "Error: deleteDataFromEphemeralStorage failed");
             reject();
         }
@@ -985,7 +985,7 @@ function getDataFromEphemeralStorage3() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -1030,7 +1030,7 @@ function refreshUsageKeys() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -1080,7 +1080,7 @@ function zeroUsageKeys() {
             });
 
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -1126,7 +1126,7 @@ function updateCallbackObject() {
             var postData = JSON.stringify({"hostname":"rpc.ssvm.secondstate.io","path":"/api/run/5/reverse/bytes","method":"POST","port":8081,"headers":{"Content-Type":"application/octet-stream"}});
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -1174,7 +1174,7 @@ function updateCallbackObject2() {
             var postData = JSON.stringify({});
             req.write(postData);
             req.end();
-        } catch {
+        } catch(e) {
             reject();
         }
     });
@@ -1214,7 +1214,7 @@ function deleteExecutable() {
                 });
             });
             req.end();
-        } catch {
+        } catch(e) {
             console.log("\x1b[31m", "Error: deleteExecutable failed");
             reject();
         }
