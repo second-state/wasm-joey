@@ -342,6 +342,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             });
         }
         for (var field of Object.entries(_fields)) {
+            console.log("Field " + field[0]);
             if (field[0].startsWith("fetch")) {
                 console.log("Field " + field[0] + "starts with fetch ...");
                 if (field[1].startsWith("http")) {
