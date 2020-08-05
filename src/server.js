@@ -259,6 +259,8 @@ function executeMultipartRequest(_original_id, _request_options) {
             });
             res.on("end", () => {
                 try {
+                    console.log("data: " + body);
+                    console.log("data type : " + typeof body);
                     if (typeof body == "object") {
                         resolve(JSON.stringify(body));
                     } else if (typeof body == "string") {
