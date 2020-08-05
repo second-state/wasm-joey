@@ -253,9 +253,9 @@ function executeMultipartRequest(_original_id, _request_options) {
         delete options.body;
         options["headers"]["Content-Length"] = data.length;
         const req = https.request(options, (res) => {
-            let data = '';
+            let body = '';
             res.on('data', (chunk) => {
-                data += chunk;
+                body += chunk;
             });
             res.on("end", () => {
                 try {
@@ -305,6 +305,8 @@ function fetchUsingGet(_value) {
         }).on("error", (error) => {
             console.error(error.message);
         });
+        req.write(data);
+        req.end();
     });
 }
 
