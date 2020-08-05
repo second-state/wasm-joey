@@ -4,7 +4,7 @@
 For a simple and easy to follow demonstration of how to create, deploy and execute WebAssembly please read [this Medium article called Programming the Web with WebAssembly](https://medium.com/wasm/programming-the-web-with-webassembly-e90d17bde276)
 
 # Feedback is very welcome
-We have [an area devoted to creating tests](https://github.com/second-state/wasm-joey/tree/master/tests) where we try and simulate every possible HTTP requests. This testing area will ensure that everything is always working for you. If you have an issue, please let us know as many details as possible so we can write a test and solve any issues once and for all. Please [click here and provide details so we can assist](https://github.com/second-state/wasm-joey/issues).
+We have [an area devoted to feedback](https://github.com/second-state/wasm-joey/blob/master/FEEDBACK.md). Please feel free to raise any questions, issues and/or feature request via the link in this paragraph.
 
 **END UPDATE**
 
