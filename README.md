@@ -1,5 +1,4 @@
-**START UPDATE** 
-## August 2020
+**START UPDATE - August 2020**
 
 # Easy instructions
 For a simple and easy to follow demonstration of how to create, deploy and execute WebAssembly please read [this Medium article called Programming the Web with WebAssembly](https://medium.com/wasm/programming-the-web-with-webassembly-e90d17bde276)
