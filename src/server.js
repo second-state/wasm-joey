@@ -335,7 +335,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     fetchUsingGet(field[1]).then((fetched_result, error) => {
                         var dict_return = {};
                         dict_return[field[0]] = fetched_result;
-                        fetched_result_object = JSON.parse(dict_return);
+                        fetched_result_object = JSON.parse(JSON.stringify(dict_return));
                         const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
                         const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
                         _readyAtZero.container[index_key] = JSON.stringify(fetched_result_object[Object.keys(fetched_result_object)[0]]);
@@ -346,7 +346,8 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     });
                 } else {
                     executeMultipartRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
-                        fetched_result_object2 = JSON.parse(fetched_result2);
+                        console.log(fetched_result2);
+                        fetched_result_object2 = JSON.parse(JSON.stringify(fetched_result2));
                         const _string_position2 = field[0].lastIndexOf("_");
                         const index_key2 = field[0].slice(_string_position2 + 1, field[0].length);
                         _readyAtZero.container[index_key2] = JSON.stringify(fetched_result_object2);
