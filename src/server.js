@@ -305,8 +305,6 @@ function fetchUsingGet(_value) {
         }).on("error", (error) => {
             console.error(error.message);
         });
-        req.write(data);
-        req.end();
     });
 }
 
