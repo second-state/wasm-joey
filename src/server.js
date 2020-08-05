@@ -289,6 +289,8 @@ function fetchUsingGet(_value) {
             });
             res.on("end", () => {
                 try {
+                    console.log("data: " + data);
+                    console.log("data type : " + typeof data);
                     if (typeof data == "object") {
                         resolve(JSON.stringify(data));
                     } else if (typeof data == "string") {
