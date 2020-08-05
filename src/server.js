@@ -259,7 +259,11 @@ function executeMultipartRequest(_original_id, _request_options) {
             });
             res.on("end", () => {
                 try {
-                    resolve(data);
+                    if (typeof body == "object") {
+                        resolve(JSON.stringify(body));
+                    } else if (typeof body == "string") {
+                        resolve(data);
+                    }
                 } catch (error) {
                     console.error(error.message);
                 };
@@ -285,7 +289,11 @@ function fetchUsingGet(_value) {
             });
             res.on("end", () => {
                 try {
-                    resolve(body);
+                    if (typeof body == "object") {
+                        resolve(JSON.stringify(body));
+                    } else if (typeof body == "string") {
+                        resolve(data);
+                    }
                 } catch (error) {
                     console.error(error.message);
                 };
