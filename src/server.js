@@ -1097,6 +1097,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         }
                         // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
                         var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
+                        console.log("tag");
                         parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
                             if (!m_error) {
                                 var in_progress = false;
