@@ -259,9 +259,9 @@ function executeMultipartRequest(_original_id, _request_options) {
             });
             res.on("end", () => {
                 try {
-                    if (typeof body == "object") {
-                        resolve(JSON.stringify(body));
-                    } else if (typeof body == "string") {
+                    if (typeof data == "object") {
+                        resolve(JSON.stringify(data));
+                    } else if (typeof data == "string") {
                         resolve(data);
                     }
                 } catch (error) {
@@ -289,9 +289,9 @@ function fetchUsingGet(_value) {
             });
             res.on("end", () => {
                 try {
-                    if (typeof body == "object") {
-                        resolve(JSON.stringify(body));
-                    } else if (typeof body == "string") {
+                    if (typeof data == "object") {
+                        resolve(JSON.stringify(data));
+                    } else if (typeof data == "string") {
                         resolve(data);
                     }
                 } catch (error) {
