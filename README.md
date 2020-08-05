@@ -1,4 +1,4 @@
-# START UPDATE 
+**START UPDATE** 
 ## August 2020
 
 # Easy instructions
@@ -7,7 +7,7 @@ For a simple and easy to follow demonstration of how to create, deploy and execu
 # Feedback is very welcome
 We have [an area devoted to creating tests](https://github.com/second-state/wasm-joey/tree/master/tests) where we try and simulate every possible HTTP requests. This testing area will ensure that everything is always working for you. If you have an issue, please let us know as many details as possible so we can write a test and solve any issues once and for all. Please [click here and provide details so we can assist](https://github.com/second-state/wasm-joey/issues).
 
-# END UPDATE
+**END UPDATE**
 
 # Wasm-joey
 A Joey is a baby Kangaroo. Wasm-joey is a **portable**, **flexible**, **lightweight** application for deploying and executing WebAssembly(Wasm) binary-code via HTTP requests and responses.
