@@ -289,6 +289,7 @@ function fetchUsingGet(_value) {
             });
             res.on("end", () => {
                 try {
+                    /*
                     console.log("data: " + data);
                     console.log("data type : " + typeof data);
                     if (typeof data == "object") {
@@ -296,6 +297,8 @@ function fetchUsingGet(_value) {
                     } else if (typeof data == "string") {
                         resolve(data);
                     }
+                    */
+                    resolve(data);
                 } catch (error) {
                     console.error(error.message);
                 };
