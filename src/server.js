@@ -347,7 +347,8 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                 console.log("Field " + field[0] + "starts with fetch ...");
                 if (field[1].startsWith("http")) {
                     fetchUsingGet(field[1]).then((fetched_result, error) => {
-                        console.log("fetched_result type: " + fetched_result);
+                        console.log("fetched_result type: " + typeof fetched_result);
+                        console.log("fetched_result" + fetched_result);
                         var dict_return = {};
                         dict_return[field[0]] = fetched_result;
                         fetched_result_object = JSON.parse(JSON.stringify(dict_return));
@@ -361,8 +362,8 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     });
                 } else {
                     executeMultipartRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
-                        console.log("fetched_result2 type: " + fetched_result2);
-                        console.log("Fetched result" + fetched_result2);
+                        console.log("fetched_result2 type: " + typeof fetched_result2);
+                        console.log("fetched_result2" + fetched_result2);
                         fetched_result_object2 = JSON.parse(JSON.stringify(fetched_result2));
                         const _string_position2 = field[0].lastIndexOf("_");
                         const index_key2 = field[0].slice(_string_position2 + 1, field[0].length);
