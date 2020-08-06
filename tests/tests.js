@@ -314,6 +314,80 @@ function executeExecutablesMultipart2() {
     });
 }
 
+// ************************************************************************************************
+// Execute a wasm executable's function
+// GET and CALLBACK
+/*
+curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/multipart/run/180/process_three_inputs' \
+--header 'Content-Type: multipart/form-data' \
+--form 'first_input_example_1=one' \
+--form 'second_input_example_2={"asdf": 10}' \
+--form 'fetch_again_3=https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt' \
+--form 'SSVM_Callback={"body": "asdf", "hostname":"dev.rpc.ssvm.secondstate.io","path": "/api/run/wasm_id/say", "method": "POST","port": 8081,"headers": {"Content-Type": "text/plain"}}'
+*/
+function executeExecutablesMultipart2_1() {
+    var say_id_to_use = wasm_object.get_wasm_id();
+    var id_to_use = wasm_object_multipart.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesMultipart2_1() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/multipart/run/' + id_to_use + '/process_three_inputs',
+                'headers': {
+                    'Content-Type': 'multipart/form-data'
+                },
+                'maxRedirects': 20
+            };
+
+            var req = https.request(options, function(res) {
+                var chunks = [];
+
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    //body_object = JSON.parse(body.toString());
+
+                    console.log(body.toString());
+                    /*
+
+                    console.log("input_a: " + body_object.input_a);
+                    console.log("input_b: " + body_object.input_b);
+                    console.log("input_c: " + body_object.input_c);
+
+                    if (body_object.input_a == "one" && body_object.input_b === "{\"asdf\": 10}" && body_object.input_c === "Tim\n") {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesMultipart2_1() test").then((printResult) => {});
+                    }
+                    */
+
+                    resolve();
+                });
+
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"second_input_example_2\"\r\n\r\n{\"asdf\": 10}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"SSVM_Callback\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"dev.rpc.ssvm.secondstate.io\",\"path\": \"/api/run/179/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+            
+            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+
+            req.write(postData);
+
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
 
 // ************************************************************************************************
 // Execute a wasm executable's function 
@@ -375,7 +449,7 @@ function executeExecutablesMultipart3() {
             });
 
             var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"" + joey_instance + "\",\"path\": \"/api/run/" + say_id_to_use + "/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
-            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+            console.log("\n***********************   POST DATA: " + postData + "\n");
             req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
             req.write(postData);
 
@@ -444,7 +518,7 @@ function executeExecutablesMultipart4() {
                 });
             });
 
-            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"second_input_example_2\"\r\n\r\n{\"asdf\": 10}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"second_input_example_2\"\r\n\r\n{\"asdf\": 10}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"" + joey_instance + "\",\"path\": \"/api/run/" + say_id_to_use + "/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
             req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
             req.write(postData);
 
@@ -515,7 +589,7 @@ function executeExecutablesMultipart5() {
                 });
             });
 
-            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"SSVM_Callback\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"" + joey_instance + "\",\"path\": \"/api/run/" + say_id_to_use + "/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"SSVM_Callback\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"" + joey_instance + "\",\"path\": \"/api/run/" + say_id_to_use + "/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
 
             req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
             req.write(postData);
@@ -1639,10 +1713,11 @@ loadExecutable().then((loadExecutableResult) => {
     loadExecutableMultipart().then((loadExecutableResult) => {
         executeExecutablesMultipart1().then((loadExecutableResult) => {
             executeExecutablesMultipart2().then((loadExecutableResult) => {
+                executeExecutablesMultipart2_1().then((loadExecutableResult) => {
                 executeExecutablesMultipart3().then((loadExecutableResult) => {
                     executeExecutablesMultipart4().then((loadExecutableResult) => {
                         executeExecutablesMultipart5().then((loadExecutableResult) => {
-                            loadExecutableAverage().then((loadExecutableAverageResult) => {
+                            /*loadExecutableAverage().then((loadExecutableAverageResult) => {
                                 loadExecutableCF().then((loadExecutableCFResult) => {
                                     updateExecutable().then((loadExecutableResult) => {
                                         updateExecutableAdminKey().then((loadExecutableResult) => {
@@ -1688,8 +1763,9 @@ loadExecutable().then((loadExecutableResult) => {
                                         });
                                     });
                                 });
-                            });
+                            });*/
                         });
+ });
                     });
                 });
             });

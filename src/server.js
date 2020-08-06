@@ -342,19 +342,13 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             });
         }
         for (var field of Object.entries(_fields)) {
-            console.log("Field " + field[0]);
+             const _string_position = field[0].lastIndexOf("_");
+             const index_key = field[0].slice(_string_position + 1, field[0].length);
+
             if (field[0].startsWith("fetch")) {
-                console.log("Field " + field[0] + "starts with fetch ...");
                 if (field[1].startsWith("http")) {
                     fetchUsingGet(field[1]).then((fetched_result, error) => {
-                        console.log("fetched_result type: " + typeof fetched_result);
-                        console.log("fetched_result " + fetched_result);
-                        var dict_return = {};
-                        dict_return[field[0]] = fetched_result;
-                        fetched_result_object = JSON.parse(JSON.stringify(dict_return));
-                        const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
-                        const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
-                        _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]];
+                        _readyAtZero.container[index_key] = fetched_result;
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -362,12 +356,8 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     });
                 } else {
                     executeMultipartRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
-                        console.log("fetched_result2 type: " + typeof fetched_result2);
-                        console.log("fetched_result2 " + fetched_result2);
                         fetched_result_object2 = JSON.parse(JSON.stringify(fetched_result2));
-                        const _string_position2 = field[0].lastIndexOf("_");
-                        const index_key2 = field[0].slice(_string_position2 + 1, field[0].length);
-                        _readyAtZero.container[index_key2] = JSON.stringify(fetched_result_object2);
+                        _readyAtZero.container[index_key] = JSON.stringify(fetched_result_object2);
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
                             resolve();
@@ -380,16 +370,14 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                     _readyAtZero.decrease();
                 } else if (_readyAtZero.callback_already_set == true) {
                     _readyAtZero.decrease();
-                    console.log("Only allowed one callback object per request");
                 }
                 if (_readyAtZero.isReady()) {
                     resolve();
                 }
 
             } else {
-                const _string_position3 = field[0].lastIndexOf("_");
-                const index_key3 = field[0].slice(_string_position3 + 1, field[0].length);
-                _readyAtZero.container[index_key3] = field[1];
+                _readyAtZero.container[index_key] = field[1];
+
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
                     resolve();
@@ -401,8 +389,6 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 }
 
 function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameters, _return_type) {
-    console.log("CHECKING PARAMETERS ....");
-    console.log(..._array_of_parameters);
     var wasi = {"args":[],"env":{},"preopens":{}};
     var _joey_response = {};
     return new Promise(function(resolve, reject) {
@@ -413,7 +399,6 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
             if (_readyAtZero.fetchable_already_set == true) {
                 var fetchable_object = _readyAtZero.get_fetchable_object();
                 if (fetchable_object.hasOwnProperty("GET")) {
-                    console.log("Performing GET request for SSVM_Fetch");
                     fetchUsingGet(fetchable_object["GET"]).then((fetched_result, error) => {
                         objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                             if (resultEmptyObject == false) {
@@ -731,6 +716,11 @@ class ReadyAtZero {
     get_fetchable_object() {
         return this.fetchable_object;
     }
+
+    get_value() {
+        return this.value;
+    }
+
     fetchable_already_set() {
         return this.fetchable_already_set;
     }
@@ -1102,7 +1092,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                         }
                         // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
                         var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
-                        console.log("tag");
                         parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
                             if (!m_error) {
                                 var in_progress = false;
