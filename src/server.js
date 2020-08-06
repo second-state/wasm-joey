@@ -401,6 +401,8 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 }
 
 function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameters, _return_type) {
+    console.log("CHECKING PARAMETERS ....");
+    console.log(..._array_of_parameters);
     var wasi = {"args":[],"env":{},"preopens":{}};
     var _joey_response = {};
     return new Promise(function(resolve, reject) {
