@@ -1,8 +1,8 @@
 // ************************************************************************************************
 // Joey production instance
-const joey_instance = "rpc.ssvm.secondstate.io";
+//const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-// const joey_instance = "dev.rpc.ssvm.secondstate.io";
+const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');
@@ -57,6 +57,7 @@ class WasmObject {
 
 }
 var wasm_object = new WasmObject();
+var wasm_object_multipart = new WasmObject();
 var wasm_object_average = new WasmObject();
 var wasm_object_c_to_f = new WasmObject();
 
@@ -118,7 +119,404 @@ function loadExecutable() {
             var postData = fs.readFileSync('./hello_bg.wasm');
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Load a new wasm executable
+function loadExecutableMultipart() {
+    console.log("\x1b[32m", "Processing: loadExecutableMultipart() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/executables',
+                'headers': {
+                    'Content-Type': 'application/octet-stream',
+                    'SSVM_Description': 'Multipart'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    var res_object = JSON.parse(body.toString());
+                    wasm_object_multipart.set_wasm_id(res_object["wasm_id"]);
+                    wasm_object_multipart.set_SSVM_Admin_Key(res_object["SSVM_Admin_Key"]);
+                    wasm_object_multipart.set_SSVM_Usage_Key(res_object["SSVM_Usage_Key"]);
+                    wasm_object_multipart.set_wasm_sha256(res_object["wasm_sha256"]);
+                    console.log("\x1b[32m", "wasm_id:" + wasm_object_multipart.get_wasm_id());
+                    console.log("\x1b[32m", "SSVM_Admin_Key:" + wasm_object_multipart.get_SSVM_Admin_Key());
+                    console.log("\x1b[32m", "SSVM_Usage_Key:" + wasm_object_multipart.get_SSVM_Usage_Key());
+                    console.log("\x1b[32m", "wasm_sha256:" + wasm_object_multipart.get_wasm_sha256());
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = fs.readFileSync('./multipart_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function
+/*
+curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/multipart/run/116/process_three_inputs' \
+--header 'Content-Type: multipart/form-data' \
+--form 'first_input_example_1=one' \
+--form 'second_input_example_2={"asdf": 10}' \
+--form 'third_parameter_3=2'
+*/
+function executeExecutablesMultipart1() {
+    var id_to_use = wasm_object_multipart.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesMultipart1() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/multipart/run/' + id_to_use + '/process_three_inputs',
+                'headers': {
+                    'Content-Type': 'multipart/form-data'
+                },
+                'maxRedirects': 20
+            };
+
+            var req = https.request(options, function(res) {
+                var chunks = [];
+
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    body_object = JSON.parse(body.toString());
+
+                    console.log(body.toString());
+
+                    console.log("input_a: " + body_object.input_a);
+                    console.log("input_b: " + body_object.input_b);
+                    console.log("input_c: " + body_object.input_c);
+
+                    if (body_object.input_a == "one" && body_object.input_b === "{\"asdf\": 10}" && body_object.input_c === "2") {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesMultipart1() test").then((printResult) => {});
+                    }
+
+                    resolve();
+                });
+
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"second_input_example_2\"\r\n\r\n{\"asdf\": 10}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"third_parameter_3\"\r\n\r\n2\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+
+            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+
+            req.write(postData);
+
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function
+// GET
+/*
+curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/multipart/run/116/process_three_inputs' \
+--header 'Content-Type: multipart/form-data' \
+--form 'first_input_example_1=one' \
+--form 'second_input_example_2={"asdf": 10}' \
+--form 'fetch_again_3=https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt'
+*/
+function executeExecutablesMultipart2() {
+    var id_to_use = wasm_object_multipart.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesMultipart2() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/multipart/run/' + id_to_use + '/process_three_inputs',
+                'headers': {
+                    'Content-Type': 'multipart/form-data'
+                },
+                'maxRedirects': 20
+            };
+
+            var req = https.request(options, function(res) {
+                var chunks = [];
+
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    body_object = JSON.parse(body.toString());
+
+                    console.log(body.toString());
+
+                    console.log("input_a: " + body_object.input_a);
+                    console.log("input_b: " + body_object.input_b);
+                    console.log("input_c: " + body_object.input_c);
+
+                    if (body_object.input_a == "one" && body_object.input_b === "{\"asdf\": 10}" && body_object.input_c === "Tim\n") {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesMultipart2() test").then((printResult) => {});
+                    }
+
+                    resolve();
+                });
+
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"second_input_example_2\"\r\n\r\n{\"asdf\": 10}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+
+            req.write(postData);
+
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+
+// ************************************************************************************************
+// Execute a wasm executable's function 
+// POST AND GET
+/*
+curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/multipart/run/116/process_three_inputs' \
+--header 'Content-Type: multipart/form-data' \
+--form 'first_input_example_1=one' \
+--form 'fetch_input_example_2={"body": "asdf", "hostname":"rpc.ssvm.secondstate.io","path": "/api/run/1/say", "method": "POST","port": 8081,"headers": {"Content-Type": "text/plain"}}' \
+--form 'fetch_again_3=https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt'
+*/
+function executeExecutablesMultipart3() {
+    var id_to_use = wasm_object_multipart.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesMultipart3() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/multipart/run/' + id_to_use + '/process_three_inputs',
+                'headers': {
+                    'Content-Type': 'multipart/form-data'
+                },
+                'maxRedirects': 20
+            };
+
+            var req = https.request(options, function(res) {
+                var chunks = [];
+
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    body_object = JSON.parse(body.toString());
+
+                    console.log(body.toString());
+
+                    console.log("input_a: " + body_object.input_a);
+                    console.log("input_b: " + body_object.input_b);
+                    console.log("input_c: " + body_object.input_c);
+
+                    if (body_object.input_a == "one" && body_object.input_b === "hello \"asdf\"" && body_object.input_c === "Tim\n") {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesMultipart3() test").then((printResult) => {});
+                    }
+
+                    resolve();
+                });
+
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+            req.write(postData);
+
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function 
+// POST AND GET
+/*
+curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/multipart/run/116/process_three_inputs' \
+--header 'Content-Type: multipart/form-data' \
+--form 'first_input_example_1=one' \
+--form 'second_input_example_2={"asdf": 10}' \
+--form 'fetch_input_example_2={"body": "asdf", "hostname":"rpc.ssvm.secondstate.io","path": "/api/run/1/say", "method": "POST","port": 8081,"headers": {"Content-Type": "text/plain"}}'
+*/
+function executeExecutablesMultipart4() {
+    var id_to_use = wasm_object_multipart.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesMultipart4() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/multipart/run/' + id_to_use + '/process_three_inputs',
+                'headers': {
+                    'Content-Type': 'multipart/form-data'
+                },
+                'maxRedirects': 20
+            };
+
+            var req = https.request(options, function(res) {
+                var chunks = [];
+
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    body_object = JSON.parse(body.toString());
+
+                    console.log(body.toString());
+
+                    console.log("input_a: " + body_object.input_a);
+                    console.log("input_b: " + body_object.input_b);
+                    console.log("input_c: " + body_object.input_c);
+
+                    if (body_object.input_a == "one" && body_object.input_b === "{\"asdf\": 10}" && body_object.input_c === "hello \"asdf\"") {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesMultipart4() test").then((printResult) => {});
+                    }
+
+                    resolve();
+                });
+
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"second_input_example_2\"\r\n\r\n{\"asdf\": 10}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+            req.write(postData);
+
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+
+// ************************************************************************************************
+// Execute a wasm executable's function 
+// POST AND GET
+/*
+curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/multipart/run/116/process_three_inputs' \
+--header 'Content-Type: multipart/form-data' \
+--form 'first_input_example_1=one' \
+--form 'fetch_input_example_2={"body": "asdf", "hostname":"rpc.ssvm.secondstate.io","path": "/api/run/1/say", "method": "POST","port": 8081,"headers": {"Content-Type": "text/plain"}}' \
+--form 'fetch_again_3=https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt' \
+--form 'SSVM_Callback={"body": "asdf", "hostname":"rpc.ssvm.secondstate.io","path": "/api/run/1/say", "method": "POST","port": 8081,"headers": {"Content-Type": "text/plain"}}'
+*/
+function executeExecutablesMultipart5() {
+    var id_to_use = wasm_object_multipart.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesMultipart5() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/multipart/run/' + id_to_use + '/process_three_inputs',
+                'headers': {
+                    'Content-Type': 'multipart/form-data'
+                },
+                'maxRedirects': 20
+            };
+
+            var req = https.request(options, function(res) {
+                var chunks = [];
+
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    body_object = JSON.parse(body.toString());
+
+                    console.log(body.toString());
+
+                    console.log("input_a: " + body_object.input_a);
+                    console.log("input_b: " + body_object.input_b);
+                    console.log("input_c: " + body_object.input_c);
+
+                    if (body.toString().startsWith("hello ") && body_object.input_a == "one" && body_object.input_b === "hello \"asdf\"" && body_object.input_c === "Tim\n") {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesMultipart5() test").then((printResult) => {});
+                    }
+
+                    resolve();
+                });
+
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"SSVM_Callback\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+
+            req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
+            req.write(postData);
+
+            req.end();
+        } catch (e) {
             reject();
         }
     });
@@ -168,7 +566,7 @@ function loadExecutableAverage() {
             var postData = fs.readFileSync('./average_bg.wasm');
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -218,7 +616,7 @@ function loadExecutableCF() {
             var postData = fs.readFileSync('./c_to_f_bg.wasm');
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -264,7 +662,7 @@ function updateExecutable() {
             var postData = fs.readFileSync('./hello_bg.wasm');
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -313,7 +711,7 @@ function updateExecutableAdminKey() {
             var postData = fs.readFileSync('./hello_bg.wasm');
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -356,7 +754,7 @@ function getExecutable() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -399,7 +797,7 @@ function getExecutableFilterByDescription() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -443,7 +841,7 @@ function getExecutableFilterBySha256() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -487,7 +885,7 @@ function executeExecutablesFunction() {
             var postData = "Tim";
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -534,7 +932,7 @@ function executeExecutablesFunctionWithHeaderFetch() {
             });
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -580,7 +978,7 @@ function executeExecutablesFunctionWithBodyFetch() {
             });
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -627,7 +1025,7 @@ function executeExecutablesFunctionWithHeaderCallback() {
             var postData = "Tim";
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -681,7 +1079,7 @@ function executeExecutablesFunctionWithBodyCallback() {
             });
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -741,7 +1139,7 @@ function executeExecutablesFunctionWithBodyCallback2() {
             });
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -789,7 +1187,7 @@ function addDataToEphemeralStorage() {
             });
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -828,7 +1226,7 @@ function getDataFromEphemeralStorage() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -869,7 +1267,7 @@ function updateDataToEphemeralStorage() {
             });
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -908,7 +1306,7 @@ function getDataFromEphemeralStorage2() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -945,7 +1343,7 @@ function deleteDataFromEphemeralStorage() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             console.log("\x1b[31m", "Error: deleteDataFromEphemeralStorage failed");
             reject();
         }
@@ -985,7 +1383,7 @@ function getDataFromEphemeralStorage3() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -1030,7 +1428,7 @@ function refreshUsageKeys() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -1080,7 +1478,7 @@ function zeroUsageKeys() {
             });
 
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -1095,38 +1493,46 @@ function updateCallbackObject() {
     return new Promise(function(resolve, reject) {
         try {
             var options = {
-              'method': 'PUT',
-              'hostname': joey_instance,
-              'port': 8081,
-              'path': '/api/callback/' + id_to_use,
-              'headers': {
-                'Content-Type': 'application/json',
-                'SSVM_Admin_Key': admin_key_required_for_update
-              },
-              'maxRedirects': 20
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/callback/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'SSVM_Admin_Key': admin_key_required_for_update
+                },
+                'maxRedirects': 20
             };
-            var req = https.request(options, function (res) {
-              var chunks = [];
-              res.on("data", function (chunk) {
-                chunks.push(chunk);
-              });
-              res.on("end", function (chunk) {
-                var body = Buffer.concat(chunks);
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
                     if (body.toString().includes("Not allowed to store a callback to the rpc.ssvm.secondstate.io hostname")) {
                         printMessage("Success, we have confirmed that callbacks to this server can not be stored in the DB").then((printResult) => {});
                     } else {
                         printMessage("Error, we should not be allowed to store this type of callback object").then((printResult) => {});
                     }
                     resolve();
-              });
-              res.on("error", function (error) {
-                console.error(error);
-              });
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
             });
-            var postData = JSON.stringify({"hostname":"rpc.ssvm.secondstate.io","path":"/api/run/5/reverse/bytes","method":"POST","port":8081,"headers":{"Content-Type":"application/octet-stream"}});
+            var postData = JSON.stringify({
+                "hostname": "rpc.ssvm.secondstate.io",
+                "path": "/api/run/5/reverse/bytes",
+                "method": "POST",
+                "port": 8081,
+                "headers": {
+                    "Content-Type": "application/octet-stream"
+                }
+            });
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -1141,40 +1547,40 @@ function updateCallbackObject2() {
     return new Promise(function(resolve, reject) {
         try {
             var options = {
-              'method': 'PUT',
-              'hostname': joey_instance,
-              'port': 8081,
-              'path': '/api/callback/' + id_to_use,
-              'headers': {
-                'Content-Type': 'application/json',
-                'SSVM_Admin_Key': admin_key_required_for_update
-              },
-              'maxRedirects': 20
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/callback/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'SSVM_Admin_Key': admin_key_required_for_update
+                },
+                'maxRedirects': 20
             };
-            var req = https.request(options, function (res) {
-              var chunks = [];
-              res.on("data", function (chunk) {
-                chunks.push(chunk);
-              });
-              res.on("end", function (chunk) {
-                var body = Buffer.concat(chunks);
-                console.log(body.toString());
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log(body.toString());
                     if (body.toString().includes(id_to_use)) {
                         printMessage("Success, we have updated the callback object which is stored in the DB").then((printResult) => {});
                     } else {
                         printMessage("Error, we should not be allowed to store this type of callback object").then((printResult) => {});
                     }
                     resolve();
-              });
-              res.on("error", function (error) {
-                console.error(error);
-              });
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
             });
             // Just adding a blank object for testing
             var postData = JSON.stringify({});
             req.write(postData);
             req.end();
-        } catch(e) {
+        } catch (e) {
             reject();
         }
     });
@@ -1214,7 +1620,7 @@ function deleteExecutable() {
                 });
             });
             req.end();
-        } catch(e) {
+        } catch (e) {
             console.log("\x1b[31m", "Error: deleteExecutable failed");
             reject();
         }
@@ -1225,30 +1631,42 @@ function deleteExecutable() {
 // ************************************************************************************************
 // Execute the tests
 loadExecutable().then((loadExecutableResult) => {
-    loadExecutableAverage().then((loadExecutableAverageResult) => {
-        loadExecutableCF().then((loadExecutableCFResult) => {
-            updateExecutable().then((loadExecutableResult) => {
-                updateExecutableAdminKey().then((loadExecutableResult) => {
-                    getExecutable().then((getExecutableResult) => {
-                        getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
-                            getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                                executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
-                                    executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
-                                        executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
-                                            executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
-                                                executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
-                                                    executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
-                                                        addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
-                                                            getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
-                                                                updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
-                                                                    getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
-                                                                        deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
-                                                                            getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
-                                                                                refreshUsageKeys().then((refreshUsageKeysResult) => {
-                                                                                    zeroUsageKeys().then((zeroUsageKeysResult) => {
-                                                                                        updateCallbackObject().then((zeroUsageKeysResult) => {
-                                                                                            updateCallbackObject2().then((zeroUsageKeysResult) => {
-                                                                                                deleteExecutable().then((deleteExecutableResult) => {});
+    loadExecutableMultipart().then((loadExecutableResult) => {
+        executeExecutablesMultipart1().then((loadExecutableResult) => {
+            executeExecutablesMultipart2().then((loadExecutableResult) => {
+                executeExecutablesMultipart3().then((loadExecutableResult) => {
+                    executeExecutablesMultipart4().then((loadExecutableResult) => {
+                        executeExecutablesMultipart5().then((loadExecutableResult) => {
+                            loadExecutableAverage().then((loadExecutableAverageResult) => {
+                                loadExecutableCF().then((loadExecutableCFResult) => {
+                                    updateExecutable().then((loadExecutableResult) => {
+                                        updateExecutableAdminKey().then((loadExecutableResult) => {
+                                            getExecutable().then((getExecutableResult) => {
+                                                getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
+                                                    getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
+                                                        executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
+                                                            executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
+                                                                executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
+                                                                    executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
+                                                                        executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
+                                                                            executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
+                                                                                addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
+                                                                                    getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
+                                                                                        updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
+                                                                                            getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
+                                                                                                deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
+                                                                                                    getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
+                                                                                                        refreshUsageKeys().then((refreshUsageKeysResult) => {
+                                                                                                            zeroUsageKeys().then((zeroUsageKeysResult) => {
+                                                                                                                updateCallbackObject().then((zeroUsageKeysResult) => {
+                                                                                                                    updateCallbackObject2().then((zeroUsageKeysResult) => {
+                                                                                                                        deleteExecutable().then((deleteExecutableResult) => {});
+                                                                                                                    });
+                                                                                                                });
+                                                                                                            });
+                                                                                                        });
+                                                                                                    });
+                                                                                                });
                                                                                             });
                                                                                         });
                                                                                     });
