@@ -255,6 +255,7 @@ curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/mul
 --form 'fetch_again_3=https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt'
 */
 function executeExecutablesMultipart2() {
+    var say_id_to_use = wasm_object.get_wasm_id();
     var id_to_use = wasm_object_multipart.get_wasm_id();
     console.log("\x1b[32m", "Processing: executeExecutablesMultipart2() ...");
     return new Promise(function(resolve, reject) {
@@ -325,6 +326,7 @@ curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/mul
 --form 'fetch_again_3=https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt'
 */
 function executeExecutablesMultipart3() {
+    var say_id_to_use = wasm_object.get_wasm_id();
     var id_to_use = wasm_object_multipart.get_wasm_id();
     console.log("\x1b[32m", "Processing: executeExecutablesMultipart3() ...");
     return new Promise(function(resolve, reject) {
@@ -349,6 +351,7 @@ function executeExecutablesMultipart3() {
 
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
+                    console.log("Body as String: " + body.toString());
                     body_object = JSON.parse(body.toString());
 
                     console.log(body.toString());
@@ -371,7 +374,7 @@ function executeExecutablesMultipart3() {
                 });
             });
 
-            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+            var postData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"first_input_example_1\"\r\n\r\none\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_input_example_2\"\r\n\r\n{\"body\": \"asdf\", \"hostname\":\"" + joey_instance + "\",\"path\": \"/api/run/" + say_id_to_use + "/say\", \"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\"}}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"fetch_again_3\"\r\n\r\nhttps://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--";
             req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
             req.setHeader('content-type', 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');
             req.write(postData);
@@ -394,6 +397,7 @@ curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/mul
 --form 'fetch_input_example_2={"body": "asdf", "hostname":"rpc.ssvm.secondstate.io","path": "/api/run/1/say", "method": "POST","port": 8081,"headers": {"Content-Type": "text/plain"}}'
 */
 function executeExecutablesMultipart4() {
+    var say_id_to_use = wasm_object.get_wasm_id();
     var id_to_use = wasm_object_multipart.get_wasm_id();
     console.log("\x1b[32m", "Processing: executeExecutablesMultipart4() ...");
     return new Promise(function(resolve, reject) {
@@ -464,6 +468,7 @@ curl --location --request POST 'https://dev.rpc.ssvm.secondstate.io:8081/api/mul
 --form 'SSVM_Callback={"body": "asdf", "hostname":"rpc.ssvm.secondstate.io","path": "/api/run/1/say", "method": "POST","port": 8081,"headers": {"Content-Type": "text/plain"}}'
 */
 function executeExecutablesMultipart5() {
+    var say_id_to_use = wasm_object.get_wasm_id();
     var id_to_use = wasm_object_multipart.get_wasm_id();
     console.log("\x1b[32m", "Processing: executeExecutablesMultipart5() ...");
     return new Promise(function(resolve, reject) {
