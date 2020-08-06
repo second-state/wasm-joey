@@ -1,8 +1,8 @@
 // ************************************************************************************************
 // Joey production instance
-//const joey_instance = "rpc.ssvm.secondstate.io";
+const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-const joey_instance = "dev.rpc.ssvm.secondstate.io";
+// const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');

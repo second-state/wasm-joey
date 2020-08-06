@@ -386,7 +386,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
             } else {
                 const _string_position3 = field[0].lastIndexOf("_");
                 const index_key3 = field[0].slice(_string_position3 + 1, field[0].length);
-                _readyAtZero.container[index_key3] = JSON.stringify(field[1]);
+                _readyAtZero.container[index_key3] = field[1];
                 _readyAtZero.decrease();
                 if (_readyAtZero.isReady()) {
                     resolve();
