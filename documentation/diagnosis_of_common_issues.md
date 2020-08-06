@@ -57,7 +57,7 @@ mysql -u joey -p joeydb < /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-0
 If you get an error like this, when trying to start server.js via node command, `Error: ER_NOT_SUPPORTED_AUTH_MODE: Client does not support authentication protocol requested by server; consider upgrading MySQL client`
 Perform the following command 
 ```
-ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here'
+ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
 FLUSH PRIVILEGES;
 
 ```
