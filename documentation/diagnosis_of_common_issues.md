@@ -25,8 +25,25 @@ FLUSH PRIVILEGES;
 ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
 FLUSH PRIVILEGES;
 ```
+Then run these commands at the mysql prompt
+```
+ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
+FLUSH PRIVILEGES;
+```
+```SQL
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
+FLUSH PRIVILEGES;
+```
 
 Then fetch a backed up sql file to restore the data, as per the instructions below.
+
+```bash
+su -
+```
+```bash
+cd /var/lib/automysqlbackup/daily/joeydb
+gzip -d the_mysq_.gz_file
+```
 
 ## MySQL backup and restore
 
@@ -47,7 +64,7 @@ To restore, use the following to decompress the database backup
 gzip -d /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql.gz
 # creates /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql
 ```
-The run the following command to restore MySQL to this particular database backup
+Then run the following command to restore MySQL to this particular database backup
 ```bash
 mysql -u joey -p joeydb < /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql
 ```
@@ -59,7 +76,6 @@ Perform the following command
 ```
 ALTER USER 'joey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
 FLUSH PRIVILEGES;
-
 ```
 ## ERROR 1698 (28000): Access denied for user 'root'@'localhost'
 
