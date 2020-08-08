@@ -1,8 +1,8 @@
 // ************************************************************************************************
 // Joey production instance
-//const joey_instance = "rpc.ssvm.secondstate.io";
+const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-const joey_instance = "dev.rpc.ssvm.secondstate.io";
+//const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');
@@ -1632,8 +1632,8 @@ function updateCallbackObject() {
                 });
             });
             var postData = JSON.stringify({
-                "hostname": "rpc.ssvm.secondstate.io",
-                "path": "/api/run/5/reverse/bytes",
+                "hostname": joey_instance,
+                "path": "/api/run/" + id_to_use + "/reverse/bytes",
                 "method": "POST",
                 "port": 8081,
                 "headers": {
