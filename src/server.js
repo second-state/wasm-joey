@@ -1155,11 +1155,14 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                                console.log("We are about to execute ssvm now ...");
                                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                                     if (typeof esfm_result == "object") {
+                                                        console.log("ssvm execution complete!");
                                                         res.send(JSON.stringify(esfm_result));
                                                         res.end();
                                                     } else if (typeof esfm_result == "string") {
+                                                        console.log("ssvm execution complete!");
                                                         res.send(esfm_result);
                                                         res.end();
                                                     }
