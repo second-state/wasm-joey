@@ -195,7 +195,6 @@ function executionLogExists(wasm_id) {
 }
 
 function executeCallbackRequest(_original_id, _request_options) {
-    console.log("Callback request options" + _request_options);
     return new Promise(function(resolve, reject) {
         if (log_level == 1) {
             var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
@@ -212,8 +211,6 @@ function executeCallbackRequest(_original_id, _request_options) {
         if (typeof data == "object") {
             data = JSON.stringify(data);
         }
-        console.log("Data is type of: " + typeof data);
-        console.log("Data is : " + data);
         options["headers"]["Content-Length"] = data.length;
         delete options.body;
         const req = https.request(JSON.parse(JSON.stringify(options)), (res) => {
@@ -260,8 +257,6 @@ function executeMultipartRequest(_original_id, _request_options) {
             });
             res.on("end", () => {
                 try {
-                    console.log("data: " + body);
-                    console.log("data type : " + typeof body);
                     if (typeof body == "object") {
                         resolve(JSON.stringify(body));
                     } else if (typeof body == "string") {
@@ -292,8 +287,6 @@ function fetchUsingGet(_value) {
             });
             res.on("end", () => {
                 try {
-                    console.log("data: " + body);
-                    console.log("data type : " + typeof body);
                     if (typeof body == "object") {
                         resolve(JSON.stringify(data));
                     } else if (typeof body == "string") {
@@ -1201,6 +1194,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
         } else {
             res.send(req.params.wasm_id + " does not exist");
         }
+
     });
 });
 
@@ -1324,8 +1318,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                     readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                    //console.log("Function name: " + req.params.function_name);
-                                    //console.log("Parameters: " + array_of_parameters);
                                     executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                         if (typeof esfm_result == "object") {
                                             res.send(JSON.stringify(esfm_result));
@@ -1488,8 +1480,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                     readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                    //console.log("Function name: " + req.params.function_name);
-                                    //console.log("Parameters: " + array_of_parameters);
                                     executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
                                         // Pass results "as is"
                                         //var result_as_bytes = Uint8Array.from(esfm_result);
@@ -1500,8 +1490,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 });
                             } else if (readyAtZero.callback_already_set == true) {
                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
-                                    // Pass results "as is"
-                                    //var result_as_bytes = Uint8Array.from(esfm2_result);
                                     console.log(esfm2_result);
                                     res.send(esfm2_result);
                                 });
