@@ -1166,11 +1166,14 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true) {
+                                            console.log("We are about to execute ssvm now ...");
                                             executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                                 if (typeof esfm2_result == "object") {
+                                                    console.log("ssvm execution complete!");
                                                     res.send(JSON.stringify(esfm2_result));
                                                     res.end();
                                                 } else if (typeof esfm2_result == "string") {
+                                                    console.log("ssvm execution complete!");
                                                     res.send(esfm2_result);
                                                     res.end();
                                                 }
