@@ -341,7 +341,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 
             if (field[0].startsWith("fetch")) {
                 if (field[1].startsWith("http")) {
+                    console.log("Fetching data using GET ...");
                     fetchUsingGet(field[1]).then((fetched_result, error) => {
+                        console.log("Fetching data using GET success!");
                         _readyAtZero.container[index_key] = fetched_result;
                         _readyAtZero.decrease();
                         if (_readyAtZero.isReady()) {
@@ -349,7 +351,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
                         }
                     });
                 } else {
+                    console.log("Fetching data using POST object ...");
                     executeMultipartRequest(_req.params.wasm_id, field[1]).then((fetched_result2, error) => {
+                        console.log("Fetching data using POST object success!");
                         fetched_result_object2 = JSON.parse(JSON.stringify(fetched_result2));
                         _readyAtZero.container[index_key] = JSON.stringify(fetched_result_object2);
                         _readyAtZero.decrease();
