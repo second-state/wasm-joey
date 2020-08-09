@@ -496,6 +496,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                             callback_object_for_processing = JSON.parse(callback_object_for_processing);
                         }
                         try {
+                            console.log("Parameters len == 0");
                             console.log("Executing function WITH a callback ...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name);
@@ -516,6 +517,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                         });
                     } else {
                         try {
+                            console.log("Parameters len == 0");
                             console.log("Executing function WITHOUT a callback...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name);
@@ -542,6 +544,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                     callback_object_for_processing = JSON.parse(callback_object_for_processing);
                                 }
                                 try {
+                                    console.log("Parameters len == 1 and it is an object");
                                     console.log("Executing function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name);
@@ -562,6 +565,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                 });
                             } else {
                                 try {
+                                    console.log("Parameters len == 1 and it is an object");
                                     console.log("Executing function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name);
@@ -585,6 +589,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                     callback_object_for_processing = JSON.parse(callback_object_for_processing);
                                 }
                                 try {
+                                    console.log("Parameters len == 1 and it is an empty object");
                                     console.log("Executing function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, ..._array_of_parameters);
@@ -605,6 +610,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                 });
                             } else {
                                 try {
+                                    console.log("Parameters len == 1 and it is an empty object");
                                     console.log("Executing function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, ..._array_of_parameters);
@@ -632,6 +638,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                             callback_object_for_processing = JSON.parse(callback_object_for_processing);
                         }
                         try {
+                            console.log("Parameters len == 1");
                             console.log("Executing function WITH a callback ...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
@@ -652,6 +659,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                         });
                     } else {
                         try {
+                            console.log("Parameters len == 1");
                             console.log("Executing function WITHOUT a callback...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
@@ -675,6 +683,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                             callback_object_for_processing = JSON.parse(callback_object_for_processing);
                         }
                         try {
+                            console.log("Parameters len > 1");
                             console.log("Executing function WITH a callback ...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
@@ -695,6 +704,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                         });
                     } else {
                         try {
+                            console.log("Parameters len > 1");
                             console.log("Executing function WITHOUT a callback...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
