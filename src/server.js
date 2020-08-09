@@ -397,6 +397,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
             if (_readyAtZero.fetchable_already_set == true) {
                 var fetchable_object = _readyAtZero.get_fetchable_object();
                 if (fetchable_object.hasOwnProperty("GET")) {
+                    console.log("Performing GET request for SSVM_Fetch ........");
                     fetchUsingGet(fetchable_object["GET"]).then((fetched_result, error) => {
                         objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                             if (resultEmptyObject == false) {
@@ -405,7 +406,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                     callback_object_for_processing = JSON.parse(callback_object_for_processing);
                                 }
                                 try {
-                                    console.log("Executing function WITH a callback ...");
+                                    console.log("Executing ssvm function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result);
                                         callback_object_for_processing["body"] = return_value;
@@ -424,7 +425,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                 });
                             } else {
                                 try {
-                                    console.log("Executing function WITHOUT a callback...");
+                                    console.log("Executing ssvm function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result);
                                         console.log("Success!");
@@ -441,7 +442,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                         });
                     });
                 } else if (fetchable_object.hasOwnProperty("POST")) {
-                    console.log("Performing POST request for SSVM_Fetch");
+                    console.log("Performing POST request for SSVM_Fetch ........");
                     executeMultipartRequest(_wasm_id, fetchable_object["POST"]).then((fetched_result2, error) => {
                         objectIsEmpty(_readyAtZero.get_callback_object()).then((resultEmptyObject, error) => {
                             if (resultEmptyObject == false) {
@@ -450,7 +451,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                     callback_object_for_processing = JSON.parse(callback_object_for_processing);
                                 }
                                 try {
-                                    console.log("Executing function WITH a callback ...");
+                                    console.log("Executing ssvm function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result2);
                                         callback_object_for_processing["body"] = return_value;
@@ -470,7 +471,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
                                 });
                             } else {
                                 try {
-                                    console.log("Executing function WITHOUT a callback...");
+                                    console.log("Executing ssvm function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result2);
                                         console.log("Success!");
@@ -1155,7 +1156,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                                console.log("We are about to execute ssvm now ...");
+                                                //console.log("We are about to execute ssvm now ...");
                                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                                     if (typeof esfm_result == "object") {
                                                         console.log("ssvm execution complete!");
@@ -1169,7 +1170,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true) {
-                                            console.log("We are about to execute ssvm now ...");
+                                            //console.log("We are about to execute ssvm now ...");
                                             executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                                 if (typeof esfm2_result == "object") {
                                                     console.log("ssvm execution complete!");
