@@ -1,3 +1,10 @@
+[package]
+name = "server_side_watermarking"
+version = "0.1.0"
+authors = ["ubuntu"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "watermark"
 path = "src/lib.rs"
