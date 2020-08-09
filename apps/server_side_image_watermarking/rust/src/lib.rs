@@ -9,7 +9,7 @@ struct Pixel {
     t: u8,
 }
 #[wasm_bindgen]
-pub fn watermark_single_image(_image_width: String, _image_height: String, mut _image_pixels: Vec<u8>, _watermark_width: String, _watermark_height: String, mut _watermark_pixels: Vec<u8>, _watermark_pos_width: String, _watermark_pos_height: String) -> Vec<u8> {
+pub fn watermark_single_image(_image_width: String, _image_height: String, mut _image_pixels: Vec<u8>, _watermark_width: String, _watermark_height: String, mut _watermark_pixels: Vec<u8>, _watermark_pos_width: String, _watermark_pos_height: String) -> String {
     // Convert the String inputs to u32 integers
     let image_width: u32 = _image_width.parse().unwrap();
     let image_height: u32 = _image_height.parse().unwrap();
@@ -59,5 +59,5 @@ pub fn watermark_single_image(_image_width: String, _image_height: String, mut _
         w_counter = 0;
         h_counter = h_counter + 1;
     }
-    _image_pixels.clone()
+    format!("{:?}",_image_pixels.clone())
 }
