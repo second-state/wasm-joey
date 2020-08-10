@@ -1220,6 +1220,99 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 });
 
 
+// Run a function by calling with multi part form data (returns a string)
+app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) => {
+    var joey_response = {};
+    var array_of_parameters = [];
+    // Perform logging
+    if (log_level == 1) {
+        var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+        performSqlQuery(sqlSelect).then((stateResult) => {
+            var logging_object = {};
+            logging_object["original_wasm_executables_id"] = req.params.wasm_id;
+            logging_object["data_payload"] = req.body;
+            var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + req.params.wasm_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
+            performSqlQuery(sqlInsert).then((resultInsert) => {});
+        });
+    }
+    executableExists(req.params.wasm_id).then((result, error) => {
+        if (result == 1) {
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if (typeof header_usage_key === 'undefined') {
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                    const form = formidable({
+                        multiples: true
+                    });
+
+                    form.parse(req, (err, fields, files) => {
+                        if (err) {
+                            next(err);
+                            joey_response["return_value"] = "Error reading multipart fields and/or files";
+                            res.send(JSON.stringify(joey_response));
+                            return;
+                        }
+                        // The formidable file and fields iteration is performed separately by formidable middleware, this is a mechanism to let us know when the iterator has completed the task (avoid race conditions)
+                        var readyAtZero = new ReadyAtZero(Object.keys(files).length + Object.keys(fields).length);
+                        parseMultipart(readyAtZero, files, fields, req).then((m_result, m_error) => {
+                            if (!m_error) {
+                                var in_progress = false;
+                                while (true && in_progress == false) {
+                                    if (readyAtZero.isReady() == true) {
+                                        in_progress = true;
+                                        var ordered_overarching_container = {};
+                                        Object.keys(readyAtZero.container).sort().forEach(function(key) {
+                                            ordered_overarching_container[key] = readyAtZero.container[key];
+                                        });
+                                        for (let [key, value] of Object.entries(ordered_overarching_container)) {
+                                            array_of_parameters.push(`${value}`);
+                                        }
+                                        // Callback
+                                        if (readyAtZero.callback_already_set == false) {
+                                            // No callback yet so we have to check the DB
+                                            var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                            performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                                readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                                //console.log("We are about to execute ssvm now ...");
+                                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
+                                                        console.log("ssvm execution complete!");
+                                                        res.send(esfm_result);
+                                                        res.end();
+                                                });
+                                            });
+                                        } else if (readyAtZero.callback_already_set == true) {
+                                            //console.log("We are about to execute ssvm now ...");
+                                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
+                                                console.log("ssvm execution complete!");
+                                                res.send(esfm2_result);
+                                                res.end();
+                                                });
+                                        }
+                                    }
+                                }
+
+                            } else {
+                                console.log(m_error);
+                            }
+                        });
+                    });
+
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
+            });
+        } else {
+            res.send(req.params.wasm_id + " does not exist");
+        }
+
+    });
+});
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
