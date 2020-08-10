@@ -17,7 +17,7 @@ pub fn watermark_single_image(
     mut _watermark_pixels: Vec<u8>,
     _watermark_pos_width: String,
     _watermark_pos_height: String,
-) -> String {
+) -> Vec<u8> {
     // Convert the String inputs to u32 integers
     let image_width: u32 = _image_width.parse().unwrap();
     let image_height: u32 = _image_height.parse().unwrap();
@@ -88,5 +88,5 @@ pub fn watermark_single_image(
     }
     w_counter = 0;
     h_counter = 0;
-    format!("{:?}", _image_pixels.clone())
+    _image_pixels
 }
