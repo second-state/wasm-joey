@@ -1,8 +1,8 @@
 // ************************************************************************************************
 // Joey production instance
-const joey_instance = "rpc.ssvm.secondstate.io";
+//const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-//const joey_instance = "dev.rpc.ssvm.secondstate.io";
+const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');
@@ -60,6 +60,8 @@ var wasm_object = new WasmObject();
 var wasm_object_multipart = new WasmObject();
 var wasm_object_average = new WasmObject();
 var wasm_object_c_to_f = new WasmObject();
+var wasm_object_to_test_bytes = new WasmObject();
+
 
 // ************************************************************************************************
 // Helper functions
@@ -117,6 +119,102 @@ function loadExecutable() {
                 });
             });
             var postData = fs.readFileSync('./hello_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+
+// ************************************************************************************************
+// Load a new wasm executable
+function loadExecutableToTestBytes() {
+    console.log("\x1b[32m", "Processing: loadExecutable() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/executables',
+                'headers': {
+                    'Content-Type': 'application/octet-stream',
+                    'SSVM_Description': 'Hello'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    var res_object_to_test_bytes = JSON.parse(body.toString());
+                    wasm_object_to_test_bytes.set_wasm_id(res_object_to_test_bytes["wasm_id"]);
+                    wasm_object_to_test_bytes.set_SSVM_Admin_Key(res_object_to_test_bytes["SSVM_Admin_Key"]);
+                    wasm_object_to_test_bytes.set_SSVM_Usage_Key(res_object_to_test_bytes["SSVM_Usage_Key"]);
+                    wasm_object_to_test_bytes.set_wasm_sha256(res_object_to_test_bytes["wasm_sha256"]);
+                    console.log("\x1b[32m", "wasm_id:" + wasm_object_to_test_bytes.get_wasm_id());
+                    console.log("\x1b[32m", "SSVM_Admin_Key:" + wasm_object_to_test_bytes.get_SSVM_Admin_Key());
+                    console.log("\x1b[32m", "SSVM_Usage_Key:" + wasm_object_to_test_bytes.get_SSVM_Usage_Key());
+                    console.log("\x1b[32m", "wasm_sha256:" + wasm_object_to_test_bytes.get_wasm_sha256());
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = fs.readFileSync('./double_number_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function to test bytes
+function executeExecutablesFunctionToTestBytes() {
+    var id_to_use = wasm_object_to_test_bytes.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionToTestBytes() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/run/' + id_to_use + '/double_to_bytes/bytes',
+                'headers': {
+                    'Content-Type': 'text/plain',
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log("Bytes to string: " +  body.toString());
+                    if (body.toString().includes("44")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionToTestBytes() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = "22";
             req.write(postData);
             req.end();
         } catch (e) {
@@ -1741,38 +1839,42 @@ function deleteExecutable() {
 // ************************************************************************************************
 // Execute the tests
 loadExecutable().then((loadExecutableResult) => {
-    loadExecutableMultipart().then((loadExecutableResult) => {
-        executeExecutablesMultipart1().then((loadExecutableResult) => {
-            executeExecutablesMultipart2().then((loadExecutableResult) => {
-                executeExecutablesMultipart2_1().then((loadExecutableResult) => {
-                    executeExecutablesMultipart2_2().then((loadExecutableResult) => {
-                        executeExecutablesMultipart2_3().then((loadExecutableResult) => {
-                            executeExecutablesMultipart2_4().then((loadExecutableResult) => {
-                                executeExecutablesMultipart2_5().then((loadExecutableResult) => {
-                                    loadExecutableAverage().then((loadExecutableAverageResult) => {
-                                        loadExecutableCF().then((loadExecutableCFResult) => {
-                                            updateExecutable().then((loadExecutableResult) => {
-                                                updateExecutableAdminKey().then((loadExecutableResult) => {
-                                                    getExecutable().then((getExecutableResult) => {
-                                                        getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
-                                                            getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                                                                executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
-                                                                    executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
-                                                                        executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
-                                                                            executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
-                                                                                executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
-                                                                                    executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
-                                                                                        addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
-                                                                                            getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
-                                                                                                updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
-                                                                                                    getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
-                                                                                                        deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
-                                                                                                            getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
-                                                                                                                refreshUsageKeys().then((refreshUsageKeysResult) => {
-                                                                                                                    zeroUsageKeys().then((zeroUsageKeysResult) => {
-                                                                                                                        updateCallbackObject().then((zeroUsageKeysResult) => {
-                                                                                                                            updateCallbackObject2().then((zeroUsageKeysResult) => {
-                                                                                                                                deleteExecutable().then((deleteExecutableResult) => {});
+    loadExecutableToTestBytes().then((loadExecutableToTestBytes) => {
+        executeExecutablesFunctionToTestBytes().then((executeExecutablesFunctionToTestBytes) => {
+            loadExecutableMultipart().then((loadExecutableResult) => {
+                executeExecutablesMultipart1().then((loadExecutableResult) => {
+                    executeExecutablesMultipart2().then((loadExecutableResult) => {
+                        executeExecutablesMultipart2_1().then((loadExecutableResult) => {
+                            executeExecutablesMultipart2_2().then((loadExecutableResult) => {
+                                executeExecutablesMultipart2_3().then((loadExecutableResult) => {
+                                    executeExecutablesMultipart2_4().then((loadExecutableResult) => {
+                                        executeExecutablesMultipart2_5().then((loadExecutableResult) => {
+                                            loadExecutableAverage().then((loadExecutableAverageResult) => {
+                                                loadExecutableCF().then((loadExecutableCFResult) => {
+                                                    updateExecutable().then((loadExecutableResult) => {
+                                                        updateExecutableAdminKey().then((loadExecutableResult) => {
+                                                            getExecutable().then((getExecutableResult) => {
+                                                                getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
+                                                                    getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
+                                                                        executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
+                                                                            executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
+                                                                                executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
+                                                                                    executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
+                                                                                        executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
+                                                                                            executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
+                                                                                                addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
+                                                                                                    getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
+                                                                                                        updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
+                                                                                                            getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
+                                                                                                                deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
+                                                                                                                    getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
+                                                                                                                        refreshUsageKeys().then((refreshUsageKeysResult) => {
+                                                                                                                            zeroUsageKeys().then((zeroUsageKeysResult) => {
+                                                                                                                                updateCallbackObject().then((zeroUsageKeysResult) => {
+                                                                                                                                    updateCallbackObject2().then((zeroUsageKeysResult) => {
+                                                                                                                                        deleteExecutable().then((deleteExecutableResult) => {});
+                                                                                                                                    });
+                                                                                                                                });
                                                                                                                             });
                                                                                                                         });
                                                                                                                     });
