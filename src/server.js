@@ -1472,10 +1472,10 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     }
 });
 
-// Run a function belonging to a Wasm executable -> returns a JSON string
+// Run a function belonging to a Wasm executable -> returns a bytes 
 app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
     if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
-        console.log("/api/run/:wasm_id/:function_name/bytes ...");
+        console.log("/api/run/:wasm_id/:function_name ...");
         var readyAtZero = new ReadyAtZero(1);
         var content_type = req.headers['content-type'];
         console.log("Request Content-Type: " + content_type);
@@ -1501,7 +1501,6 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                     console.log("Callback found in the header keys");
                     readyAtZero.set_callback_object(JSON.parse(header_callback_object));
                 }
-
                 // Implement fetchable object (where server-side fetches the body for the request)
                 var header_fetchable_object = req.header('SSVM_Fetch');
                 if (typeof header_fetchable_object === 'undefined') {
@@ -1555,6 +1554,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 }
                                 if (readyAtZero.fetchable_already_set == false) {
                                     if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
+                                        console.log("CHAR AT: " + JSON.stringify(JSON.parse(JSON.stringify(function_parameters["SSVM_Fetch"]))).charAt(1));
                                         if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
                                             console.log("This is a URL");
                                             var temp_obj = {};
@@ -1592,17 +1592,14 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                     readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
                                     executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
-                                        // Pass results "as is"
-                                        //var result_as_bytes = Uint8Array.from(esfm_result);
-                                        console.log(esfm_result);
-                                        res.send(esfm_result);
-
+                                            res.set('Content-Type', 'application/octet-stream');
+                                            res.send(Buffer.from(esfm_result));
                                     });
                                 });
                             } else if (readyAtZero.callback_already_set == true) {
                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
-                                    console.log(esfm2_result);
-                                    res.send(esfm2_result);
+                                        res.set('Content-Type', 'application/octet-stream');
+                                         res.send(Buffer.from(esfm2_result));
                                 });
                             }
 
