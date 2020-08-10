@@ -1274,23 +1274,20 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
                                         }
                                         // Callback
                                         if (readyAtZero.callback_already_set == false) {
-                                            // No callback yet so we have to check the DB
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                                //console.log("We are about to execute ssvm now ...");
                                                 executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
                                                         console.log("ssvm execution complete!");
-                                                        res.send(esfm_result);
-                                                        res.end();
+                                                        res.set('Content-Type', 'application/octet-stream');
+                                                        res.send(Buffer.from(esfm_result));
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true) {
-                                            //console.log("We are about to execute ssvm now ...");
                                             executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
                                                 console.log("ssvm execution complete!");
-                                                res.send(esfm2_result);
-                                                res.end();
+                                                res.set('Content-Type', 'application/octet-stream');
+                                                res.send(Buffer.from(esfm2_result));
                                                 });
                                         }
                                     }
