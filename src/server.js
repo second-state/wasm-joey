@@ -828,6 +828,34 @@ app.get('/api/ephemeral_storage/:key', (req, res) => {
         res.send(JSON.stringify(joey_response));
     }
 });
+
+app.get('/api/state/:wasm_id', (req, res) => {
+    console.log("Request to update state into the database ...");
+    executableExists(req.params.wasm_id).then((result, error) => {
+        if (result == 1) {
+            var header_usage_key = req.header('SSVM_Usage_Key');
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                // Set usage key
+                if (typeof header_usage_key === 'undefined') {
+                    header_usage_key = "00000000-0000-0000-0000-000000000000";
+                }
+                // Set usage key
+                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                        var sqlState = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                        performSqlQuery(sqlState).then((sqlStateRes) => {
+                            res.send(sqlStateRes[0].wasm_state.toString());
+                        });
+                } else {
+                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
+            });
+        } else {
+            res.send(req.params.wasm_id + " does not exist");
+        }
+    });
+});
 // Update data at ephemeral storage location ("Must be valid JSON")
 app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
     joey_response = {};
