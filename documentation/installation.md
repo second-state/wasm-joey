@@ -224,7 +224,7 @@ CREATE TABLE wasm_executables(
     wasm_id INT(6) NOT NULL AUTO_INCREMENT,
     wasm_description CHAR(255) NOT NULL,
     wasm_binary LONGBLOB NOT NULL,
-    wasm_state JSON NOT NULL,
+    wasm_state LONGTEXT NOT NULL,
     wasm_callback_object JSON NOT NULL,
     usage_key binary(36),
     admin_key binary(36),
