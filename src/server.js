@@ -386,7 +386,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
     });
 }
 
-function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameters, _return_type) {
+function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _array_of_parameters, _return_type) {
     var _joey_response = {};
     return new Promise(function(resolve, reject) {
         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
@@ -395,7 +395,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _function_name, _array_of_parameter
             var wasm_state = result2[0].wasm_state;
             var wasi = {
                 "args": [],
-                "env": {"wasm_id": _wasm_id},
+                "env": {"wasm_id": _wasm_id, "storage_key": storage_key},
                 "preopens": {"/": "/tmp"}
             };
             wasi.args[0] = wasm_state;
