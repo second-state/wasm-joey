@@ -139,6 +139,10 @@ npm install formidable
 cd /media/nvme/node_rpc/wasm-joey/src
 npm install buffer-string-to-array
 ```
+```bash
+cd /media/nvme/node_rpc/wasm-joey/src
+npm install randomstring
+```
 
 # System timezone
 ```bash
