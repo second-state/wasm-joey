@@ -1201,7 +1201,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
                                                 //console.log("We are about to execute ssvm now ...");
-                                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
+                                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                                     if (typeof esfm_result == "object") {
                                                         console.log("ssvm execution complete!");
                                                         res.send(JSON.stringify(esfm_result));
@@ -1215,7 +1215,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             });
                                         } else if (readyAtZero.callback_already_set == true) {
                                             //console.log("We are about to execute ssvm now ...");
-                                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
+                                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                                 if (typeof esfm2_result == "object") {
                                                     console.log("ssvm execution complete!");
                                                     res.send(JSON.stringify(esfm2_result));
@@ -1307,14 +1307,14 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
+                                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
                                                         console.log("ssvm execution complete!");
                                                         res.set('Content-Type', 'application/octet-stream');
                                                         res.send(Buffer.from(esfm_result));
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true) {
-                                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
+                                            executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
                                                 console.log("ssvm execution complete!");
                                                 res.set('Content-Type', 'application/octet-stream');
                                                 res.send(Buffer.from(esfm2_result));
@@ -1459,7 +1459,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                     readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
+                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                         if (typeof esfm_result == "object") {
                                             res.send(JSON.stringify(esfm_result));
                                             res.end();
@@ -1470,7 +1470,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                     });
                                 });
                             } else if (readyAtZero.callback_already_set == true) {
-                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
+                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                     if (typeof esfm2_result == "object") {
                                         res.send(JSON.stringify(esfm2_result));
                                         res.end();
@@ -1621,13 +1621,13 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                     readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
-                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
+                                    executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
                                             res.set('Content-Type', 'application/octet-stream');
                                             res.send(Buffer.from(esfm_result));
                                     });
                                 });
                             } else if (readyAtZero.callback_already_set == true) {
-                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
+                                executeSSVM(readyAtZero, req.params.wasm_id, req.params.storage_key, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
                                         res.set('Content-Type', 'application/octet-stream');
                                          res.send(Buffer.from(esfm2_result));
                                 });
