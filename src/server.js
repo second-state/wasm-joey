@@ -165,6 +165,7 @@ function removeElementFromArray(arr, value) {
 }
 
 function performSqlQuery(string_query) {
+
     return new Promise(function(resolve, reject) {
         connection.query(string_query, function(err, resultSelect) {
             if (err) {
@@ -1169,7 +1170,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
             var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT usage_key, storage_key, from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            var sqlCheckKey = "SELECT usage_key, storage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
                 // Set usage key
                 if (typeof header_usage_key === 'undefined') {

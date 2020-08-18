@@ -1,8 +1,8 @@
 // ************************************************************************************************
 // Joey production instance
-const joey_instance = "rpc.ssvm.secondstate.io";
+//const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-//const joey_instance = "dev.rpc.ssvm.secondstate.io";
+const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');
@@ -57,6 +57,7 @@ class WasmObject {
 
 }
 var wasm_object = new WasmObject();
+var wasm_object_increment = new WasmObject();
 var wasm_object_multipart = new WasmObject();
 var wasm_object_average = new WasmObject();
 var wasm_object_c_to_f = new WasmObject();
@@ -126,7 +127,6 @@ function loadExecutable() {
         }
     });
 }
-
 
 // ************************************************************************************************
 // Load a new wasm executable
@@ -202,7 +202,7 @@ function executeExecutablesFunctionToTestBytes() {
                 });
                 res.on("end", function(chunk) {
                     var body = Buffer.concat(chunks);
-                    console.log("Bytes to string: " +  body.toString());
+                    console.log("Bytes to string: " + body.toString());
                     if (body.toString().includes("44")) {
                         printMessage("Success: Function executed correctly!").then((printResult) => {});
                     } else {
@@ -216,6 +216,188 @@ function executeExecutablesFunctionToTestBytes() {
             });
             var postData = "22";
             req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Load a new wasm executable
+function loadExecutableIncrementValue() {
+    console.log("\x1b[32m", "Processing: loadExecutableIncrementValue() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/executables',
+                'headers': {
+                    'Content-Type': 'application/octet-stream',
+                    'SSVM_Description': 'Increment'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    var res_object = JSON.parse(body.toString());
+                    wasm_object_increment.set_wasm_id(res_object["wasm_id"]);
+                    wasm_object_increment.set_SSVM_Admin_Key(res_object["SSVM_Admin_Key"]);
+                    wasm_object_increment.set_SSVM_Usage_Key(res_object["SSVM_Usage_Key"]);
+                    wasm_object_increment.set_wasm_sha256(res_object["wasm_sha256"]);
+                    console.log("\x1b[32m", "wasm_id:" + wasm_object_increment.get_wasm_id());
+                    console.log("\x1b[32m", "SSVM_Admin_Key:" + wasm_object_increment.get_SSVM_Admin_Key());
+                    console.log("\x1b[32m", "SSVM_Usage_Key:" + wasm_object_increment.get_SSVM_Usage_Key());
+                    console.log("\x1b[32m", "wasm_sha256:" + wasm_object_increment.get_wasm_sha256());
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = fs.readFileSync('./cumulative_storage_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Update a new wasm executable
+function incrementValueInit() {
+    console.log("\x1b[32m", "Processing: incrementValueInit() ...");
+    var wasm_object_to_increment = wasm_object_increment.get_wasm_id();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/run/' + wasm_object_to_increment + "/init",
+                'headers': {
+                    'Content-Type': 'text/plain'
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log(body.toString());
+                    if (body.toString().length == 32) {
+                        printMessage("Success: Increment working as planned").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Something is wrong with leveldb storage layer").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+            var postData = "1000";
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Update a new wasm executable
+function incrementValue1() {
+    console.log("\x1b[32m", "Processing: incrementValue1() ...");
+    var wasm_object_to_increment = wasm_object_increment.get_wasm_id();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/run/' + wasm_object_to_increment + "/increment",
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log(body.toString());
+                    if (body.toString().startsWith("1001")) {
+                        printMessage("Success: Increment working as planned").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Something is wrong with leveldb storage layer").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+// ************************************************************************************************
+// Update a new wasm executable
+function incrementValue2() {
+    console.log("\x1b[32m", "Processing: incrementValue2() ...");
+    var wasm_object_to_increment = wasm_object_increment.get_wasm_id();
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'POST',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/run/' + wasm_object_to_increment + "/increment",
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log(body.toString());
+                    if (body.toString().startsWith("1002")) {
+                        printMessage("Success: Increment working as planned").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Something is wrong with leveldb storage layer").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    printMessage(body.toString()).then((printResult) => {
+                        resolve();
+                    });
+                });
+            });
+
             req.end();
         } catch (e) {
             reject();
@@ -1841,38 +2023,46 @@ function deleteExecutable() {
 loadExecutable().then((loadExecutableResult) => {
     loadExecutableToTestBytes().then((loadExecutableToTestBytes) => {
         executeExecutablesFunctionToTestBytes().then((executeExecutablesFunctionToTestBytes) => {
-            loadExecutableMultipart().then((loadExecutableResult) => {
-                executeExecutablesMultipart1().then((loadExecutableResult) => {
-                    executeExecutablesMultipart2().then((loadExecutableResult) => {
-                        executeExecutablesMultipart2_1().then((loadExecutableResult) => {
-                            executeExecutablesMultipart2_2().then((loadExecutableResult) => {
-                                executeExecutablesMultipart2_3().then((loadExecutableResult) => {
-                                    executeExecutablesMultipart2_4().then((loadExecutableResult) => {
-                                        executeExecutablesMultipart2_5().then((loadExecutableResult) => {
-                                            loadExecutableAverage().then((loadExecutableAverageResult) => {
-                                                loadExecutableCF().then((loadExecutableCFResult) => {
-                                                    updateExecutable().then((loadExecutableResult) => {
-                                                        updateExecutableAdminKey().then((loadExecutableResult) => {
-                                                            getExecutable().then((getExecutableResult) => {
-                                                                getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
-                                                                    getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                                                                        executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
-                                                                            executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
-                                                                                executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
-                                                                                    executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
-                                                                                        executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
-                                                                                            executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
-                                                                                                addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
-                                                                                                    getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
-                                                                                                        updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
-                                                                                                            getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
-                                                                                                                deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
-                                                                                                                    getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
-                                                                                                                        refreshUsageKeys().then((refreshUsageKeysResult) => {
-                                                                                                                            zeroUsageKeys().then((zeroUsageKeysResult) => {
-                                                                                                                                updateCallbackObject().then((zeroUsageKeysResult) => {
-                                                                                                                                    updateCallbackObject2().then((zeroUsageKeysResult) => {
-                                                                                                                                        deleteExecutable().then((deleteExecutableResult) => {});
+            loadExecutableIncrementValue().then((loadExecutableIncrementValueResult) => {
+                incrementValueInit().then((incrementValueInitResult) => {
+                    incrementValue1().then((incrementValue1Result) => {
+                        incrementValue2().then((incrementValue2Result) => {
+                            loadExecutableMultipart().then((loadExecutableResult) => {
+                                executeExecutablesMultipart1().then((loadExecutableResult) => {
+                                    executeExecutablesMultipart2().then((loadExecutableResult) => {
+                                        executeExecutablesMultipart2_1().then((loadExecutableResult) => {
+                                            executeExecutablesMultipart2_2().then((loadExecutableResult) => {
+                                                executeExecutablesMultipart2_3().then((loadExecutableResult) => {
+                                                    executeExecutablesMultipart2_4().then((loadExecutableResult) => {
+                                                        executeExecutablesMultipart2_5().then((loadExecutableResult) => {
+                                                            loadExecutableAverage().then((loadExecutableAverageResult) => {
+                                                                loadExecutableCF().then((loadExecutableCFResult) => {
+                                                                    updateExecutable().then((loadExecutableResult) => {
+                                                                        updateExecutableAdminKey().then((loadExecutableResult) => {
+                                                                            getExecutable().then((getExecutableResult) => {
+                                                                                getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
+                                                                                    getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
+                                                                                        executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
+                                                                                            executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
+                                                                                                executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
+                                                                                                    executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
+                                                                                                        executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
+                                                                                                            executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
+                                                                                                                addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
+                                                                                                                    getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
+                                                                                                                        updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
+                                                                                                                            getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
+                                                                                                                                deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
+                                                                                                                                    getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
+                                                                                                                                        refreshUsageKeys().then((refreshUsageKeysResult) => {
+                                                                                                                                            zeroUsageKeys().then((zeroUsageKeysResult) => {
+                                                                                                                                                updateCallbackObject().then((zeroUsageKeysResult) => {
+                                                                                                                                                    updateCallbackObject2().then((zeroUsageKeysResult) => {
+                                                                                                                                                        deleteExecutable().then((deleteExecutableResult) => {});
+                                                                                                                                                    });
+                                                                                                                                                });
+                                                                                                                                            });
+                                                                                                                                        });
                                                                                                                                     });
                                                                                                                                 });
                                                                                                                             });
@@ -1907,6 +2097,9 @@ loadExecutable().then((loadExecutableResult) => {
         });
     });
 });
+
+
+
 
 // TODO 
 // Native storage
