@@ -1421,7 +1421,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                     if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                         storage_key = resultCheckKey[0].storage_key.toString();
                         // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
-                        if (content_type == "application/octet-stream" || content_type == "image/png") {
+                        if (content_type == "application/octet-stream") {
                             bytes_input = true;
                             function_parameters = Uint8Array.from(req.body);
                         } else if (content_type == "application/json" || content_type == "text/plain") {
@@ -1523,14 +1523,16 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 
 // Run a function belonging to a Wasm executable -> returns a bytes 
 app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
-    // storage_key
+    var bytes_input = false;
+    var array_of_parameters = [];
     var storage_key = "";
+    var function_parameters = "";
     if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
         console.log("/api/run/:wasm_id/:function_name ...");
         var readyAtZero = new ReadyAtZero(1);
         var content_type = req.headers['content-type'];
         console.log("Request Content-Type: " + content_type);
-        var function_parameters;
+
         // Perform logging
         if (log_level == 1) {
             var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -1583,9 +1585,8 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                         // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                         if (content_type == "application/octet-stream") {
                             console.log("Request body is an octet stream ...");
-                            // Pass in body "as is" when it is an octet-stream
-                            //function_parameters = new Uint8Array(req.body);
-                            function_parameters = req.body;
+                            bytes_input = true;
+                            function_parameters = Uint8Array.from(req.body);
                         } else if (content_type == "application/json" || content_type == "text/plain") {
                             if (typeof req.body == "object") {
                                 function_parameters = JSON.stringify(req.body);
@@ -1594,7 +1595,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                             }
                         }
                         isValidJSON(function_parameters).then((isBodyJson, err) => {
-                            if (isBodyJson == true) {
+                            if (isBodyJson == true && bytes_input == false) {
                                 // Parse the request body 
                                 function_parameters = JSON.parse(function_parameters);
                                 // Check for callback object
@@ -1622,12 +1623,9 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                     }
                                 }
                                 function_parameters = JSON.stringify(function_parameters);
-                            } else if (isBodyJson == false) {
+                            } else if (isBodyJson == false && bytes_input == false) {
                                 function_parameters = req.body;
                             }
-
-                            var array_of_parameters = [];
-
                             if (readyAtZero.fetchable_already_set == true) {
                                 array_of_parameters.push(readyAtZero.get_fetchable_object());
                                 readyAtZero.decrease();

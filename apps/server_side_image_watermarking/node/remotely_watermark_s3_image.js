@@ -48,6 +48,6 @@ function watermark_image() {
 }
 
 watermark_image().then((watermark_image_result) => {
-    console.log(watermark_image_result);
+    console.log(watermark_image_result.toString());
 });
 
