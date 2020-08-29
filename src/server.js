@@ -401,8 +401,13 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
             var wasm_state = result2[0].wasm_state;
             var wasi = {
                 "args": [],
-                "env": {"wasm_id": _wasm_id, "storage_key": _storage_key},
-                "preopens": {"/": "/tmp"}
+                "env": {
+                    "wasm_id": _wasm_id,
+                    "storage_key": _storage_key
+                },
+                "preopens": {
+                    "/": "/tmp"
+                }
             };
             wasi.args[0] = wasm_state;
             var vm = new ssvm.VM(uint8array, wasi);
@@ -848,10 +853,10 @@ app.get('/api/state/:wasm_id', (req, res) => {
                 }
                 // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
-                        var sqlState = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                        performSqlQuery(sqlState).then((sqlStateRes) => {
-                            res.send(sqlStateRes[0].wasm_state.toString());
-                        });
+                    var sqlState = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                    performSqlQuery(sqlState).then((sqlStateRes) => {
+                        res.send(sqlStateRes[0].wasm_state.toString());
+                    });
                 } else {
                     joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
                     res.send(JSON.stringify(joey_response));
@@ -923,8 +928,8 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
             var admin_key = uuidv4();
             // storage_key
             var storage_key = randomstring.generate({
-              length: 32,
-              charset: 'hex'
+                length: 32,
+                charset: 'hex'
             });
             var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key, storage_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "', '" + storage_key + "');";
             performSqlQuery(sqlInsert).then((resultInsert) => {
@@ -1323,9 +1328,9 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
                                                 executeSSVM(readyAtZero, req.params.wasm_id, storage_key, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
-                                                        console.log("ssvm execution complete!");
-                                                        res.set('Content-Type', 'application/octet-stream');
-                                                        res.send(Buffer.from(esfm_result));
+                                                    console.log("ssvm execution complete!");
+                                                    res.set('Content-Type', 'application/octet-stream');
+                                                    res.send(Buffer.from(esfm_result));
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true) {
@@ -1333,7 +1338,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
                                                 console.log("ssvm execution complete!");
                                                 res.set('Content-Type', 'application/octet-stream');
                                                 res.send(Buffer.from(esfm2_result));
-                                                });
+                                            });
                                         }
                                     }
                                 }
@@ -1457,7 +1462,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 function_parameters = JSON.stringify(function_parameters);
                             } else if (isBodyJson == false && bytes_input == false) {
                                 function_parameters = req.body;
-                            }                           
+                            }
                             if (readyAtZero.fetchable_already_set == true) {
                                 array_of_parameters.push(readyAtZero.get_fetchable_object());
                                 readyAtZero.decrease();
@@ -1639,14 +1644,14 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
                                 performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                     readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
                                     executeSSVM(readyAtZero, req.params.wasm_id, storage_key, req.params.function_name, array_of_parameters, "bytes").then((esfm_result, error) => {
-                                            res.set('Content-Type', 'application/octet-stream');
-                                            res.send(Buffer.from(esfm_result));
+                                        res.set('Content-Type', 'application/octet-stream');
+                                        res.send(Buffer.from(esfm_result));
                                     });
                                 });
                             } else if (readyAtZero.callback_already_set == true) {
                                 executeSSVM(readyAtZero, req.params.wasm_id, storage_key, req.params.function_name, array_of_parameters, "bytes").then((esfm2_result, error) => {
-                                        res.set('Content-Type', 'application/octet-stream');
-                                         res.send(Buffer.from(esfm2_result));
+                                    res.set('Content-Type', 'application/octet-stream');
+                                    res.send(Buffer.from(esfm2_result));
                                 });
                             }
 
