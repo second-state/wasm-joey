@@ -395,7 +395,9 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
     return new Promise(function(resolve, reject) {
         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
         performSqlQuery(sqlSelect).then((result2, error2) => {
-            var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
+            const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
+            var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
+            //var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
             var wasm_state = result2[0].wasm_state;
             var wasi = {
                 "args": [],
@@ -1355,6 +1357,8 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
 });
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', (req, res) => {
+    var bytes_input = false;
+    var array_of_parameters = [];
     var storage_key = "";
     if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
         console.log("/api/run/:wasm_id/:function_name ...");
@@ -1412,11 +1416,8 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                     if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
                         storage_key = resultCheckKey[0].storage_key.toString();
                         // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
-                        if (content_type == "application/octet-stream") {
-                            console.log("Request body is an octet stream ...");
-                            // Pass in body "as is" when it is an octet-stream
-                            //function_parameters = new Uint8Array(req.body);
-                            function_parameters = req.body;
+                        if (content_type == "application/octet-stream" || content_type == "image/png") {
+                            bytes_input = true;
                         } else if (content_type == "application/json" || content_type == "text/plain") {
                             if (typeof req.body == "object") {
                                 function_parameters = JSON.stringify(req.body);
@@ -1425,6 +1426,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             }
                         }
                         isValidJSON(function_parameters).then((isBodyJson, err) => {
+                            if (bytes_input == false){
                             if (isBodyJson == true) {
                                 // Parse the request body 
                                 function_parameters = JSON.parse(function_parameters);
@@ -1455,10 +1457,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 function_parameters = JSON.stringify(function_parameters);
                             } else if (isBodyJson == false) {
                                 function_parameters = req.body;
-                            }
-
-                            var array_of_parameters = [];
-
+                            }                           
                             if (readyAtZero.fetchable_already_set == true) {
                                 array_of_parameters.push(readyAtZero.get_fetchable_object());
                                 readyAtZero.decrease();
@@ -1466,8 +1465,17 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 array_of_parameters.push(function_parameters);
                                 readyAtZero.decrease();
                             }
+                        } else if (bytes_input == true){
+                            if (readyAtZero.fetchable_already_set == true) {
+                                array_of_parameters.push(readyAtZero.get_fetchable_object());
+                                readyAtZero.decrease();
+                            } else {
+                                var function_parameters = Uint8Array.from(req.body);
+                                array_of_parameters.push(function_parameters);
+                                readyAtZero.decrease();
+                            }
+                        }
                             console.log("Array of parameters is now set: " + array_of_parameters);
-
                             // Callback
                             if (readyAtZero.callback_already_set == false) {
                                 // No callback yet so we have to check the DB
