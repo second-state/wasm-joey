@@ -1360,12 +1360,12 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     var bytes_input = false;
     var array_of_parameters = [];
     var storage_key = "";
+    var function_parameters = "";
     if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
         console.log("/api/run/:wasm_id/:function_name ...");
         var readyAtZero = new ReadyAtZero(1);
         var content_type = req.headers['content-type'];
         console.log("Request Content-Type: " + content_type);
-        var function_parameters;
         // Perform logging
         if (log_level == 1) {
             var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -1418,6 +1418,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                         // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                         if (content_type == "application/octet-stream" || content_type == "image/png") {
                             bytes_input = true;
+                            function_parameters = Uint8Array.from(req.body);
                         } else if (content_type == "application/json" || content_type == "text/plain") {
                             if (typeof req.body == "object") {
                                 function_parameters = JSON.stringify(req.body);
@@ -1426,8 +1427,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             }
                         }
                         isValidJSON(function_parameters).then((isBodyJson, err) => {
-                            if (bytes_input == false){
-                            if (isBodyJson == true) {
+                            if (isBodyJson == true && bytes_input == false) {
                                 // Parse the request body 
                                 function_parameters = JSON.parse(function_parameters);
                                 // Check for callback object
@@ -1455,7 +1455,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                     }
                                 }
                                 function_parameters = JSON.stringify(function_parameters);
-                            } else if (isBodyJson == false) {
+                            } else if (isBodyJson == false && bytes_input == false) {
                                 function_parameters = req.body;
                             }                           
                             if (readyAtZero.fetchable_already_set == true) {
@@ -1465,16 +1465,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 array_of_parameters.push(function_parameters);
                                 readyAtZero.decrease();
                             }
-                        } else if (bytes_input == true){
-                            if (readyAtZero.fetchable_already_set == true) {
-                                array_of_parameters.push(readyAtZero.get_fetchable_object());
-                                readyAtZero.decrease();
-                            } else {
-                                var function_parameters = Uint8Array.from(req.body);
-                                array_of_parameters.push(function_parameters);
-                                readyAtZero.decrease();
-                            }
-                        }
+
                             console.log("Array of parameters is now set: " + array_of_parameters);
                             // Callback
                             if (readyAtZero.callback_already_set == false) {
