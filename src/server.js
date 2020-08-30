@@ -127,6 +127,7 @@ function objectIsEmpty(_json) {
     if (typeof _json == "string") {
         _json = JSON.parse(_json);
     }
+    //console.log("Processing JSON: " + JSON.stringify(_json));
     var empty = true;
     return new Promise(function(resolve, reject) {
         for (var key in _json) {
@@ -149,7 +150,6 @@ function isValidJSON(text) {
             resolve(false);
         }
         try {
-            console.log("Att");
             JSON.parse(text);
             resolve(true);
         } catch (error) {
@@ -933,6 +933,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
             });
             var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key, storage_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "', '" + storage_key + "');";
             performSqlQuery(sqlInsert).then((resultInsert) => {
+                console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
                 joey_response["wasm_id"] = resultInsert.insertId;
                 joey_response["wasm_sha256"] = wasm_sha256;
                 joey_response["SSVM_Usage_Key"] = usage_key;
@@ -1217,6 +1218,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
                                                 readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                                //console.log("We are about to execute ssvm now ...");
                                                 executeSSVM(readyAtZero, req.params.wasm_id, storage_key, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
                                                     if (typeof esfm_result == "object") {
                                                         console.log("ssvm execution complete!");
@@ -1230,6 +1232,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                                 });
                                             });
                                         } else if (readyAtZero.callback_already_set == true) {
+                                            //console.log("We are about to execute ssvm now ...");
                                             executeSSVM(readyAtZero, req.params.wasm_id, storage_key, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
                                                 if (typeof esfm2_result == "object") {
                                                     console.log("ssvm execution complete!");
@@ -1364,17 +1367,14 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
     var storage_key = "";
     var function_parameters = "";
     if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
+        console.log("/api/run/:wasm_id/:function_name ...");
         var readyAtZero = new ReadyAtZero(1);
         var content_type = req.headers['content-type'];
-<<<<<<< HEAD
-        var function_parameters;
-=======
-        console.log("Request Content-Type: " + content_type);
->>>>>>> cc79f74bc7e23af47a2baf4ce0f1ea1b45c8987e
         // Perform logging
         if (log_level == 1) {
             var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlSelect).then((stateResult) => {
+                console.log("Creating log object");
                 var logging_object = {};
                 logging_object["original_wasm_executables_id"] = req.params.wasm_id;
                 logging_object["data_payload"] = req.body;
@@ -1431,18 +1431,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                             }
                         }
                         isValidJSON(function_parameters).then((isBodyJson, err) => {
-<<<<<<< HEAD
-                            if (bytes_input == false) {
-                                if (isBodyJson == true) {
-                                    // Parse the request body 
-                                    function_parameters = JSON.parse(function_parameters);
-                                    // Check for callback object
-                                    if (readyAtZero.callback_already_set == false) {
-                                        if (function_parameters.hasOwnProperty('SSVM_Callback')) {
-                                            readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
-                                            delete function_parameters.SSVM_Callback;
-                                        }
-=======
                             if (isBodyJson == true && bytes_input == false) {
                                 // Parse the request body 
                                 function_parameters = JSON.parse(function_parameters);
@@ -1451,47 +1439,24 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                     if (function_parameters.hasOwnProperty('SSVM_Callback')) {
                                         readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
                                         delete function_parameters.SSVM_Callback;
->>>>>>> cc79f74bc7e23af47a2baf4ce0f1ea1b45c8987e
                                     }
-                                    if (readyAtZero.fetchable_already_set == false) {
-                                        if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                            if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
-                                                console.log("This is a URL");
-                                                var temp_obj = {};
-                                                temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                                readyAtZero.set_fetchable_object(temp_obj);
-                                            } else {
-                                                console.log("This is a POST object");
-                                                var temp_obj = {};
-                                                temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                                readyAtZero.set_fetchable_object(temp_obj);
-                                            }
-                                            delete function_parameters.SSVM_Fetch;
+                                }
+                                if (readyAtZero.fetchable_already_set == false) {
+                                    if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
+                                        if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
+                                            console.log("This is a URL");
+                                            var temp_obj = {};
+                                            temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
+                                        } else {
+                                            console.log("This is a POST object");
+                                            var temp_obj = {};
+                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                            readyAtZero.set_fetchable_object(temp_obj);
                                         }
+                                        delete function_parameters.SSVM_Fetch;
                                     }
-                                    function_parameters = JSON.stringify(function_parameters);
-                                } else if (isBodyJson == false) {
-                                    function_parameters = req.body;
                                 }
-                                if (readyAtZero.fetchable_already_set == true) {
-                                    array_of_parameters.push(readyAtZero.get_fetchable_object());
-                                    readyAtZero.decrease();
-                                } else {
-                                    array_of_parameters.push(function_parameters);
-                                    readyAtZero.decrease();
-                                }
-                            } else if (bytes_input == true) {
-                                if (readyAtZero.fetchable_already_set == true) {
-                                    array_of_parameters.push(readyAtZero.get_fetchable_object());
-                                    readyAtZero.decrease();
-                                } else {
-                                    var function_parameters = Uint8Array.from(req.body);
-                                    array_of_parameters.push(function_parameters);
-                                    readyAtZero.decrease();
-                                }
-<<<<<<< HEAD
-                            }
-=======
                                 function_parameters = JSON.stringify(function_parameters);
                             } else if (isBodyJson == false && bytes_input == false) {
                                 function_parameters = req.body;
@@ -1504,8 +1469,6 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 readyAtZero.decrease();
                             }
 
-                            console.log("Array of parameters is now set: " + array_of_parameters);
->>>>>>> cc79f74bc7e23af47a2baf4ce0f1ea1b45c8987e
                             // Callback
                             if (readyAtZero.callback_already_set == false) {
                                 // No callback yet so we have to check the DB
@@ -1562,18 +1525,15 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
     var storage_key = "";
     var function_parameters = "";
     if (typeof req.body != "number" && typeof req.body != "boolean" && typeof req.body != "undefined") {
+        console.log("/api/run/:wasm_id/:function_name ...");
         var readyAtZero = new ReadyAtZero(1);
         var content_type = req.headers['content-type'];
-<<<<<<< HEAD
-        var function_parameters;
-=======
-        console.log("Request Content-Type: " + content_type);
 
->>>>>>> cc79f74bc7e23af47a2baf4ce0f1ea1b45c8987e
         // Perform logging
         if (log_level == 1) {
             var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlSelect).then((stateResult) => {
+                console.log("Creating log object");
                 var logging_object = {};
                 logging_object["original_wasm_executables_id"] = req.params.wasm_id;
                 logging_object["data_payload"] = req.body;
