@@ -1,3 +1,4 @@
+const axios = require('axios');
 /* Application dependencies & config - START */
 // Config
 require('dotenv').config();
