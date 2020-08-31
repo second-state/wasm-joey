@@ -279,6 +279,26 @@ function executeMultipartRequest(_original_id, _request_options) {
     });
 }
 
+
+function axiosFetch(_value) {
+    return new Promise(function(resolve, reject) {
+        axios.get(_value, {
+                responseType: 'arraybuffer'
+            }).then(function(response) {
+                const buffer = Buffer.from(response.data, "utf-8");
+                console.log(buffer);
+                resolve(buffer);
+            })
+            .catch(function(error) {
+                // handle error
+                console.log(error);
+            })
+            .then(function() {
+                // always executed
+            });
+    });
+}
+
 function fetchUsingGet(_value) {
     if (_value.charAt(0) == '"' && _value.charAt(_value.length - 1) == '"') {
         _value = _value.substr(1, _value.length - 2)
@@ -294,7 +314,18 @@ function fetchUsingGet(_value) {
                     if (typeof body == "object") {
                         resolve(JSON.stringify(data));
                     } else if (typeof body == "string") {
-                        resolve(body);
+                        var contentType = res.headers['content-type'];
+                        if (contentType.startsWith("image")) {
+                            axiosFetch(_value).then((result, error) => {
+                                if (!error) {
+                                    resolve(result);
+                                } else {
+                                    console.log(file_read_error);
+                                }
+                            });
+                        } else {
+                            resolve(body);
+                        }
                     }
                 } catch (error) {
                     console.error(error.message);
