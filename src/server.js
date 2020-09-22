@@ -1715,6 +1715,9 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
                         performSqlQuery(sqlInsert).then((resultInsert) => {
                             res.send(req.params.wasm_id);
                         });
+                    } else {
+                          joey_response["error"] = "Wrong content type. Please use Content-Type of text/plain only";
+                          res.send(JSON.stringify(joey_response));
                     }
                 } else {
                     joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be accessed.";
