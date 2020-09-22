@@ -1706,15 +1706,10 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
     console.log("Request to update state into the database ...");
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            var header_admin_key = req.header('SSVM_Admin_Key');
+            var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                // Set usage key
-                if (typeof header_usage_key === 'undefined') {
-                    header_usage_key = "00000000-0000-0000-0000-000000000000";
-                }
-                // Set usage key
-                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
                     if (req.is('text/plain') == 'text/plain') {
                         var sqlInsert = "UPDATE wasm_executables SET wasm_state = '" + req.body + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                         performSqlQuery(sqlInsert).then((resultInsert) => {
@@ -1722,7 +1717,7 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
                         });
                     }
                 } else {
-                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be accessed.";
                     res.send(JSON.stringify(joey_response));
                 }
             });
