@@ -1703,6 +1703,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
 
 // State is set to blank when a new Wasm executable is put in the system. The following function allows you to update the state via REST
 app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
+    joey_response = {};
     console.log("Request to update state into the database ...");
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
@@ -1716,6 +1717,7 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
                             res.send(req.params.wasm_id);
                         });
                     } else {
+                          console.log("Wrong content type");
                           joey_response["error"] = "Wrong content type. Please use Content-Type of text/plain only";
                           res.send(JSON.stringify(joey_response));
                     }
