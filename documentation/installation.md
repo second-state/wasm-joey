@@ -344,6 +344,10 @@ git config -l
 You can reverse/revert this Git config by typing `git config --global --edit` and then commenting out the appropriate sections.
 
 ```bash
+cd /media/nvme/node_rpc/wasm-joey/src
+```
+
+```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
 ```
 ### Hostname config
