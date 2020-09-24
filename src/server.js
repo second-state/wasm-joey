@@ -1717,9 +1717,9 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
                             res.send(req.params.wasm_id);
                         });
                     } else {
-                          console.log("Wrong content type");
-                          joey_response["error"] = "Wrong content type. Please use Content-Type of text/plain only";
-                          res.send(JSON.stringify(joey_response));
+                        console.log("Wrong content type");
+                        joey_response["error"] = "Wrong content type. Please use Content-Type of text/plain only";
+                        res.send(JSON.stringify(joey_response));
                     }
                 } else {
                     joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be accessed.";
@@ -1751,21 +1751,16 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
                 if (result == true) {
                     executableExists(req.params.wasm_id).then((result2, error) => {
                         if (result2 == 1) {
-                            var header_usage_key = req.header('SSVM_Usage_Key');
-                            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            var header_admin_key = req.header('SSVM_Admin_Key');
+                            var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                             performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                                // Set usage key
-                                if (typeof header_usage_key === 'undefined') {
-                                    header_usage_key = "00000000-0000-0000-0000-000000000000";
-                                }
-                                // Set usage key
-                                if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
+                                if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
                                     var sqlInsert = "UPDATE wasm_executables SET wasm_callback_object = '" + JSON.stringify(req.body) + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                                     performSqlQuery(sqlInsert).then((resultInsert) => {
                                         res.send(req.params.wasm_id);
                                     });
                                 } else {
-                                    joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                                    joey_response["error"] = "Wrong Admin key ... " + req.params.wasm_id + " can not be accessed.";
                                     res.send(JSON.stringify(joey_response));
                                 }
                             });
