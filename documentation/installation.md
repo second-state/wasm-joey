@@ -414,7 +414,7 @@ cargo install --path .
 cd ../image_classification_mobilenet_v2_14_224
 cargo install --path .
 ```
-### Hostname config
+# Joey hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
 ```bash
 vi /media/nvme/node_rpc/wasm-joey/src/.env
@@ -428,13 +428,13 @@ server_name=rpc.ssvm.secondstate.io
 ```
 etc.
 
-### Serve
+# Serving Joey
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
 nodejs server.js
 ```
 
-# Testing it out
+# Testing Joey
 
 ## Rust
 Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
