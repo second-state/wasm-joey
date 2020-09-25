@@ -1,8 +1,8 @@
 // ************************************************************************************************
 // Joey production instance
-const joey_instance = "rpc.ssvm.secondstate.io";
+//const joey_instance = "rpc.ssvm.secondstate.io";
 // Joey development instanance
-//const joey_instance = "dev.rpc.ssvm.secondstate.io";
+const joey_instance = "dev.rpc.ssvm.secondstate.io";
 
 // Set up environment
 const https = require('https');
@@ -170,6 +170,282 @@ function loadExecutableToTestBytes() {
                 });
             });
             var postData = fs.readFileSync('./double_number_bg.wasm');
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function to update callback object
+function executeExecutablesFunctionToUpdateCallbackObject() {
+    var id_to_use = wasm_object_to_test_bytes.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionToUpdateCallbackObject() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/callback/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'SSVM_Admin_Key': wasm_object_to_test_bytes.get_SSVM_Admin_Key(),
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log("Response i.e. wasm id: " + body.toString());
+                    if (body.toString().startsWith(wasm_object_to_test_bytes.get_wasm_id().toString())) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionToUpdateCallbackObject() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = '{"test": "test"}';
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function to update callback object
+function executeExecutablesFunctionToUpdateState() {
+    var id_to_use = wasm_object_to_test_bytes.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionToUpdateState() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/state/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'text/plain',
+                    'SSVM_Admin_Key': wasm_object_to_test_bytes.get_SSVM_Admin_Key(),
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log("Response i.e. wasm id: " + body.toString());
+                    if (body.toString().startsWith(wasm_object_to_test_bytes.get_wasm_id().toString())) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionToUpdateState() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = 'asdf';
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function to update callback object
+function executeExecutablesFunctionToUpdateCallbackObject2() {
+    var id_to_use = wasm_object_to_test_bytes.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionToUpdateCallbackObject() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/callback/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'SSVM_Admin_Key': 'wrong_key',
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log("Response i.e. ERROR: " + body.toString());
+                    if (body.toString().includes("Wrong Admin key")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionToUpdateCallbackObject2() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = '{"test": "test"}';
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function to update callback object
+function executeExecutablesFunctionToUpdateState2() {
+    var id_to_use = wasm_object_to_test_bytes.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionToUpdateState() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/state/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'text/plain',
+                    'SSVM_Admin_Key': 'wrong_key',
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log("Response i.e. ERROR: " + body.toString());
+                    if (body.toString().includes("Wrong admin key")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionToUpdateState2() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = 'asdf';
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function to update callback object
+function executeExecutablesFunctionToUpdateCallbackObject3() {
+    var id_to_use = wasm_object_to_test_bytes.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionToUpdateCallbackObject() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/callback/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'wrong_type',
+                    'SSVM_Admin_Key': wasm_object_to_test_bytes.get_SSVM_Admin_Key(),
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log("Response i.e. ERROR: " + body.toString());
+                    if (body.toString().includes("Must use Content-Type of application/json")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionToUpdateCallbackObject2() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = '{"test": "test"}';
+            req.write(postData);
+            req.end();
+        } catch (e) {
+            reject();
+        }
+    });
+}
+
+// ************************************************************************************************
+// Execute a wasm executable's function to update callback object
+function executeExecutablesFunctionToUpdateState3() {
+    var id_to_use = wasm_object_to_test_bytes.get_wasm_id();
+    console.log("\x1b[32m", "Processing: executeExecutablesFunctionToUpdateState() ...");
+    return new Promise(function(resolve, reject) {
+        try {
+            var options = {
+                'method': 'PUT',
+                'hostname': joey_instance,
+                'port': 8081,
+                'path': '/api/state/' + id_to_use,
+                'headers': {
+                    'Content-Type': 'wrong_type',
+                    'SSVM_Admin_Key': wasm_object_to_test_bytes.get_SSVM_Admin_Key(),
+                },
+                'maxRedirects': 20
+            };
+            var req = https.request(options, function(res) {
+                var chunks = [];
+                res.on("data", function(chunk) {
+                    chunks.push(chunk);
+                });
+                res.on("end", function(chunk) {
+                    var body = Buffer.concat(chunks);
+                    console.log("Response i.e. ERROR: " + body.toString());
+                    if (body.toString().includes("Wrong content type")) {
+                        printMessage("Success: Function executed correctly!").then((printResult) => {});
+                    } else {
+                        printMessage("Error: Function not executed correctly via the executeExecutablesFunctionToUpdateState2() test").then((printResult) => {});
+                    }
+                    resolve();
+                });
+                res.on("error", function(error) {
+                    console.error(error);
+                });
+            });
+            var postData = 'asdf';
             req.write(postData);
             req.end();
         } catch (e) {
@@ -2023,42 +2299,54 @@ function deleteExecutable() {
 loadExecutable().then((loadExecutableResult) => {
     loadExecutableToTestBytes().then((loadExecutableToTestBytes) => {
         executeExecutablesFunctionToTestBytes().then((executeExecutablesFunctionToTestBytes) => {
-            loadExecutableIncrementValue().then((loadExecutableIncrementValueResult) => {
-                incrementValueInit().then((incrementValueInitResult) => {
-                    incrementValue1().then((incrementValue1Result) => {
-                        incrementValue2().then((incrementValue2Result) => {
-                            loadExecutableMultipart().then((loadExecutableResult) => {
-                                executeExecutablesMultipart1().then((loadExecutableResult) => {
-                                    executeExecutablesMultipart2().then((loadExecutableResult) => {
-                                        executeExecutablesMultipart2_1().then((loadExecutableResult) => {
-                                            executeExecutablesMultipart2_2().then((loadExecutableResult) => {
-                                                executeExecutablesMultipart2_3().then((loadExecutableResult) => {
-                                                    executeExecutablesMultipart2_4().then((loadExecutableResult) => {
-                                                        executeExecutablesMultipart2_5().then((loadExecutableResult) => {
-                                                            loadExecutableAverage().then((loadExecutableAverageResult) => {
-                                                                loadExecutableCF().then((loadExecutableCFResult) => {
-                                                                    updateExecutable().then((loadExecutableResult) => {
-                                                                        updateExecutableAdminKey().then((loadExecutableResult) => {
-                                                                            getExecutable().then((getExecutableResult) => {
-                                                                                getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
-                                                                                    getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
-                                                                                        executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
-                                                                                            executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
-                                                                                                executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
-                                                                                                    executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
-                                                                                                        executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
-                                                                                                            executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
-                                                                                                                addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
-                                                                                                                    getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
-                                                                                                                        updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
-                                                                                                                            getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
-                                                                                                                                deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
-                                                                                                                                    getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
-                                                                                                                                        refreshUsageKeys().then((refreshUsageKeysResult) => {
-                                                                                                                                            zeroUsageKeys().then((zeroUsageKeysResult) => {
-                                                                                                                                                updateCallbackObject().then((zeroUsageKeysResult) => {
-                                                                                                                                                    updateCallbackObject2().then((zeroUsageKeysResult) => {
-                                                                                                                                                        deleteExecutable().then((deleteExecutableResult) => {});
+            executeExecutablesFunctionToUpdateCallbackObject().then((loadexecuteExecutablesFunctionToUpdateCallbackObject) => {
+                executeExecutablesFunctionToUpdateState().then((loadexecuteExecutablesFunctionToUpdateState) => {
+                    executeExecutablesFunctionToUpdateCallbackObject2().then((loadexecuteExecutablesFunctionToUpdateCallbackObject) => {
+                        executeExecutablesFunctionToUpdateState2().then((loadexecuteExecutablesFunctionToUpdateState) => {
+                            executeExecutablesFunctionToUpdateCallbackObject3().then((loadexecuteExecutablesFunctionToUpdateCallbackObject) => {
+                                executeExecutablesFunctionToUpdateState3().then((loadexecuteExecutablesFunctionToUpdateState) => {
+                                    loadExecutableIncrementValue().then((loadExecutableIncrementValueResult) => {
+                                        incrementValueInit().then((incrementValueInitResult) => {
+                                            incrementValue1().then((incrementValue1Result) => {
+                                                incrementValue2().then((incrementValue2Result) => {
+                                                    loadExecutableMultipart().then((loadExecutableResult) => {
+                                                        executeExecutablesMultipart1().then((loadExecutableResult) => {
+                                                            executeExecutablesMultipart2().then((loadExecutableResult) => {
+                                                                executeExecutablesMultipart2_1().then((loadExecutableResult) => {
+                                                                    executeExecutablesMultipart2_2().then((loadExecutableResult) => {
+                                                                        executeExecutablesMultipart2_3().then((loadExecutableResult) => {
+                                                                            executeExecutablesMultipart2_4().then((loadExecutableResult) => {
+                                                                                executeExecutablesMultipart2_5().then((loadExecutableResult) => {
+                                                                                    loadExecutableAverage().then((loadExecutableAverageResult) => {
+                                                                                        loadExecutableCF().then((loadExecutableCFResult) => {
+                                                                                            updateExecutable().then((loadExecutableResult) => {
+                                                                                                updateExecutableAdminKey().then((loadExecutableResult) => {
+                                                                                                    getExecutable().then((getExecutableResult) => {
+                                                                                                        getExecutableFilterByDescription().then((ggetExecutableFilterByDescriptionResult) => {
+                                                                                                            getExecutableFilterBySha256().then((getExecutableFilterBySha256Result) => {
+                                                                                                                executeExecutablesFunction().then((executeExecutablesFunctionResult) => {
+                                                                                                                    executeExecutablesFunctionWithHeaderFetch().then((executeExecutablesFunctionResult) => {
+                                                                                                                        executeExecutablesFunctionWithBodyFetch().then((executeExecutablesFunctionResult) => {
+                                                                                                                            executeExecutablesFunctionWithHeaderCallback().then((executeExecutablesFunctionResult) => {
+                                                                                                                                executeExecutablesFunctionWithBodyCallback().then((executeExecutablesFunctionResult) => {
+                                                                                                                                    executeExecutablesFunctionWithBodyCallback2().then((executeExecutablesFunctionResult) => {
+                                                                                                                                        addDataToEphemeralStorage().then((addDataToEphemeralStorageResult) => {
+                                                                                                                                            getDataFromEphemeralStorage().then((getDataFromEphemeralStorageResult) => {
+                                                                                                                                                updateDataToEphemeralStorage().then((updateDataToEphemeralStorageResult) => {
+                                                                                                                                                    getDataFromEphemeralStorage2().then((getDataFromEphemeralStorage2Result) => {
+                                                                                                                                                        deleteDataFromEphemeralStorage().then((deleteDataFromEphemeralStorageResult) => {
+                                                                                                                                                            getDataFromEphemeralStorage3().then((getDataFromEphemeralStorage3Result) => {
+                                                                                                                                                                refreshUsageKeys().then((refreshUsageKeysResult) => {
+                                                                                                                                                                    zeroUsageKeys().then((zeroUsageKeysResult) => {
+                                                                                                                                                                        updateCallbackObject().then((zeroUsageKeysResult) => {
+                                                                                                                                                                            updateCallbackObject2().then((zeroUsageKeysResult) => {
+                                                                                                                                                                                deleteExecutable().then((deleteExecutableResult) => {});
+                                                                                                                                                                            });
+                                                                                                                                                                        });
+                                                                                                                                                                    });
+                                                                                                                                                                });
+                                                                                                                                                            });
+                                                                                                                                                        });
                                                                                                                                                     });
                                                                                                                                                 });
                                                                                                                                             });
