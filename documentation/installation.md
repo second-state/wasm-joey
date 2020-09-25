@@ -351,6 +351,69 @@ cd /media/nvme/node_rpc/wasm-joey/src
 npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
 ```
 
+### Tensorflow functionality
+
+Install the Tensorflow for C library
+```
+mkdir /media/nvme/tensorflow
+sudo chown -R ubuntu:ubuntu /media/nvme/tensorflow/
+cd /media/nvme/tensorflow
+wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-2.3.0.tar.gz
+tar -zxvf libtensorflow-gpu-linux-x86_64-2.3.0.tar.gz
+sudo ldconfig
+```
+Open `.profile` and export the `LIBRARY_PATH` and `LD_LIBRARY_PATH` at the very end of the file.
+```
+vi ~/.profile
+```
+These get added to the end of the file
+```
+export LIBRARY_PATH="/media/nvme/tensorflow/lib:$LIBRARY_PATH"
+export LD_LIBRARY_PATH="/media/nvme/tensorflow/lib:$LD_LIBRARY_PATH"
+```
+Log out and back in again and check that these values are now permanent.
+```
+echo $LIBRARY_PATH
+```
+Returns
+```
+/media/nvme/tensorflow/lib:
+```
+Also, 
+```
+echo $LD_LIBRARY_PATH
+```
+Returns
+```
+/media/nvme/tensorflow/lib:
+```
+Also, please check that `/usr/bin` is in your path i.e.
+```
+echo $PATH
+```
+Should contain `/usr/bin` along with a myriad of other file paths. If it does not exist then also add the following to the `~/.profile` file and log out and back in again. **It is unlikely that you will need to perform this additional export because `/usr/bin` will be in the path by default**.
+```
+export PATH="/usr/bin:$PATH"
+```
+Fetch the AI as a Service code 
+```
+mkdir /media/nvme/AIaaS
+sudo chown -R ubuntu:ubuntu /media/nvme/AIaaS/
+cd /media/nvme/AIaaS/
+git clone https://github.com/second-state/AI-as-a-Service.git
+```
+Compile the necessary binaries to `/usr/bin/` (/usr/bin is default setting as per the [Cargo.toml's install settings](https://github.com/second-state/AI-as-a-Service/blob/master/native_model_zoo/image_classification_mobilenet/Cargo.toml#L18))
+```
+rustup update nightly
+rustup update stable
+cd /media/nvme/AIaaS/AI-as-a-Service/native_model_zoo
+cd face_detection_mtcnn/
+cargo install --path .
+cd ../image_classification_mobilenet
+cargo install --path .
+cd ../image_classification_mobilenet_v2_14_224
+cargo install --path .
+```
 ### Hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
 ```bash
