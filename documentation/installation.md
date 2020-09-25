@@ -387,14 +387,7 @@ Returns
 ```
 /media/nvme/tensorflow/lib:
 ```
-Also, please check that `/usr/bin` is in your path i.e.
-```
-echo $PATH
-```
-Should contain `/usr/bin` along with a myriad of other file paths. If it does not exist then also add the following to the `~/.profile` file and log out and back in again. **It is unlikely that you will need to perform this additional export because `/usr/bin` will be in the path by default**.
-```
-export PATH="/usr/bin:$PATH"
-```
+
 Fetch the AI as a Service code 
 ```
 mkdir /media/nvme/AIaaS
@@ -414,6 +407,16 @@ cargo install --path .
 cd ../image_classification_mobilenet_v2_14_224
 cargo install --path .
 ```
+Ensure that all of those binaries are available in the user (who is running Joey's path).
+Set the system path so it can find the binaries via `vi ~/.profile` (then log out and back in again as shown above)
+```
+export PATH="/usr/bin:$PATH"
+export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/face_detection_mtcnn/target/release:$PATH"
+export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/http_proxy/target/release:$PATH"
+export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet/target/release:$PATH"
+export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet_v2_14_224/target/release:$PATH"
+```
+
 # Joey hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
 ```bash
