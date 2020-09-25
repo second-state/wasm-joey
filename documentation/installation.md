@@ -350,6 +350,7 @@ cd /media/nvme/node_rpc/wasm-joey/src
 ```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
 ```
+
 ### Hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
 ```bash
@@ -449,6 +450,19 @@ Returns
 ```bash
 hello World
 ```
+
+# More testing
+
+---
+
+## Rust Process Interface Library
+
+SecondState's [Rust Process Interface Library](https://github.com/second-state/rust_process_interface_library) plays a part in executing commands with arguments and environment values as part of Wasm execution. Rust process interface library is essentially a process interface that will allow the native operating system (which SSVM / Joey is running on) to play a part in the runtime execution.
+
+Users can [create command objects](https://github.com/second-state/rust_process_interface_library#create-a-command-object) in their Rust code and then compile to Wasm, and later execute.
+
+---
+
 
 
 
