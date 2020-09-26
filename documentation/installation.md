@@ -416,6 +416,11 @@ export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/http_proxy/targe
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet/target/release:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet_v2_14_224/target/release:$PATH"
 ```
+In once case, when following [the official documentation](https://www.tensorflow.org/install/lang_c), it was required that the files were copied to another location, so please choose your method and implement accordingly. 
+```
+cd /usr/lib
+cp -rp /usr/local/lib/libtensorflow* .
+```
 
 # Joey hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
