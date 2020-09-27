@@ -404,6 +404,10 @@ cd face_detection_mtcnn/
 cargo install --path .
 cd ../http_proxy
 cargo install --path .
+cd ../mobilenet_v2
+cargo install --path .
+cd ../mtcnn
+cargo install --path .
 cd ../image_classification_mobilenet
 cargo install --path .
 cd ../image_classification_mobilenet_v2_14_224
@@ -415,6 +419,8 @@ Set the system path so it can find the binaries via `vi ~/.profile` (then log ou
 export PATH="/usr/bin:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/face_detection_mtcnn/target/release:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/http_proxy/target/release:$PATH"
+export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/mobilenet_v2/target/release:$PATH"
+export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/mtcnn/target/release:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet/target/release:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet_v2_14_224/target/release:$PATH"
 ```
