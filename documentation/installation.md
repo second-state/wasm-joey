@@ -402,6 +402,8 @@ rustup update stable
 cd /media/nvme/AIaaS/AI-as-a-Service/native_model_zoo
 cd face_detection_mtcnn/
 cargo install --path .
+cd ../http_proxy
+cargo install --path .
 cd ../image_classification_mobilenet
 cargo install --path .
 cd ../image_classification_mobilenet_v2_14_224
@@ -522,20 +524,5 @@ Returns
 hello World
 ```
 
-# More testing
-
----
-
-## Rust Process Interface Library
-
-SecondState's [Rust Process Interface Library](https://github.com/second-state/rust_process_interface_library) plays a part in executing commands with arguments and environment values as part of Wasm execution. Rust process interface library is essentially a process interface that will allow the native operating system (which SSVM / Joey is running on) to play a part in the runtime execution.
-
-Users can [create command objects](https://github.com/second-state/rust_process_interface_library#create-a-command-object) in their Rust code and then compile to Wasm, and later execute.
-
----
-
-
-
-
-
-
+# Logging via a browser
+At present you can access the server logs via [this URL](http://rpc.ssvm.secondstate.io:9001/)
