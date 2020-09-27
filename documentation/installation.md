@@ -532,3 +532,16 @@ hello World
 
 # Logging via a browser
 At present you can access the server logs via [this URL](http://rpc.ssvm.secondstate.io:9001/)
+
+To set up the logging please install the following node package
+```
+npm i frontail -g
+```
+Then instead of just starting using `forever start server.js` use this more verbose command that creates a deliberate log file for frontail to access
+```
+forever start -o out.log -e err.log server.js
+```
+Then start frontail and allow it to serve the out.log file
+```
+nohup frontail out.log &
+```
