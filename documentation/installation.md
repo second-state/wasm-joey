@@ -545,3 +545,22 @@ Then start frontail and allow it to serve the out.log file
 ```
 nohup frontail out.log &
 ```
+
+# Rate limiting
+If you would like to rate limit usage please perform the following steps
+
+```
+npm install --save express-rate-limit
+```
+Then add the following to the top of your server.js file
+```
+const rateLimit = require("express-rate-limit");
+ 
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 2 // limit each IP to 2 requests per windowMs
+});
+ 
+//  apply to all requests
+app.use(limiter);
+```
