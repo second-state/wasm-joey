@@ -74,7 +74,6 @@ cd /media/nvme/node_rpc/wasm-joey/src
 ```
 
 # Node.js on the system
-
 Fetch
 ```bash
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
@@ -85,6 +84,10 @@ sudo apt-get install -y nodejs
 ```
 
 ## Node libraries
+Mime
+```
+npm install mime-types
+```
 Axios
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
