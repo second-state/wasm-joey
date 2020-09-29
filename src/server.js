@@ -286,8 +286,10 @@ function axiosFetch(_value) {
         axios.get(_value, {
                 responseType: 'arraybuffer'
             }).then(function(response) {
-                const buffer = Buffer.from(response.data, "utf-8");
-                console.log(buffer);
+                //const buffer = Buffer.from(response.data, "utf-8");
+                // The following will produce 0-255 u8 style
+                const buffer = new Uint8Array(response.data);
+                //console.log(buffer);
                 resolve(buffer);
             })
             .catch(function(error) {
@@ -1242,7 +1244,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
                                             ordered_overarching_container[key] = readyAtZero.container[key];
                                         });
                                         for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                            array_of_parameters.push(`${value}`);
+                                            array_of_parameters.push(value);
                                         }
                                         // Callback
                                         if (readyAtZero.callback_already_set == false) {
@@ -1352,8 +1354,9 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
                                             ordered_overarching_container[key] = readyAtZero.container[key];
                                         });
                                         for (let [key, value] of Object.entries(ordered_overarching_container)) {
-                                            array_of_parameters.push(`${value}`);
+                                            array_of_parameters.push(value);
                                         }
+
                                         // Callback
                                         if (readyAtZero.callback_already_set == false) {
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
