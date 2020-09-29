@@ -347,7 +347,7 @@ function readTheFile(_file) {
     return new Promise(function(resolve, reject) {
         var file_path = _file[1]["path"];
         var mime_content_type = mime.contentType(file_path);
-        console.log(mime_content_type);
+        console.log("File's content type is: " + mime_content_type);
         fs.readFile(file_path, (err, data) => {
             if (err) {
                 console.log("err ocurred", err);
