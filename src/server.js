@@ -3,8 +3,8 @@ const axios = require('axios');
 // Config
 require('dotenv').config();
 
-//Mime 
-var mime = require('mime-types')
+//ContentType
+const FileType = require('file-type');
 
 // Node Cache
 const NodeCache = require("node-cache");
@@ -343,18 +343,40 @@ function fetchUsingGet(_value) {
     });
 }
 
+function getContentType(_file_path) {
+    return new Promise(function(resolve, reject) {
+        var a = FileType.fromFile(_file_path);
+        resolve(a);
+    });
+}
+
+
 function readTheFile(_file) {
     return new Promise(function(resolve, reject) {
         var file_path = _file[1]["path"];
-        var mime_content_type = mime.lookup(file_path);
-        console.log("File's content type is: " + mime_content_type);
-        fs.readFile(file_path, (err, data) => {
-            if (err) {
-                console.log("err ocurred", err);
+        var aa = getContentType(file_path).then((result, error) => {
+            if (!error) {
+                fs.readFile(file_path, (err, data) => {
+                    if (err) {
+                        console.log("err ocurred", err);
+                    } else {
+                        var return_data = {};
+                        //console.log("FILE DATA: " + data);
+                        if (JSON.stringify(result).includes("image")) {
+                            console.log("This is an image");
+                            const image_as_array = Uint8Array.from(data);
+                            return_data[_file[0]] = image_as_array;
+                            return_data["content_type"] = "image";
+                            resolve(return_data);
+                        } else {
+                            return_data[_file[0]] = data;
+                            return_data["content_type"] = "string";
+                            resolve(return_data);
+                        }
+                    }
+                });
             } else {
-                var return_data = {};
-                return_data[_file[0]] = data;
-                resolve(JSON.stringify(return_data));
+                console.log(file_read_error);
             }
         });
     });
@@ -363,15 +385,25 @@ function readTheFile(_file) {
 function parseMultipart(_readyAtZero, _files, _fields, _req) {
     return new Promise(function(resolve, reject) {
         for (var file of Object.entries(_files)) {
-            readTheFile(file).then((file_read_result, file_read_error) => {
+            readTheFile(file).then((fetched_result_object, file_read_error) => {
                 if (!file_read_error) {
-                    fetched_result_object = JSON.parse(file_read_result);
-                    const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
-                    const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
-                    _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]]["data"];
-                    _readyAtZero.decrease();
-                    if (_readyAtZero.isReady()) {
-                        resolve();
+                    if (fetched_result_object["content_type"].toString().includes("image")) {
+                        const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
+                        const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
+                        _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]];
+                        _readyAtZero.decrease();
+                        if (_readyAtZero.isReady()) {
+                            resolve();
+                        }
+                    } else {
+                        const _string_position = Object.keys(fetched_result_object)[0].lastIndexOf("_");
+                        const index_key = Object.keys(fetched_result_object)[0].slice(_string_position + 1, Object.keys(fetched_result_object)[0].length);
+                        _readyAtZero.container[index_key] = fetched_result_object[Object.keys(fetched_result_object)[0]]["data"];
+                        _readyAtZero.decrease();
+                        if (_readyAtZero.isReady()) {
+                            resolve();
+                        }
+
                     }
                 } else {
                     console.log(file_read_error);
@@ -1361,8 +1393,6 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
                                         for (let [key, value] of Object.entries(ordered_overarching_container)) {
                                             array_of_parameters.push(value);
                                         }
-
-                                        // Callback
                                         if (readyAtZero.callback_already_set == false) {
                                             var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                             performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {

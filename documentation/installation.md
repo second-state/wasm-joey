@@ -84,9 +84,9 @@ sudo apt-get install -y nodejs
 ```
 
 ## Node libraries
-Mime
+Content Type
 ```
-npm install mime-types
+npm install file-type
 ```
 Axios
 ```bash
