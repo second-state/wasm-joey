@@ -548,6 +548,22 @@ Then start frontail and allow it to serve the out.log file
 ```
 nohup frontail out.log &
 ```
+# Purging temp files (server maintenance)
+
+Node.js will store temporary files in `/tmp` as `upload_*`
+
+Create a shell script with the following syntax in `/home/ubuntu/purge_temp.sh`
+It will delete all tmp files which are older than 5 minutes
+
+```
+#!/bin/bash
+find /tmp/upload_* -mmin +5 -type f -exec rm -fv {} \;
+```
+Then create the following cron which will execute once per minute
+
+```
+* * * * * /home/ubuntu/purge_temp.sh
+```
 
 # Rate limiting
 If you would like to rate limit usage please perform the following steps
