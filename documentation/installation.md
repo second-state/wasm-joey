@@ -209,7 +209,7 @@ sudo mysqld --initialize --user=mysql
 ```
 ## Start MySQL
 ```bash
-sudo /etc/init.d/mysql
+sudo /etc/init.d/mysql start
 ```
 ## MySQL setup for application
 Access MySQL console use the following
