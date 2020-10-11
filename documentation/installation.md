@@ -350,9 +350,18 @@ You can reverse/revert this Git config by typing `git config --global --edit` an
 cd /media/nvme/node_rpc/wasm-joey/src
 ```
 
+```
+npm install ssvm-storage
+```
+
+---
+
+Redundant
 ```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
 ```
+
+---
 
 ### Tensorflow functionality
 
