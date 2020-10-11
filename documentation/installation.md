@@ -280,7 +280,7 @@ sudo chown $USER:$USER -R /etc/letsencrypt
 cd ~
 ```
 ```bash
-git clone git@github.com:second-state/SSVM.git
+git clone https://github.com/second-state/SSVM.git
 cd SSVM
 git checkout 0.6.7
 ```
