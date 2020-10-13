@@ -1,0 +1,27 @@
+#!/bin/bash
+npm uninstall axios
+npm install axios
+npm uninstall node-cache
+npm install node-cache
+npm uninstall uuid
+npm install uuid
+npm uninstall urllib
+npm install urllib
+npm uninstall dotenv
+npm install dotenv
+npm uninstall express
+npm install express
+npm uninstall body-parser
+npm install body-parser
+npm uninstall mysql
+npm install mysql
+npm uninstall cors
+npm install cors
+npm uninstall https
+npm install https
+npm uninstall formidable
+npm install formidable
+npm uninstall buffer-string-to-array
+npm install buffer-string-to-array
+npm uninstall randomstring
+npm install randomstring
