@@ -1,5 +1,34 @@
 The following file has a few methods of recovering from common issues with Nodejs MySQL etc. This file also shows you how to restore data from a database backup.
 
+## Diagnose 100 CPU issues
+Install tick
+
+```
+npm install tick
+```
+Stop the process (if running)
+```
+cd /media/nvme/node_rpc/wasm-joey/src
+forever stop server.js
+```
+Start again using logging
+```
+node --prof server.js
+```
+This creates a log file with a name similar to the following `isolate-0x103800000-v8.log`.
+Then we create a readable text log file from this output (after the specific 100% cpu process has been running)
+```
+node --prof-process isolate-0x103800000-v8.log > processed.txt
+```
+Then inspect the log
+```
+vi processed.txt
+```
+You will see something obvious like this
+```
+6  100.0%            LazyCompile: ~isValidJSON /media/nvme/node_rpc/wasm-joey/src/server.js:150:21
+```
+At this point, go ahead and look at like 150 in the `server.js` file
 
 ## MySQL repair (Ubuntu)
 
