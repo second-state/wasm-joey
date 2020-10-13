@@ -1,4 +1,6 @@
 #!/bin/bash
+npm uninstall file-type
+npm install file-type
 npm uninstall axios
 npm install axios
 npm uninstall node-cache
@@ -25,3 +27,7 @@ npm uninstall buffer-string-to-array
 npm install buffer-string-to-array
 npm uninstall randomstring
 npm install randomstring
+npm uninstall express-rate-limit
+npm install express-rate-limit
+npm uninstall helmet
+npm install helmet
