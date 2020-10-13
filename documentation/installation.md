@@ -84,6 +84,11 @@ sudo apt-get install -y nodejs
 ```
 
 ## Node libraries
+
+**NOTE** If you ever need to unistall and reinstall all of the node dependencies you can use [this automated_node.sh script](../automated_node.sh). Just `sudo chmod a+x automated_node.sh` then `./automated_node.sh`.
+
+The following are instruction on installing all of the node dependencies manually.
+
 Content Type
 ```
 npm install file-type
