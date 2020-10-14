@@ -110,6 +110,17 @@ var ssvm = require('ssvm-storage');
 // Checksum
 const checksum = require('crypto');
 
+// Rate limiter
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 2 // limit each IP to 2 requests per windowMs
+});
+
+//  apply to all requests
+app.use(limiter);
+
 /* Application dependencies & config - END */
 
 /* Application startup - START */
