@@ -114,8 +114,8 @@ const checksum = require('crypto');
 const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 2 // limit each IP to 2 requests per windowMs
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 2 // limit each IP to 2 requests per windowMs
 });
 
 //  apply to all requests
@@ -474,12 +474,17 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 
 function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _array_of_parameters, _return_type) {
     var _joey_response = {};
+    aot = false;
+    var aot_filename = myCache.get(_wasm_id);
+    if (aot_filename == undefined) {
+        console.log("AOT filename not found");
+    } else {
+        console.log("AOT filename is " + aot_filename);
+        aot = true;
+    }
     return new Promise(function(resolve, reject) {
         var sqlSelect = "SELECT wasm_binary, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
         performSqlQuery(sqlSelect).then((result2, error2) => {
-            const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
-            var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
-            //var uint8array = new Uint8Array(result2[0].wasm_binary.toString().split(','));
             var wasm_state = result2[0].wasm_state;
             var wasi = {
                 "EnableAOT": true,
@@ -493,7 +498,13 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                 }
             };
             wasi.args[0] = wasm_state;
-            var vm = new ssvm.VM(uint8array, wasi);
+            if (aot == false) {
+                const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
+                var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
+                var vm = new ssvm.VM(uint8array, wasi);
+            } else if (aot == true) {
+                var vm = new ssvm.VM(aot_filename, wasi);
+            }
             if (_readyAtZero.fetchable_already_set == true) {
                 var fetchable_object = _readyAtZero.get_fetchable_object();
                 if (fetchable_object.hasOwnProperty("GET")) {
@@ -509,10 +520,16 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing ssvm function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         callback_object_for_processing["body"] = return_value;
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name, fetched_result);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                         callback_object_for_processing["body"] = return_value;
                                     }
@@ -528,9 +545,15 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing ssvm function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name, fetched_result);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     }
                                 } catch (err) {
@@ -554,10 +577,16 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing ssvm function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result2);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         callback_object_for_processing["body"] = return_value;
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name, fetched_result2);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                         callback_object_for_processing["body"] = return_value;
                                     }
@@ -574,9 +603,15 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing ssvm function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, fetched_result2);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name, fetched_result2);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     }
                                 } catch (err) {
@@ -600,10 +635,16 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                             console.log("Executing function WITH a callback ...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 callback_object_for_processing["body"] = return_value;
                                 console.log("Success!");
                             } else if (_return_type == "bytes") {
                                 var return_value = vm.RunUint8Array(_function_name);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                                 callback_object_for_processing["body"] = return_value;
                             }
@@ -621,9 +662,15 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                             console.log("Executing function WITHOUT a callback...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                             } else if (_return_type == "bytes") {
                                 var return_value = vm.RunUint8Array(_function_name);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                             }
                         } catch (err) {
@@ -648,10 +695,16 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         callback_object_for_processing["body"] = return_value;
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                         callback_object_for_processing["body"] = return_value;
                                     }
@@ -669,9 +722,15 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     }
                                 } catch (err) {
@@ -693,10 +752,16 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing function WITH a callback ...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         callback_object_for_processing["body"] = return_value;
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                         callback_object_for_processing["body"] = return_value;
                                     }
@@ -714,9 +779,15 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     console.log("Executing function WITHOUT a callback...");
                                     if (_return_type == "string") {
                                         var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     } else if (_return_type == "bytes") {
                                         var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                        if (aot == false) {
+                                            myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                        }
                                         console.log("Success!");
                                     }
                                 } catch (err) {
@@ -742,10 +813,16 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                             console.log("Executing function WITH a callback ...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 callback_object_for_processing["body"] = return_value;
                                 console.log("Success!");
                             } else if (_return_type == "bytes") {
                                 var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                                 callback_object_for_processing["body"] = return_value;
                             }
@@ -763,9 +840,15 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                             console.log("Executing function WITHOUT a callback...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                             } else if (_return_type == "bytes") {
                                 var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                             }
                         } catch (err) {
@@ -787,10 +870,16 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                             console.log("Executing function WITH a callback ...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 callback_object_for_processing["body"] = return_value;
                                 console.log("Success!");
                             } else if (_return_type == "bytes") {
                                 var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                                 callback_object_for_processing["body"] = return_value;
                             }
@@ -808,9 +897,15 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                             console.log("Executing function WITHOUT a callback...");
                             if (_return_type == "string") {
                                 var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                             } else if (_return_type == "bytes") {
                                 var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                if (aot == false) {
+                                    myCache.set(_wasm_id, vm.getAOTFilename(), 0);
+                                }
                                 console.log("Success!");
                             }
                         } catch (err) {
