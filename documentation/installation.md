@@ -337,7 +337,7 @@ cd /media/nvme/node_rpc/wasm-joey/src
 export CXX=g++-9
 ```
 
-#### Install SSVM Nodejs add-on from source
+### Install SSVM Nodejs add-on from source
 
 The following `ssvm-napi-storage` allows the SSVM runtime to access permanent storage.
 You will need to alter the Git configuration on the machine where this installation procedure is being performed. Reason being, this machine will not have the SSH keys to communicate with git@github. If you add the following config, you will be able to successfully run the `npm install --build-from-source ...` below.
@@ -357,6 +357,21 @@ cd /media/nvme/node_rpc/wasm-joey/src
 Then install ssvm-storage@0.5.0 like this
 ```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
+```
+
+### Create directory for AOT compiler files
+
+SSVM generates AOT files which need to be stored on the solid state file system. Please create the following directory and adjust the permissions as follows.
+
+```
+mkdir /media/nvme/aot
+```
+```
+sudo chown -R $user:$user /media/nvme/aot
+```
+Also be sure that this path is present in the `src/.env` configuration file as follows (no trailing slash)
+```
+aot_dir=/media/nvme/aot
 ```
 
 ### Tensorflow functionality
