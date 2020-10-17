@@ -369,10 +369,18 @@ mkdir /media/nvme/aot
 ```
 sudo chown -R $user:$user /media/nvme/aot
 ```
-Also be sure that this path is present in the `src/.env` configuration file as follows (no trailing slash)
+Also be sure that this path is present in the `src/.env` configuration file as follows 
 ```
 aot_dir=/media/nvme/aot
 ```
+
+Lastly, create a blank file which will be the future manifest of all wasm_ids and AOT file paths. Each time the system restarts or Joey is restarted we will need to import the wasm_id and AOT file paths. 
+
+```
+touch /media/nvme/aot/manifest.txt
+```
+
+Obviously if you ever need to flush this manifest you would just remove and recreate a blank file
 
 ### Tensorflow functionality
 
