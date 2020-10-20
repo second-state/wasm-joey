@@ -29,6 +29,8 @@ Create a file system
 ```bash
 sudo mkfs -t ext4 /dev/nvme0n1 
 ```
+(on Azure it would be something like `sudo mkfs -t ext4 /dev/sdb`)
+
 Part of the output from the above mkfs command will include the Filesystem UUID. Cut and paste this UUID because it will be used in an upcoming command.
 ```bash
 Filesystem UUID: 6f6177fe-947a-46a2-b593-c36dfaaa8407
