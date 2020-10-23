@@ -152,7 +152,7 @@ const readInterface = readline.createInterface({
 console.log("Loading AOT into cache");
 readInterface.on('line', function(line) {
     var split_id_aot = line.split(",");
-    console.log("Loading " + split_id_aot[0] + "'s AOT file into cache ("+split_id_aot[1]+")";
+    console.log("Loading " + split_id_aot[0] + "'s AOT file into cache (" + split_id_aot[1] + ")");
      myCache.set(split_id_aot[0], split_id_aot[1], 0);
 });
 
