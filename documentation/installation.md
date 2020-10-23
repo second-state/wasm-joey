@@ -14,6 +14,8 @@ To begin, create a new EC2 Ubuntu Server instance which has an additional SSD i.
 sudo apt-get update
 sudo apt-get -y upgrade
 sudo apt-get install -y build-essential
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
 ```
 
 # Auxillary hardware
@@ -289,7 +291,7 @@ cd ~
 ```bash
 git clone https://github.com/second-state/SSVM.git
 cd SSVM
-git checkout 0.6.7
+git checkout 0.7.0
 ```
 ```bash
 sudo apt install -y \
@@ -371,7 +373,7 @@ mkdir /media/nvme/aot
 ```
 sudo chown -R $user:$user /media/nvme/aot
 ```
-Also be sure that this path is present in the `src/.env` configuration file as follows 
+Also be sure that this path is present in the `/media/nvme/node_rpc/wasm-joey/src/.env` configuration file as follows 
 ```
 aot_dir=/media/nvme/aot
 ```
