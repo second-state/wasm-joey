@@ -98,6 +98,24 @@ Then run the following command to restore MySQL to this particular database back
 mysql -u joey -p joeydb < /var/lib/automysqlbackup/daily/joeydb/joeydb_2020-06-07_23h54m.Sunday.sql
 ```
 
+# Migrate data
+Use the following command to dump the MySQL data to a file
+```
+cd /media/nvme
+mysqldump -u root -p --databases joeydb > backup_2020_10_24.sql
+```
+Transfer this data to the next machine (perhaps to local machine and then back up to next machine)
+```
+scp -i "~/.ssh/my.pem" -rp ubuntu@123.45.67:/media/nvme/backup_2020_10_24.sql .
+scp -i ~/.ssh/other.pem -rp backup_2020_10_24.sql ubuntu@89.10.11.12:/media/nvme
+```
+Then restore the entire database on the new machine
+```
+cd /media/nvme
+sudo mysql -u root -p joeydb < backup_2020_10_24.sql
+```
+
+
 ## Error: ER_NOT_SUPPORTED_AUTH_MODE
 
 If you get an error like this, when trying to start server.js via node command, `Error: ER_NOT_SUPPORTED_AUTH_MODE: Client does not support authentication protocol requested by server; consider upgrading MySQL client`
