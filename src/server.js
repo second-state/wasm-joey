@@ -530,6 +530,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                 var wasm_state = result2[0].wasm_state;
                 var ssvm_options = {
                     "EnableAOT": true,
+                    "EnableMeasurement": false,
                     "args": [],
                     "env": {
                         "wasm_id": _wasm_id,
