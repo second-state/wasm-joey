@@ -14,6 +14,8 @@ To begin, create a new EC2 Ubuntu Server instance which has an additional SSD i.
 sudo apt-get update
 sudo apt-get -y upgrade
 sudo apt-get install -y build-essential
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
 ```
 
 # Auxillary hardware
