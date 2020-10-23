@@ -126,3 +126,10 @@ Secure DB
 ```
 sudo mysql_secure_installation
 ```
+
+## Sock
+Plugin mysqlx reported: 'Setup of socket: '/var/run/mysqld/mysqlx.sock' failed
+```
+sudo mkdir /var/run/mysqld
+sudo chown mysql:mysql /var/run/mysqld
+```
