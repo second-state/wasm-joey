@@ -291,7 +291,7 @@ cd ~
 ```bash
 git clone https://github.com/second-state/SSVM.git
 cd SSVM
-git checkout 0.6.7
+git checkout 0.7.0
 ```
 ```bash
 sudo apt install -y \
