@@ -373,7 +373,7 @@ mkdir /media/nvme/aot
 ```
 sudo chown -R $user:$user /media/nvme/aot
 ```
-Also be sure that this path is present in the `src/.env` configuration file as follows 
+Also be sure that this path is present in the `/media/nvme/node_rpc/wasm-joey/src/.env` configuration file as follows 
 ```
 aot_dir=/media/nvme/aot
 ```
