@@ -587,35 +587,13 @@ const limiter = rateLimit({
 //  apply to all requests
 app.use(limiter);
 ```
-
-# Redundant
-Joey now interoperates with SSVM via a NodeJS plugin so the following section is redundant
-### SSVM
-```bash
-cd ~
+# Monitoring GPU usage
+The following package will allow you to monitor GPU and Memory whilst executing Wasm executables
 ```
-```bash
-git clone https://github.com/second-state/SSVM.git
-cd SSVM
-git checkout 0.7.0
+sudo apt-get install -y python3-pip
+sudo pip3 install glances[gpu]
 ```
-```bash
-sudo apt install -y \
-	software-properties-common \
-	cmake \
-	libboost-all-dev
+To run glances, use
 ```
-```bash
-sudo apt install -y \
-	llvm-dev \
-	liblld-10-dev
-```
-```bash
-sudo apt install -y gcc g++
-```
-```bash
-mkdir -p build && cd build
-```
-```bash
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON .. && make
+sudo glances 
 ```
