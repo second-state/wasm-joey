@@ -284,36 +284,6 @@ Run the following command to enable sufficient permissions for the files that ce
 sudo chown $USER:$USER -R /etc/letsencrypt
 ```
 
-### SSVM
-```bash
-cd ~
-```
-```bash
-git clone https://github.com/second-state/SSVM.git
-cd SSVM
-git checkout 0.7.0
-```
-```bash
-sudo apt install -y \
-	software-properties-common \
-	cmake \
-	libboost-all-dev
-```
-```bash
-sudo apt install -y \
-	llvm-dev \
-	liblld-10-dev
-```
-```bash
-sudo apt install -y gcc g++
-```
-```bash
-mkdir -p build && cd build
-```
-```bash
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON .. && make
-```
-
 ### Permanent storage
 
 Create the infrastructure for the permanent storage by following [these rust_native_storage_library instructions](https://github.com/second-state/rust_native_storage_library#installing-database-rocksdb)
@@ -614,4 +584,36 @@ const limiter = rateLimit({
  
 //  apply to all requests
 app.use(limiter);
+```
+
+# Redundant
+Joey now interoperates with SSVM via a NodeJS plugin so the following section is redundant
+### SSVM
+```bash
+cd ~
+```
+```bash
+git clone https://github.com/second-state/SSVM.git
+cd SSVM
+git checkout 0.7.0
+```
+```bash
+sudo apt install -y \
+	software-properties-common \
+	cmake \
+	libboost-all-dev
+```
+```bash
+sudo apt install -y \
+	llvm-dev \
+	liblld-10-dev
+```
+```bash
+sudo apt install -y gcc g++
+```
+```bash
+mkdir -p build && cd build
+```
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON .. && make
 ```
