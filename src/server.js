@@ -494,7 +494,7 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
     });
 }
 
-function updateAOT(_wasm_id) {
+function updateAOT(_wasm_id, _ssvm_options) {
     return new Promise(function(resolve, reject) {
         var aot_filename = myCache.get(_wasm_id);
         if (aot_filename == undefined) {
@@ -503,7 +503,7 @@ function updateAOT(_wasm_id) {
             performSqlQuery(sqlSelect).then((result2, error2) => {
                 const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
                 var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
-                var vm = new ssvm.VM(uint8array, ssvm_options);
+                var vm = new ssvm.VM(uint8array, _ssvm_options);
                 var new_aot_key = uuidv4() + ".so";
                 var file_path = path.join(process.env.aot_dir, new_aot_key);
                 var bool_compiled = vm.Compile(file_path);
@@ -523,27 +523,26 @@ function updateAOT(_wasm_id) {
 
 function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _array_of_parameters, _return_type) {
     var _joey_response = {};
+    var ssvm_options = {
+        "EnableAOT": true,
+        "EnableMeasurement": false,
+        "args": [],
+        "env": {
+            "wasm_id": _wasm_id,
+            "storage_key": _storage_key
+        },
+        "preopens": {
+            "/": "/tmp"
+        }
+    };
     return new Promise(function(resolve, reject) {
-        updateAOT(_wasm_id).then((aotResult, aotError) => {
+        updateAOT(_wasm_id, ssvm_options).then((aotResult, aotError) => {
             aot_filename = myCache.get(_wasm_id);
             var sqlSelect = "SELECT wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
             performSqlQuery(sqlSelect).then((result2, error2) => {
                 var wasm_state = result2[0].wasm_state;
-                var ssvm_options = {
-                    "EnableAOT": true,
-                    "EnableMeasurement": false,
-                    "args": [],
-                    "env": {
-                        "wasm_id": _wasm_id,
-                        "storage_key": _storage_key
-                    },
-                    "preopens": {
-                        "/": "/tmp"
-                    }
-                };
                 ssvm_options.args[0] = wasm_state;
                 var vm = new ssvm.VM(aot_filename, ssvm_options);
-
                 if (_readyAtZero.fetchable_already_set == true) {
                     var fetchable_object = _readyAtZero.get_fetchable_object();
                     if (fetchable_object.hasOwnProperty("GET")) {
