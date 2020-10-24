@@ -543,7 +543,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                 var wasm_state = result2[0].wasm_state;
                 ssvm_options.args[0] = wasm_state;
                 console.log("Instantiating SSVM with AOT filename of: " + aot_filename + "which has a typeof: " + typeof(aot_filename));
-                var vm = new ssvm.VM(aot_filename, ssvm_options);
+                var vm = new ssvm.VM(path.join(process.env.aot_dir, aot_filename), ssvm_options);
                 console.log("Instantiation success!");
                 if (_readyAtZero.fetchable_already_set == true) {
                     var fetchable_object = _readyAtZero.get_fetchable_object();
