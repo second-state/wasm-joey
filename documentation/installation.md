@@ -600,6 +600,12 @@ sudo apt-get update
 sudo apt-get -y install cuda
 ```
 
+Follow these instructions on CUDA and FFMPEG
+
+https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+
+https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/index.html
+
 # Monitoring GPU usage
 The following package will allow you to monitor GPU and Memory whilst executing Wasm executables
 ```
