@@ -606,6 +606,13 @@ https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 
 https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/index.html
 
+Be sure to modify the `configure` file by updating any instances of `compute_30` with `compute_35`
+
+Be sure to use the following configure command for ffmpeg
+```
+./configure --enable-cuda-nvcc --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda-11.1/include --extra-ldflags=-L/usr/local/cuda-11.1/lib64
+```
+
 # Monitoring GPU usage
 The following package will allow you to monitor GPU and Memory whilst executing Wasm executables
 ```
