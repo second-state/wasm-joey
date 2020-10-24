@@ -328,7 +328,7 @@ You can reverse/revert this Git config by typing `git config --global --edit` an
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
 ```
-Then install ssvm-storage@0.5.0 like this
+Then install ssvm-storage@0.5.3 like this
 ```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
 ```
