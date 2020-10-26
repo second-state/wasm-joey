@@ -160,6 +160,10 @@ npm install buffer-string-to-array
 cd /media/nvme/node_rpc/wasm-joey/src
 npm install randomstring
 ```
+```bash
+cd /media/nvme/node_rpc/wasm-joey/src
+npm install express-rate-limit
+```
 
 # System timezone
 ```bash
