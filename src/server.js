@@ -1265,9 +1265,11 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
                                         res.send(JSON.stringify(joey_response));
                                     });
                                 });
-                                res.send(JSON.stringify(joey_response));
                             });
                         }
+                    } else {
+                        joey_response["error"] = "Content-Type must be application/octet-stream";
+                        res.send(JSON.stringify(joey_response));
                     }
                 } else {
                     joey_response["error"] = "Wrong admin key ... " + req.params.wasm_id + " can not be updated.";
