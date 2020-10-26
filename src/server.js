@@ -496,9 +496,10 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 
 function getOptions(_wasm_id) {
     return new Promise(function(resolve, reject) {
-        var sqlSelect = "SELECT storage_key from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
+        var sqlSelect = "SELECT storage_key, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
             var _storage_key = result[0].storage_key;
+            var _wasm_state = result[0].wasm_state;
             var ssvm_options = {
                 "EnableAOT": true,
                 "EnableMeasurement": false,
@@ -511,6 +512,7 @@ function getOptions(_wasm_id) {
                     "/": "/tmp"
                 }
             };
+            ssvm_options.args[0] = _wasm_state;
             resolve(ssvm_options);
         });
     });
@@ -552,10 +554,10 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
         getOptions(_wasm_id).then((optionsResult, optionsError) => {
             updateAOT(_wasm_id, optionsResult).then((aotResult, aotError) => {
                 aot_filename = myCache.get(_wasm_id);
-                var sqlSelect = "SELECT wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
-                performSqlQuery(sqlSelect).then((result2, error2) => {
-                    var wasm_state = result2[0].wasm_state;
-                    optionsResult.args[0] = wasm_state;
+                //var sqlSelect = "SELECT wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
+                //performSqlQuery(sqlSelect).then((result2, error2) => {
+                    //var wasm_state = result2[0].wasm_state;
+                    //optionsResult.args[0] = wasm_state;
                     console.log("Instantiating SSVM with AOT filename of: " + path.join(process.env.aot_dir, aot_filename) + " which has a typeof: " + typeof(aot_filename));
                     var vm = new ssvm.VM(path.join(process.env.aot_dir, aot_filename), optionsResult);
                     console.log("Instantiation success!");
@@ -886,7 +888,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                             }
                         });
                     }
-                });
+                //});
 
             });
         });
