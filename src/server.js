@@ -544,24 +544,24 @@ function updateAOT(_wasm_id, _ssvm_options, _is_an_update) {
             } else {
                 resolve();
             }
-        } else {
-                console.log("AOT file needs to be updated, please wait ...");
-                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
-                performSqlQuery(sqlSelect).then((result2, error2) => {
-                    const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
-                    var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
-                    var vm = new ssvm.VM(uint8array, _ssvm_options);
-                    var new_aot_key = uuidv4() + ".so";
-                    var file_path = path.join(process.env.aot_dir, new_aot_key);
-                    var bool_compiled = vm.Compile(file_path);
-                    console.log("Was the AOT compile a success ... ?: " + bool_compiled);
-                    myCache.set(_wasm_id, new_aot_key, 0);
-                    fs.appendFile(path.join(process.env.aot_dir, "manifest.txt"), _wasm_id + "," + new_aot_key + '\n', function(err) {
-                        if (err) throw err;
-                        console.log("AOT executable saved at " + file_path);
-                        resolve();
-                    });
+        } else if (_is_an_update == true) {
+            console.log("AOT file needs to be updated, please wait ...");
+            var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
+            performSqlQuery(sqlSelect).then((result2, error2) => {
+                const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
+                var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
+                var vm = new ssvm.VM(uint8array, _ssvm_options);
+                var new_aot_key = uuidv4() + ".so";
+                var file_path = path.join(process.env.aot_dir, new_aot_key);
+                var bool_compiled = vm.Compile(file_path);
+                console.log("Was the AOT compile a success ... ?: " + bool_compiled);
+                myCache.set(_wasm_id, new_aot_key, 0);
+                fs.appendFile(path.join(process.env.aot_dir, "manifest.txt"), _wasm_id + "," + new_aot_key + '\n', function(err) {
+                    if (err) throw err;
+                    console.log("Updated AOT executable saved at " + file_path);
+                    resolve();
                 });
+            });
         }
     });
 }
