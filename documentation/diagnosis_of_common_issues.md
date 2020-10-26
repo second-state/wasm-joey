@@ -112,6 +112,7 @@ scp -i ~/.ssh/other.pem -rp backup_2020_10_24.sql ubuntu@89.10.11.12:/media/nvme
 Then restore the entire database on the new machine
 ```
 cd /media/nvme
+set global max_allowed_packet = 1000000000
 sudo mysql -u root -p joeydb < backup_2020_10_24.sql
 ```
 
