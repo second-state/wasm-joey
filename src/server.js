@@ -498,7 +498,7 @@ function getOptions(_wasm_id) {
     return new Promise(function(resolve, reject) {
         var sqlSelect = "SELECT storage_key from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
         performSqlQuery(sqlSelect).then((result, error) => {
-            var _storage_key = result2[0].storage_key;
+            var _storage_key = result[0].storage_key;
             var ssvm_options = {
                 "EnableAOT": true,
                 "EnableMeasurement": false,
