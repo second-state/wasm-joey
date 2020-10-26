@@ -518,30 +518,50 @@ function getOptions(_wasm_id) {
     });
 }
 
-function updateAOT(_wasm_id, _ssvm_options) {
+function updateAOT(_wasm_id, _ssvm_options, _is_an_update) {
     return new Promise(function(resolve, reject) {
-        var aot_filename = myCache.get(_wasm_id);
-        if (aot_filename == undefined) {
-            console.log("AOT filename not found, please wait ...");
-            var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result2, error2) => {
-                const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
-                var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
-                var vm = new ssvm.VM(uint8array, _ssvm_options);
-                var new_aot_key = uuidv4() + ".so";
-                var file_path = path.join(process.env.aot_dir, new_aot_key);
-                var bool_compiled = vm.Compile(file_path);
-                console.log("Was the AOT compile a success ... ?: " + bool_compiled);
-                myCache.set(_wasm_id, new_aot_key, 0);
-                fs.appendFile(path.join(process.env.aot_dir, "manifest.txt"), _wasm_id + "," + new_aot_key + '\n', function(err) {
-                    if (err) throw err;
-                    console.log("AOT executable saved at " + file_path);
-                    resolve();
+        if (_is_an_update == false) {
+            var aot_filename = myCache.get(_wasm_id);
+            if (aot_filename == undefined) {
+                console.log("AOT filename not found, please wait ...");
+                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
+                performSqlQuery(sqlSelect).then((result2, error2) => {
+                    const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
+                    var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
+                    var vm = new ssvm.VM(uint8array, _ssvm_options);
+                    var new_aot_key = uuidv4() + ".so";
+                    var file_path = path.join(process.env.aot_dir, new_aot_key);
+                    var bool_compiled = vm.Compile(file_path);
+                    console.log("Was the AOT compile a success ... ?: " + bool_compiled);
+                    myCache.set(_wasm_id, new_aot_key, 0);
+                    fs.appendFile(path.join(process.env.aot_dir, "manifest.txt"), _wasm_id + "," + new_aot_key + '\n', function(err) {
+                        if (err) throw err;
+                        console.log("AOT executable saved at " + file_path);
+                        resolve();
+                    });
                 });
-            });
 
+            } else {
+                resolve();
+            }
         } else {
-            resolve();
+                console.log("AOT file needs to be updated, please wait ...");
+                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
+                performSqlQuery(sqlSelect).then((result2, error2) => {
+                    const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
+                    var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
+                    var vm = new ssvm.VM(uint8array, _ssvm_options);
+                    var new_aot_key = uuidv4() + ".so";
+                    var file_path = path.join(process.env.aot_dir, new_aot_key);
+                    var bool_compiled = vm.Compile(file_path);
+                    console.log("Was the AOT compile a success ... ?: " + bool_compiled);
+                    myCache.set(_wasm_id, new_aot_key, 0);
+                    fs.appendFile(path.join(process.env.aot_dir, "manifest.txt"), _wasm_id + "," + new_aot_key + '\n', function(err) {
+                        if (err) throw err;
+                        console.log("AOT executable saved at " + file_path);
+                        resolve();
+                    });
+                });
         }
     });
 }
@@ -550,7 +570,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
     var _joey_response = {};
     return new Promise(function(resolve, reject) {
         getOptions(_wasm_id).then((optionsResult, optionsError) => {
-            updateAOT(_wasm_id, optionsResult).then((aotResult, aotError) => {
+            updateAOT(_wasm_id, optionsResult, false).then((aotResult, aotError) => {
                 aot_filename = myCache.get(_wasm_id);
                 console.log("Instantiating SSVM with AOT filename of: " + path.join(process.env.aot_dir, aot_filename) + " which has a typeof: " + typeof(aot_filename));
                 var vm = new ssvm.VM(path.join(process.env.aot_dir, aot_filename), optionsResult);
@@ -1084,7 +1104,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
                 joey_response["SSVM_Usage_Key"] = usage_key;
                 joey_response["SSVM_Admin_Key"] = admin_key;
                 getOptions(resultInsert.insertId).then((optionsResult, optionsError) => {
-                    updateAOT(resultInsert.insertId, optionsResult).then((aotResult, aotError) => {
+                    updateAOT(resultInsert.insertId, optionsResult, false).then((aotResult, aotError) => {
                         res.send(JSON.stringify(joey_response));
                     });
                 });
@@ -1261,7 +1281,7 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
                                 joey_response["wasm_id"] = req.params.wasm_id;
                                 joey_response["wasm_sha256"] = wasm_sha256;
                                 getOptions(req.params.wasm_id).then((optionsResult, optionsError) => {
-                                    updateAOT(req.params.wasm_id, optionsResult).then((aotResult, aotError) => {
+                                    updateAOT(req.params.wasm_id, optionsResult, true).then((aotResult, aotError) => {
                                         res.send(JSON.stringify(joey_response));
                                     });
                                 });
