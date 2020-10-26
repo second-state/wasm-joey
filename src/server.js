@@ -1067,6 +1067,18 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
                 length: 32,
                 charset: 'hex'
             });
+            var ssvm_options = {
+                "EnableAOT": true,
+                "EnableMeasurement": false,
+                "args": [],
+                "env": {
+                    "wasm_id": _wasm_id,
+                    "storage_key": storage_key
+                },
+                "preopens": {
+                    "/": "/tmp"
+                }
+            };
             var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key, storage_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "', '" + storage_key + "');";
             performSqlQuery(sqlInsert).then((resultInsert) => {
                 console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
@@ -1074,7 +1086,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
                 joey_response["wasm_sha256"] = wasm_sha256;
                 joey_response["SSVM_Usage_Key"] = usage_key;
                 joey_response["SSVM_Admin_Key"] = admin_key;
-                updateAOT(resultInsert.insertId).then((aotResult, aotError) => {
+                updateAOT(resultInsert.insertId, ssvm_options).then((aotResult, aotError) => {
                     res.send(JSON.stringify(joey_response));
                 });
             });
