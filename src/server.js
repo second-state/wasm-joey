@@ -508,7 +508,7 @@ function updateAOT(_wasm_id, _ssvm_options) {
                 var file_path = path.join(process.env.aot_dir, new_aot_key);
                 var bool_compiled = vm.Compile(file_path);
                 console.log("Was the AOT compile a success ... ?: " + bool_compiled);
-                myCache.set(_wasm_id, file_path, 0);
+                myCache.set(_wasm_id, new_aot_key, 0);
                 fs.appendFile(path.join(process.env.aot_dir, "manifest.txt"), _wasm_id + "," + new_aot_key + '\n', function(err) {
                     if (err) throw err;
                     console.log("AOT executable saved at " + file_path);
