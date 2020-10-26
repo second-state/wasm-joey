@@ -573,7 +573,8 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
             updateAOT(_wasm_id, optionsResult, false).then((aotResult, aotError) => {
                 aot_filename = myCache.get(_wasm_id);
                 console.log("Instantiating SSVM with AOT filename of: " + path.join(process.env.aot_dir, aot_filename) + " which has a typeof: " + typeof(aot_filename));
-                var vm = new ssvm.VM(path.join(process.env.aot_dir, aot_filename), optionsResult);
+                options_object = JSON.parse(optionsResult);
+                var vm = new ssvm.VM(path.join(process.env.aot_dir, aot_filename), options_object);
                 console.log("Instantiation success!");
                 if (_readyAtZero.fetchable_already_set == true) {
                     var fetchable_object = _readyAtZero.get_fetchable_object();
