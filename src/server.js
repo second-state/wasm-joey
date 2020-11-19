@@ -1597,6 +1597,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                         storage_key = resultCheckKey[0].storage_key.toString();
                         // The input is potentially json object with callback so we have to see if the caller intended it as JSON with a callback object
                         if (content_type == "application/octet-stream") {
+                            console.log("Request body is an octet stream ...");
                             bytes_input = true;
                             function_parameters = Uint8Array.from(req.body);
                         } else if (content_type == "application/json" || content_type == "text/plain") {
@@ -1606,37 +1607,77 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                 function_parameters = req.body;
                             }
                         }
-                        isValidJSON(function_parameters).then((isBodyJson, err) => {
-                            if (isBodyJson == true && bytes_input == false) {
-                                // Parse the request body 
-                                function_parameters = JSON.parse(function_parameters);
-                                // Check for callback object
-                                if (readyAtZero.callback_already_set == false) {
-                                    if (function_parameters.hasOwnProperty('SSVM_Callback')) {
-                                        readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
-                                        delete function_parameters.SSVM_Callback;
-                                    }
-                                }
-                                if (readyAtZero.fetchable_already_set == false) {
-                                    if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
-                                        if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
-                                            console.log("This is a URL");
-                                            var temp_obj = {};
-                                            temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                            readyAtZero.set_fetchable_object(temp_obj);
-                                        } else {
-                                            console.log("This is a POST object");
-                                            var temp_obj = {};
-                                            temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
-                                            readyAtZero.set_fetchable_object(temp_obj);
+                        if (bytes_input == false) {
+                            isValidJSON(function_parameters).then((isBodyJson, err) => {
+                                if (isBodyJson == true && bytes_input == false) {
+                                    // Parse the request body 
+                                    function_parameters = JSON.parse(function_parameters);
+                                    // Check for callback object
+                                    if (readyAtZero.callback_already_set == false) {
+                                        if (function_parameters.hasOwnProperty('SSVM_Callback')) {
+                                            readyAtZero.set_callback_object(function_parameters["SSVM_Callback"]);
+                                            delete function_parameters.SSVM_Callback;
                                         }
-                                        delete function_parameters.SSVM_Fetch;
                                     }
+                                    if (readyAtZero.fetchable_already_set == false) {
+                                        if (function_parameters.hasOwnProperty('SSVM_Fetch')) {
+                                            if (JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http") || JSON.stringify(function_parameters["SSVM_Fetch"]).startsWith("http", 1)) {
+                                                console.log("This is a URL");
+                                                var temp_obj = {};
+                                                temp_obj["GET"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                                readyAtZero.set_fetchable_object(temp_obj);
+                                            } else {
+                                                console.log("This is a POST object");
+                                                var temp_obj = {};
+                                                temp_obj["POST"] = JSON.stringify(function_parameters["SSVM_Fetch"]);
+                                                readyAtZero.set_fetchable_object(temp_obj);
+                                            }
+                                            delete function_parameters.SSVM_Fetch;
+                                        }
+                                    }
+                                    function_parameters = JSON.stringify(function_parameters);
+                                } else if (isBodyJson == false && bytes_input == false) {
+                                    function_parameters = req.body;
                                 }
-                                function_parameters = JSON.stringify(function_parameters);
-                            } else if (isBodyJson == false && bytes_input == false) {
-                                function_parameters = req.body;
-                            }
+                                if (readyAtZero.fetchable_already_set == true) {
+                                    array_of_parameters.push(readyAtZero.get_fetchable_object());
+                                    readyAtZero.decrease();
+                                } else {
+                                    array_of_parameters.push(function_parameters);
+                                    readyAtZero.decrease();
+                                }
+
+                                // Callback
+                                if (readyAtZero.callback_already_set == false) {
+                                    // No callback yet so we have to check the DB
+                                    var sqlSelectCallback = "SELECT wasm_callback_object from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                    performSqlQuery(sqlSelectCallback).then((resultCallback, error) => {
+                                        readyAtZero.set_callback_object(resultCallback[0].wasm_callback_object);
+                                        executeSSVM(readyAtZero, req.params.wasm_id, storage_key, req.params.function_name, array_of_parameters, "string").then((esfm_result, error) => {
+                                            if (typeof esfm_result == "object") {
+                                                res.send(JSON.stringify(esfm_result));
+                                                res.end();
+                                            } else if (typeof esfm_result == "string") {
+                                                res.send(esfm_result);
+                                                res.end();
+                                            }
+                                        });
+                                    });
+                                } else if (readyAtZero.callback_already_set == true) {
+                                    executeSSVM(readyAtZero, req.params.wasm_id, storage_key, req.params.function_name, array_of_parameters, "string").then((esfm2_result, error) => {
+                                        if (typeof esfm2_result == "object") {
+                                            res.send(JSON.stringify(esfm2_result));
+                                            res.end();
+                                        } else if (typeof esfm2_result == "string") {
+                                            res.send(esfm2_result);
+                                            res.end();
+                                        }
+                                    });
+                                }
+
+                            });
+                        } else {
+                            // start of new code that is not worried about bytes_input
                             if (readyAtZero.fetchable_already_set == true) {
                                 array_of_parameters.push(readyAtZero.get_fetchable_object());
                                 readyAtZero.decrease();
@@ -1672,8 +1713,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
                                     }
                                 });
                             }
-
-                        });
+                        }
 
                     } else {
                         var joey_response = {};
