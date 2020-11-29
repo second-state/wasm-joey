@@ -337,6 +337,31 @@ Then install ssvm-storage@0.5.3 like this
 npm install --build-from-source https://github.com/second-state/ssvm-napi-storage
 ```
 
+### Create directory for usage statistics
+Gas and invocation details are gathered for all wasm executables. Please create the following directory and adjust the permissions as follows.
+
+```
+mkdir /media/nvme/usage
+```
+```
+sudo chown -R $user:$user /media/nvme/usage
+```
+Also be sure that this path is present in the `/media/nvme/node_rpc/wasm-joey/src/.env` configuration file as follows 
+```
+usage_dir=/media/nvme/usage
+```
+If you want to turn usage statistics off and on, open the `/media/nvme/node_rpc/wasm-joey/src/.env` file and update the value for `measure_gas_and_invocations` i.e. use `0` for off and `1` for on.
+
+To stop/pause gathering statistics, turn usage off like this.
+```
+measure_gas_and_invocations=0
+```
+
+To start/recommence gathering statistics, turn usage on like this.
+```
+measure_gas_and_invocations=1
+```
+
 ### Create directory for AOT compiler files
 
 SSVM generates AOT files which need to be stored on the solid state file system. Please create the following directory and adjust the permissions as follows.
@@ -455,13 +480,30 @@ server_name=rpc.ssvm.secondstate.io
 ```
 etc.
 
-# Serving Joey
+# Configuration before starting
+
+## Measuring gas and invocations
+
+If you want to turn usage statistics off and on, open the `/media/nvme/node_rpc/wasm-joey/src/.env` file and update the value for `measure_gas_and_invocations` i.e. use `0` for off and `1` for on.
+
+For example, to stop/pause gathering statistics, turn usage off like this.
+```
+measure_gas_and_invocations=0
+```
+
+To start/recommence gathering statistics, turn usage on like this.
+```
+measure_gas_and_invocations=1
+```
+
+# Starting (Serving) Joey
 ```bash
 cd /media/nvme/node_rpc/wasm-joey/src
 nodejs server.js
 ```
 
 # Testing Joey
+This section shows you how to build, compile, deploy and call a FaaS.
 
 ## Rust
 Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)

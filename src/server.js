@@ -146,7 +146,7 @@ https.createServer(credentials, app).listen(port, process.env.host, () => {
     console.log("\n");
 });
 
-// Load AOT files from manifect
+// START Load AOT files from manifect
 const readInterface = readline.createInterface({
     input: fs.createReadStream(path.join(process.env.aot_dir, 'manifest.txt')),
     output: process.stdout,
@@ -159,7 +159,36 @@ readInterface.on('line', function(line) {
     console.log("Loading " + split_id_aot[0] + "'s AOT file into cache (" + split_id_aot[1] + ")");
     myCache.set(split_id_aot[0], split_id_aot[1], 0);
 });
+// END Load AOT files from manifect
 
+// Create usage files if they are not present
+createBlankUsageFile(_wasm_id){
+    if(_wasm_id != undefined){
+        filename = path.join(_wasm_id, '.txt')),
+    }
+
+}
+    var sqlSelectAllIds = "SELECT wasm_id from wasm_executables;";
+    performSqlQuery(sqlSelectAllIds).then((result) => {
+        res.send(JSON.stringify(result));
+    });
+const readInterface = readline.createInterface({
+    input: fs.createReadStream(path.join(process.env.aot_dir, 'manifest.txt')),
+    output: process.stdout,
+    console: false
+});
+
+function readUsageFile(_wasm_id){
+    return new Promise(function(resolve, reject) {
+        console.log("Reading usage file");
+        readInterface.on('line', function(line) {
+            var split_id_aot = line.split(",");
+            console.log("Loading " + split_id_aot[0] + "'s AOT file into cache (" + split_id_aot[1] + ")");
+            myCache.set(split_id_aot[0], split_id_aot[1], 0);
+        });
+        resolve(empty);
+    });
+}
 
 /* Application startup - END */
 
@@ -1038,28 +1067,6 @@ app.get('/api/state/:wasm_id', (req, res) => {
     });
 });
 
-app.get('/api/meter/:wasm_id', (req, res) => {
-    console.log("Request to read this function's meter ...");
-    executableExists(req.params.wasm_id).then((result, error) => {
-        if (result == 1) {
-            var header_admin_key = req.header('SSVM_Admin_Key');
-            var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
-                if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
-                    // Send the contents of this functions meter file back to the caller
-                    //
-                    //
-                    //
-                } else {
-                    joey_response["error"] = "Wrong admin key! Usage for " + req.params.wasm_id + " can not be accessed.";
-                    res.send(JSON.stringify(joey_response));
-                }
-            });
-        } else {
-            res.send(req.params.wasm_id + " does not exist");
-        }
-    });
-});
 // Update data at ephemeral storage location ("Must be valid JSON")
 app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
     joey_response = {};
@@ -1184,7 +1191,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object"];
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object", "total_gas_consumed", "total_invocations", "full_usage_report"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 try {
@@ -1236,7 +1243,35 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 });
                             }
                         }
-                        // We can join the simple objects i.e. char and just perform one select query for these
+                        // Separate section for usage statistics (this way we don't have to read from DB if caller is only wanting gas and invocation details)
+                        if (filters.length >= 1) {
+                            if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report")) {
+                                var header_admin_key = req.header('SSVM_Admin_Key');
+                                var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                                    if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
+                                        // Send the contents of this functions meter file back to the caller
+                                        // Parse the text file and send back JSON object
+                                        //
+                                        //
+                                    } else {
+                                        joey_response["error"] = "Wrong admin key! total_gas_consumed, total_invocations and full_usage_report for " + req.params.wasm_id + " require that San SVM_Admin_Key is present in the request headers.";
+                                        res.send(JSON.stringify(joey_response));
+                                    }
+                                });
+                                getUsage
+                                filters = removeElementFromArray(filters, "wasm_sha256");
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                performSqlQuery(sqlSelect).then((result) => {
+                                    joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
+                                    if (filters.length == 0) {
+                                        res.send(JSON.stringify(joey_response));
+                                    }
+                                });
+                            }
+                        }
+
+                        // If there are still filters left, then we can join the simple objects i.e. char and just perform one select query for the remaining filters
                         if (filters.length >= 1) {
                             var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                             performSqlQuery(sqlSelect).then((result) => {
