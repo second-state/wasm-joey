@@ -98,6 +98,10 @@ connection.connect((err) => {
 console.log("Setting log level ...");
 const log_level = process.env.log_level;
 
+// Measure gas and invocations
+console.log("Setting whether to measure gas and invocations");
+const measure_gas_and_invocations = process.env.measure_gas_and_invocations;
+
 // Filtering the content types which are allowed to access Joey
 app.use(function(req, res, next) {
     if (req.method === 'POST') {
@@ -1025,6 +1029,29 @@ app.get('/api/state/:wasm_id', (req, res) => {
                     });
                 } else {
                     joey_response["error"] = "Wrong usage key ... " + req.params.wasm_id + " can not be accessed.";
+                    res.send(JSON.stringify(joey_response));
+                }
+            });
+        } else {
+            res.send(req.params.wasm_id + " does not exist");
+        }
+    });
+});
+
+app.get('/api/meter/:wasm_id', (req, res) => {
+    console.log("Request to read this function's meter ...");
+    executableExists(req.params.wasm_id).then((result, error) => {
+        if (result == 1) {
+            var header_admin_key = req.header('SSVM_Admin_Key');
+            var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
+                    // Send the contents of this functions meter file back to the caller
+                    //
+                    //
+                    //
+                } else {
+                    joey_response["error"] = "Wrong admin key! Usage for " + req.params.wasm_id + " can not be accessed.";
                     res.send(JSON.stringify(joey_response));
                 }
             });
