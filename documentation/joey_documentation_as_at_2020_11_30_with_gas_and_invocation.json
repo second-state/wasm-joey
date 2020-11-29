@@ -1,0 +1,834 @@
+{
+	"info": {
+		"_postman_id": "84b93d68-2073-4f51-bde3-68f19de57c62",
+		"name": "Wasm-Joey API documentation",
+		"description": "# SecondState's Wasm execution environment; Wasm-Joey\n\n[SecondState](https://www.secondstate.io/) has developed a high performance [WebAssembly(Wasm) Virtual Machine called SSVM](https://github.com/second-state/SSVM). \n\nThis product, called [Wasm-Joey](https://github.com/second-state/wasm-joey) allows you to:\n- upload/store your WebAssembly executables (.wasm files) for later use\n- run a function of your Wasm executable in the SSVM environment (via HTTP request/response)\n- store data\n- remote fetch data\n- secure your Wasm \n- share your Wasm and much more ...\n\nBelow is an explanation of the list of features, followed by actual endpoint documentation.\n\nFirstly, callbacks!\n\n## Callbacks\n- Allows user to specify a callback object as part of a request. \n- Callback objects can be placed in the request header i.e. `--header SSVM_Callback: {hostname ... port ... etc.}`\n- Callback objects can be placed in the request body i.e.\n```\n{\n\t\"SSVM_Callback\": {\n\t\t\"hostname\": \"dev.rpc.ssvm.secondstate.io\",\n\t\t\"path\": \"/api/run/1/say\",\n\t\t\"method\": \"POST\",\n\t\t\"port\": 8081,\n\t\t\"headers\": {\n\t\t\t\"Content-Type\": \"text/plain\",\n\t\t\t\"SSVM_Usage_Key\": \"83f02dd3-6440-482f-983f-78127ed6f943\"\n\t\t}\n\t},\n\t  \"Function_Parameters\": [1, 2, 3, 4]\n}\n```\n- Callback objects can be stored permanently in Joey's DB via a RESTful API endpoint.\n- A Callback in the header overrides a Callback in the body and a Callback in the DB.\n- A Callback in the body overrides a Callback in the DB.\n- If no other Callback objects are provided in the request and there is a Callback object in the DB, that DB Callback will execute regardless.\n- A blank Callback object in the header or the body can negate the Callback that is stored in the DB. \n\n## Remote fetching of data\nThis allows the caller to deal with large files without having to upload/download them. The GET and POST activities take place on the server side. The client stays light.\n\n### SSVM_Fetch in the request body (passes the response from the request and ignores any peripheral data in the body)\n```\ncurl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/say' \\\n--header 'SSVM_Usage_Key: 83f02dd3-6440-482f-983f-78127ed6f943' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n\t\"SSVM_Fetch\": {\n\t\t\"body\": \"body\",\n\t\t\"hostname\": \"rpc.ssvm.secondstate.io\",\n\t\t\"path\": \"/api/run/1/say\",\n\t\t\"method\": \"POST\",\n\t\t\"port\": 8081,\n\t\t\"headers\": {\n\t\t\t\"Content-Type\": \"text/plain\",\n\t\t\t\"SSVM_Usage_Key\": \"83f02dd3-6440-482f-983f-78127ed6f943\"\n\t\t}\n\t},\n\t\"function_params\": [1, 2]\n}'\n```\nReturns\n```\nhello hello \"body\"\n```\n\n### SSVM_Fetch in the request head (overrides body and any peripheral data)\n```\ncurl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/say' \\\n--header 'SSVM_Usage_Key: 83f02dd3-6440-482f-983f-78127ed6f943' \\\n--header 'SSVM_Fetch: {\"body\": \"header\",\"hostname\": \"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/1/say\",\"method\": \"POST\",\"port\": 8081,\"headers\": {\"Content-Type\": \"text/plain\",\"SSVM_Usage_Key\": \"83f02dd3-6440-482f-983f-78127ed6f943\"}}' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n\t\"SSVM_Fetch\": {\n\t\t\"body\": \"body\",\n\t\t\"hostname\": \"rpc.ssvm.secondstate.io\",\n\t\t\"path\": \"/api/run/1/say\",\n\t\t\"method\": \"POST\",\n\t\t\"port\": 8081,\n\t\t\"headers\": {\n\t\t\t\"Content-Type\": \"text/plain\",\n\t\t\t\"SSVM_Usage_Key\": \"83f02dd3-6440-482f-983f-78127ed6f943\"\n\t\t}\n\t},\n\t\"function_params\": [1, 2]\n}'\n```\nReturns\n```\nhello hello \"header\"\n```\n\n### SSVM_Fetch in the request body; providing only a URL\n```\ncurl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/say' \\\n--header 'SSVM_Usage_Key: 83f02dd3-6440-482f-983f-78127ed6f943' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n\t\"SSVM_Fetch\": \"https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\",\n\t\"function_params\": [1, 2]\n}'\n```\nReturns\n```\nhello Tim\n```\n\n### SSVM_Fetch in the request header; providing only a URL\n```\ncurl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/run/1/say' \\\n--header 'SSVM_Usage_Key: 83f02dd3-6440-482f-983f-78127ed6f943' \\\n--header 'SSVM_Fetch: https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim2.txt' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n\t\"SSVM_Fetch\": \"https://raw.githubusercontent.com/tpmccallum/test_endpoint2/master/tim.txt\"\n}'\n```\nReturns\n```\nhello Tim2\n```\n## Authenticated calling\n### Private \nIf a Wasm executable is for private use, the caller can make Joey generate a couple of keys (at the time when the Wasm executable is uploaded). For example, if the following header (`SSVM_Create_Usage_Key`) key is set to true in the request, the keys will be generated.\n```\ncurl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \\\n--header 'Content-Type: application/octet-stream' \\\n--header 'SSVM_Description: Private Wasm File' \\\n--header 'SSVM_Create_Usage_Key: true' \\\n--data-binary '@/Users/tpmccallum/hello_bg.wasm'\n```\nThe above code will return the following response\n```\n{\n\t\"wasm_id\": 16,\n\t\"wasm_sha256\": \"0xfb413547a8aba56d0349603a7989e269f3846245e51804932b3e02bc0be4b665\",\n\t\"usage_key\": \"a038c28b-0e47-42e3-8686-be4c4d7f729b\",\n\t\"admin_key\": \"87d6edf0-52de-48fa-a4b2-0d035e5dc70a\"\n}\n```\nNote the `usage_key` and `admin_key`.\n### Public\nOn the contrary, Wasm executables that are set into the system with no mention of `SSVM_Create_Usage_Key` are set to public by default. For example, the following request returns the generic zeroed out usage key.\n```\ncurl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/executables' \\\n--header 'Content-Type: application/octet-stream' \\\n--header 'SSVM_Description: Private Wasm File' \\\n--data-binary '@/Users/tpmccallum/hello_bg.wasm'\n```\n```\n{\n\t\"wasm_id\": 17,\n\t\"wasm_sha256\": \"0xfb413547a8aba56d0349603a7989e269f3846245e51804932b3e02bc0be4b665\",\n\t\"usage_key\": \"00000000-0000-0000-0000-000000000000\",\n\t\"admin_key\": \"8741ec91-79d4-4718-bce9-d073438ea582\"\n}\n```\n### Switching between private and public\nTo make a public Wasm executable private, simply perform the following RESTful (`PUT`) request\n```\ncurl --location --request PUT 'https://rpc.ssvm.secondstate.io:8081/api/keys/17/usage_key' \\\n--header 'SSVM_Admin_Key: 8741ec91-79d4-4718-bce9-d073438ea582'\n```\nThe above request will return a fresh key as shown below.\n```\n{\n    \"SSVM_Usage_Key\": \"c031f2c8-dada-4eff-9a92-8bd63011c7c1\"\n}\n```\nThis `PUT` request is also a great way to refresh keys i.e. change who can access a Wasm executable, after a hackathon or temporary training exercise etc.\n\nTo make a private Wasm executable public, simply perform the following RESTful `DELETE` request\n```\ncurl --location --request DELETE 'https://rpc.ssvm.secondstate.io:8081/api/keys/17/usage_key' \\\n--header 'SSVM_Admin_Key: 8741ec91-79d4-4718-bce9-d073438ea582'\n```\n\n## Ephemeral storage\n- Allows users to quickly store ephemeral information via a RESTful endpoint (no Wasm or Rust required). This is useful for pooling information from IoT sensors or performing tasks such as quickly gathering information per second which is then placed in a batch which may be processed each 60 seconds etc.\n- Allows users to quickly retrieve ephemeral information via RESTful endpoint.\n- Any ephemeral information is saved for up to 1 hour. If the ephemeral information (at the specific key) is updated then the 1 hour limit is restarted.\n\n### Store data and receive a key for future use\n```\ncurl --location --request POST 'https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\"some_json\": \"data_to_store_temporarily\"}'\n```\nReturns\n```\n{\"key\":\"e09da790-b072-46e9-9e6c-c879d07376fd\"}\n```\n\n### Use the key to access the data\n```\ncurl --location --request GET 'https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/e09da790-b072-46e9-9e6c-c879d07376fd'\n```\nReturns\n```\n{\"value\":{\"some_json\":\"data_to_store_temporarily\"}}\n```\n\n### Update the data\n```\ncurl --location --request PUT 'https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/e09da790-b072-46e9-9e6c-c879d07376fd' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\"asdf\": \"Update the data\"}'\n```\n\n### Delete the data\n```\ncurl --location --request DELETE 'https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/e09da790-b072-46e9-9e6c-c879d07376fd'\n```\n\nNow, as promised, let's look at the individual endpoints. \n\n# Endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/1",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables/4?filterBy=[\"wasm_as_buffer\"]",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables",
+						"4"
+					],
+					"query": [
+						{
+							"key": "filterBy",
+							"value": "[\"wasm_as_buffer\"]"
+						}
+					]
+				},
+				"description": "Path structure\n```\n/api/executables/:wasm_id\n```\nGet a single wasm executable (all fields returned by default)\n# Response\n```\n{\"wasm_id\":1,\"wasm_description\":\"Description goes here\",\"wasm_as_buffer\":{\"type\":\"Buffer\",\"data\":[49,49,44,53,44,49,44,52,44,53,44,49,44,49,49,50,44,49,44,49,54,44,49,54,44,53]}}\n```\n# Optional parameters\nPath structure (if using filters)\n```\n/api/executables/:wasm_id?filterBy=[\"wasm_id\"]\n/api/executables/:wasm_id?filterBy=[\"wasm_description\"]\n/api/executables/:wasm_id?filterBy=[\"wasm_as_buffer\"]\n```\n## filterBy\n### wasm_id\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_id\"]\n```\n{\"wasm_id\":1}\n```\n### wasm_sha256\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_sha256\"]\n```\n{\"wasm_sha256\":\"0x880633dce728eddd3d441f297f43226fd21b9bbac080d70a29407507ca6e004b\"}\n```\n### wasm_description\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_description\"]\n```\n{\"wasm_description\":\"Description goes here\"}\n```\n### wasm_as_buffer\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_as_buffer\"]\n```\n{\"wasm_as_buffer\":{\"type\":\"Buffer\",\"data\":[49,49,44,53,44,49,44,52,44,53,44,49,44,49,49,50,44,49,44,49,54,44,49,54,44,53]}}\n```\n### wasm_state\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_state\"]\n```\n{\"wasm_state\":\"state is x\"}\n```\n### wasm_callback_object\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"wasm_callback_object\"]\n```\n{\"wasm_callback_object\":{\"returns valid callback object\"}}\n```\n## Admin only filters\nThe following \"total_gas_consumed\", \"total_invocations\" and \"full_usage_report\" filters will require the \"SSVM_Admin_Key\" in the request header i.e.\n\n```\nvar settings = {\n  \"url\": \"https://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\\\"full_usage_report\\\"]\",\n  \"method\": \"GET\",\n  \"timeout\": 0,\n  \"headers\": {\n    \"SSVM_Admin_Key\": \"0000-xxxx-0000-xxxx-0000-xxxx\"\n  },\n};\n\n$.ajax(settings).done(function (response) {\n  console.log(response);\n});\n```\n### total_gas_consumed\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"total_gas_consumed\"]\n```\n{\"total_gas_consumed\":\"200\"}\n```\n### total_invocations\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"total_invocations\"]\n```\n{\"total_invocations\":\"4\"}\n```\n### full_usage_report\nhttps://rpc.ssvm.secondstate.io:8081/api/executables/1?filterBy=[\"full_usage_report\"]\n```\n{\n\t\"full_usage_report\": {\n\t\t\"1606690637\": 50,\n\t\t\"1606690639\": 50\n\t}\n}\n```\nThe full_usage_report lists each invocation in the format of timestamp: gas. The sum of all gas values i.e. 100 is equivalent to `total_gas_consumed` and the length of the keys (timestamps) are equivalent to the `total_invocations` i.e.\n```\nmy_report = {\n\t\"full_usage_report\": {\n\t\t\"1606690637\": 50,\n\t\t\"1606690639\": 50\n\t}\n}\nObject.keys(my_report.full_usage_report).length;\n// Returns 2\n```\n\n"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables"
+					]
+				},
+				"description": "Path structure\n```\n/api/executables\n```\nGet all wasm executables (provides wasm_id for each)\n\n# Response\n```\n[{\"wasm_id\":1}, {\"wasm_id\":2}, {\"wasm_id\":3}, {\"wasm_id\":4}]\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					},
+					{
+						"key": "SSVM_Description",
+						"value": "say",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/Users/tpmccallum/hello_bg.wasm"
+					},
+					"options": {
+						"file": {}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables"
+					]
+				},
+				"description": "Path structure \n```\n/api/executables\n```\nSet a wasm binary file. You simply have to perform this POST request and add your .wasm executable as the payload, as shown in the example ->\n\n# Response\n```\n{\"wasm_id\":1,\"wasm_sha256\":\"0xfb413547a8aba56d0349603a7989e269f3846245e51804932b3e02bc0be4b665\",\"usage_key\":\"83f02dd3-6440-482f-983f-78127ed6f943\",\"admin_key\":\"00ac9d9b-f611-43fe-bd54-4adc960fd2b8\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/update_wasm_binary/3",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/Users/tpmccallum/triple/target/wasm32-unknown-unknown/debug/triple_lib.wasm"
+					},
+					"options": {
+						"file": {}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/update_wasm_binary/3",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"update_wasm_binary",
+						"3"
+					]
+				},
+				"description": "Path structure\n```\n/api/update_wasm_binary/:wasm_id\n```\nHotswap Wasm binary (at specific wasm_id) with a different Wasm binary\n\n# Response\n```\n{\"wasm_id\":1,\"wasm_sha256\":\"0xfb413547a8aba56d0349603a7989e269f3846245e51804932b3e02bc0be4b665\",\"usage_key\":\"83f02dd3-6440-482f-983f-78127ed6f943\",\"admin_key\":\"00ac9d9b-f611-43fe-bd54-4adc960fd2b8\"}\n\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/state/1",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/plain"
+					},
+					{
+						"key": "SSVM_Usage_Key",
+						"value": "83f02dd3-6440-482f-983f-78127ed6f943",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"test\": \"test\"}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/state/1",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"state",
+						"1"
+					]
+				},
+				"description": "Path structure\n```\n/api/state/:wasm_id\n```\nUpdate the state object for the wasm executable with `wasm_id` of 1\n# Response\nThe wasm_id of the executable which was just updated\n```\n{\"wasm_id\":\"1\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/run/1/my_function/bytes",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/plain"
+					},
+					{
+						"key": "SSVM_Callback",
+						"type": "text",
+						"value": "{\"hostname\": \"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/5/reverse/bytes\",\"method\": \"POST\",\"port\": 8081,\"headers\":{\"Content-Type\": \"application/octet-stream\"}}",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "reverse this",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/run/21/reverse/bytes",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"run",
+						"21",
+						"reverse",
+						"bytes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/19",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables/19",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables",
+						"19"
+					]
+				},
+				"description": "Delete a Wasm executable (and all related metadata) where `wasm_id` equals `19`\n\n# Returns\n```\n{\"wasm_id\":\"19\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/run/1/my_function",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/plain",
+						"type": "text"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "reverse this",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/run/21/reverse",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"run",
+						"21",
+						"reverse"
+					]
+				},
+				"description": "Execute a function that resides in your Wasm executable.\n\nDepending on the particular Rust/Wasm function, the caller will be required to provide the valid JSON in the format that the Rust/Wasm can consume it.\n\nPlease note:\nThe Rust/Wasm code could explicitly declare a Struct on which serde_json could use as the data type, when parsing. However, a struct is flat. What this means, is that if you are going to parse and traverse nested data, then Rust will require that you build and maintain multiple complex data structures (which mirror the JSON data). You may want to do this, which is great. However, in some cases this may be too hard to write and maintain and so here is a proposal for an easier solution.\n\nInstead of writing complex nested Structs you could use serde_json's generic Value type as demonstrated in the following code. This approach allows for maximum flexiblility. For example if the Rust/Wasm application looks like this\n```\nuse serde_json;\nuse serde_json::{Value};\n\n#[no_mangle]\nfn process(s: &str){\n    let json_as_object: Value = serde_json::from_str(s).unwrap();\n    println!(\"{:?}\", json_as_object[\"function_params\"]);\n    println!(\"{:?}\", json_as_object[\"function_params\"][\"param_one\"]);\n    println!(\"{:?}\", json_as_object[\"function_params\"][\"param_two\"]);\n}\n```\nThen the calling request would create a valid JSON object like the one below, in order to satisfy the Rust/Wasm's parsing of this data\n```\n{\n\t\"function_params\": {\n\t\t\"param_one\": 1,\n\t\t\"param_two\": \"two\"\n\t}\n}\n```\n\n# Callback\nThe caller can also issue a callback object which will ensure that once the original request is performed, the second callback request will also be performed. Here is an example of a callback object.\n\nIn a case where the user wanted to utilise a callback the original body of the request would be as follows (note that we are using not only the `function_params` but also the `callback` object which sits at the top level.)\n\nPlease note the callback must be explicitly named `SSVM_Callback`, as shown below.\n```\n{\n\t\"SSVM_Callback\": {\n\t\t\"hostname\": \"gorest.co.in\",\n\t\t\"path\": \"/public-api/users\",\n\t\t\"method\": \"POST\",\n\t\t\"headers\": {\n\t\t\t\"Content-Type\": \"application/json\",\n\t\t\t\"Authorization\": \"Bearer 4dWCe0YCGG4IBIbKh1eRoNUdq3Qzv0xxxx\"\n\t\t}\n\t},\n\t\"function_params\": {\n\t\t\"param_one\": 4,\n\t\t\"param_two\": 4\n\t}\n}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/log/1",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/log/1",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"log",
+						"1"
+					]
+				},
+				"description": "# Logging of execution\n\nThe `api/log` endpoint is able to provide details about past execution of wasm functions. The system captures many facets i.e. wasm_executable's state, callback objects in play, timestamp etc. every time an execution takes place. A caller can use this log to diagnose callbacks that did not complete and more. For efficiency sake, Joey allows the caller to filter logs based on any combination of the following parameters.\n\n### log_id\nhttps://rpc.ssvm.secondstate.io:8081/api/log/1?filterBy=[%22log_id%22]\n```\n{\"log_id\":1}\n```\n### wasm_executable_id\nhttps://rpc.ssvm.secondstate.io:8081/api/log/1?filterBy=[%22wasm_executable_id%22]\n```\n{\"wasm_executable_id\":1}\n```\n### wasm_executable_state\nhttps://rpc.ssvm.secondstate.io:8081/api/log/1?filterBy=[%22wasm_executable_state%22]\n```\n{\"wasm_executable_state\":\"asdf\"}\n```\n### execution_timestamp\nhttps://rpc.ssvm.secondstate.io:8081/api/log/1?filterBy=[%22execution_timestamp%22]\n```\n{\"execution_timestamp\":\"2020-06-01T06:33:40.000Z\"}\n```\n### execution_object\nhttps://rpc.ssvm.secondstate.io:8081/api/log/1?filterBy=[%22execution_object%22]\n```\nexecution_object: \"{\"callback_data_payload\": {\"function\": {\"name\": \"new template name\"}}, \"callback_request_options\": {\"path\": \"/api/run/2/my_other_function\", \"port\": 8081, \"method\": \"GET\", \"headers\": {\"Content-Type\": \"application/json\"}, \"hostname\": \"rpc.ssvm.secondstate.io\", \"maxRedirects\": 20}, \"original_wasm_executables_id\": \"1\"}\"\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/multipart/run/22/my_function",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "input_6",
+							"type": "file",
+							"src": "/Users/tpmccallum/for_joey/lib_small.wasm"
+						},
+						{
+							"key": "fetch_input_2",
+							"value": "{ \"hostname\": \"reqres.in\",\n    \"path\": \"/api/users\",\n    \"method\": \"POST\",\n    \"headers\": {\n        \"Content-Type\": \"application/json\"\n    },\n    \"body\": {\n        \"name\": \"John Doe\",\n        \"job\": \"Content Writer\"\n    }\n}",
+							"type": "text"
+						},
+						{
+							"key": "fetch_input_3",
+							"value": "https://postman-echo.com/get?foo1=bar1",
+							"type": "text"
+						},
+						{
+							"key": "input_4",
+							"value": "asdf",
+							"type": "text"
+						},
+						{
+							"key": "input_1",
+							"value": "{ \"left_temperature\": 35,\"right_temperature\": 38}",
+							"type": "text"
+						},
+						{
+							"key": "input_5",
+							"type": "file",
+							"src": "/Users/tpmccallum/for_joey/lib_small.wasm"
+						}
+					],
+					"options": {
+						"formdata": {}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/multipart/run/22/multipart",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"multipart",
+						"run",
+						"22",
+						"multipart"
+					]
+				},
+				"description": "# Multipart request\n\n# Conventions\nEvery key must end in an underscore **followed** by a number i.e. input_1\nThe order of the keys i.e. _1, _2, _3 relates to the order that `my_function` is expecting the function arguments\n\nEvery key must **not** start with the reserved word `fetch` **unless** the caller is specifically wanting Joey to fetch the value from a remote location (upfront) and then pass that fetched value into `my_function` as an argument. See fetch_input_4 example below\n\nEvery key must **not** start with the reserved word `SSVM_Callback` **unless** the caller is specifically wanting Joey to execute a callback at the very end of processing. See SSVM_Callback_6 example below\n\n## input_1\nThis shows how a caller can just pass in a simple string as an argument. Joey will just pass this across to `my_function` verbatim.\n\n## input_2\nThis example shows how to pass in JSON string. Data like this will just be passed straight into `my_function` verbatim. The Rust / Wasm and caller will have already agreed on how to interpret this data.\n```\n{\"left_temperature\": 35,\"right_temperature\": 38}}\n```\n\n## fetch_input_3\n### Execute remote request before calling function\nAs mentioned above, if a key starts with the reserved word `fetch`, then the key must be one of two formats\n\n1 - A URL that will return remote data all on its own i.e. a URL which will return raw data or a URL pointing to a remote server's GET request endpoint. Here is an example of a URL that will return remote data all on its own i.e. a URL which will return raw data or a URL pointing to a remote server's GET request endpoint\n```\nhttps://postman-echo.com/get?foo1=bar1\n```\n\n2 - A JSON string object which adheres to the `fetch_input_4` example below. This JSON data structure is modelled off the native Node.js `https.request` library which accepts this JSON data as `options`. See below ...\n\n## fetch_input_4\nThe caller can create a JSON string object like the one below and pass this in as the value of `fetch_input_4`. Joey will execute the request as a top priority and then pass the result of this request into the `my_function` function at `wasm_id` 1 as, in this case, the 4th function parameter.\n```\n{\n\t\"method\": \"POST\",\n\t\"hostname\": \"postman-echo.com\",\n\t\"port\": 80,\n\t\"path\": \"/post\",\n\t\"headers\": {\n\t\t\"Content-Type\": \"application/json\"\n\t},\n\t\"data\": {\n\t\t\"hand\": \"wave\"\n\t}\n}\n```\n\n## input_5\nData from callers file system that will be passed to the function as a Buffer\n\n## SSVM_Callback_6\nThis object will be executed (after all other processing has taken place, but) right before Joey sends the result back to the original caller.\n\nThe callback object must conform to the following structure i.e hostname, path, port, method etc.\n\n```\n{\n\t\"hostname\": \"rpc.ssvm.secondstate.io\",\n\t\"path\": \"/api/run/46/convert_celsius_to_fahrenheit\",\n\t\"method\": \"POST\",\n\t\"port\": 8081,\n\t\"headers\": {\n\t\t\"Content-Type\": \"application/json\"\n\t}\n}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"some_json\": \"data_to_store_temporarily\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"ephemeral_storage"
+					]
+				},
+				"description": "Store ephemeral data in Joey (TTL is 1 hour only)\n\nReturns unique key like this\n```\n{\"key\":\"d3e8b5b6-397b-48db-b594-013f1ca5790c\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/d3e8b5b6-397b-48db-b594-013f1ca5790c",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/d3e8b5b6-397b-48db-b594-013f1ca5790c",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"ephemeral_storage",
+						"d3e8b5b6-397b-48db-b594-013f1ca5790c"
+					]
+				},
+				"description": "Get storage at ephemeral location\nReturns the data\n```\n{\"value\":{\"some_json\":\"data_to_store_temporarily\"}}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/d3e8b5b6-397b-48db-b594-013f1ca5790c",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"asdf\": \"Update the data\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/d3e8b5b6-397b-48db-b594-013f1ca5790c",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"ephemeral_storage",
+						"d3e8b5b6-397b-48db-b594-013f1ca5790c"
+					]
+				},
+				"description": "Update the data at a specific key location.\n\nThis action resets the TTL to 1 hour\n```\n{\"key\":\"d3e8b5b6-397b-48db-b594-013f1ca5790c\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/d3e8b5b6-397b-48db-b594-013f1ca5790c",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/ephemeral_storage/d3e8b5b6-397b-48db-b594-013f1ca5790c",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"ephemeral_storage",
+						"d3e8b5b6-397b-48db-b594-013f1ca5790c"
+					]
+				},
+				"description": "Delete the data at a specific key\n\n```\n{\"key\":\"d3e8b5b6-397b-48db-b594-013f1ca5790c\"}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/callback/3",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hostname\": \"rpc.ssvm.secondstate.io\",\"path\": \"/api/run/5/reverse/bytes\",\"method\": \"POST\",\"port\": 8081,\"headers\":{\"Content-Type\": \"application/octet-stream\"}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/callback/3",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"callback",
+						"3"
+					]
+				},
+				"description": "Update the callback object of a Wasm executable\n\nThe default for the callback object is `{}` i.e. a blank object is created when a new Wasm executable is added to the system."
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/keys/16/usage_key",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "SSVM_Admin_key",
+						"type": "text",
+						"value": "eae0db3b-4761-4b2e-b916-21727e79e1b0"
+					}
+				],
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/keys/16/usage_key",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"keys",
+						"16",
+						"usage_key"
+					]
+				},
+				"description": "Using the DELETE verb, when actioning the /api/keys/:wasm_id/usage_keys endpoint, will set the SSVM_Usage_Key to a zeroed out value (publicly available)"
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/keys/17/usage_key",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "SSVM_Admin_Key",
+						"value": "8741ec91-79d4-4718-bce9-d073438ea582",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/keys/17/usage_key",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"keys",
+						"17",
+						"usage_key"
+					]
+				},
+				"description": "Using the PUT verb, when actioning the /api/keys/:wasm_id/usage_key endpoint will generate a new SSVM_Usage_Key which will supersede all previous SSVM_Usage_Key values for that Wasm executable.\nAs with the DELETE verb, to this endpoint, you must pass the SSVM_Admin_Key into the request headers as shown here."
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/1",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables/4?filterBy=[\"wasm_as_buffer\"]",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables",
+						"4"
+					],
+					"query": [
+						{
+							"key": "filterBy",
+							"value": "[\"wasm_as_buffer\"]"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					},
+					{
+						"key": "SSVM_Description",
+						"value": "say",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/Users/tpmccallum/hello_bg.wasm"
+					},
+					"options": {
+						"file": {}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rpc.ssvm.secondstate.io:8081/api/executables/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					},
+					{
+						"key": "SSVM_Description",
+						"value": "say",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/Users/tpmccallum/hello_bg.wasm"
+					},
+					"options": {
+						"file": {}
+					}
+				},
+				"url": {
+					"raw": "https://rpc.ssvm.secondstate.io:8081/api/executables",
+					"protocol": "https",
+					"host": [
+						"rpc",
+						"ssvm",
+						"secondstate",
+						"io"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"executables"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
