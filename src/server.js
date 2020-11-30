@@ -1475,15 +1475,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                         res.send(JSON.stringify(joey_response));
                                     }
                                 });
-
-                                filters = removeElementFromArray(filters, "wasm_sha256");
-                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                performSqlQuery(sqlSelect).then((result) => {
-                                    joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
-                                    if (filters.length == 0) {
-                                        res.send(JSON.stringify(joey_response));
-                                    }
-                                });
                             }
                         }
 
