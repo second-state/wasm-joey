@@ -1416,27 +1416,18 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                             gas_total = gas_total + value;
                                                         }
                                                         joey_response["total_gas_consumed"] = gas_total;
-                                                        if (filters.length == 0) {
-                                                            res.send(JSON.stringify(joey_response));
-                                                        }
                                                     }
                                                 }
                                                 if (filters.length >= 1) {
                                                     if (filters.includes("total_invocations")) {
                                                         filters = removeElementFromArray(filters, "total_invocations");
                                                         joey_response["total_invocations"] = Object.keys(usage_obj.full_usage_report).length;
-                                                        if (filters.length == 0) {
-                                                            res.send(JSON.stringify(joey_response));
-                                                        }
                                                     }
                                                 }
                                                 if (filters.length >= 1) {
                                                     if (filters.includes("full_usage_report")) {
                                                         filters = removeElementFromArray(filters, "full_usage_report");
                                                         joey_response["full_usage_report"] = usage_obj.full_usage_report;
-                                                        if (filters.length == 0) {
-                                                            res.send(JSON.stringify(joey_response));
-                                                        }
                                                     }
                                                 }
                                             } else {
@@ -1446,17 +1437,11 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                         joey_response["total_gas_consumed"] = 0;
                                                     }
                                                 }
-                                                if (filters.length == 0) {
-                                                    res.send(JSON.stringify(joey_response));
-                                                }
                                                 if (filters.length >= 1) {
                                                     if (filters.includes("total_invocations")) {
                                                         filters = removeElementFromArray(filters, "total_invocations");
                                                         joey_response["total_invocations"] = 0;
                                                     }
-                                                }
-                                                if (filters.length == 0) {
-                                                    res.send(JSON.stringify(joey_response));
                                                 }
                                                 if (filters.length >= 1) {
                                                     if (filters.includes("full_usage_report")) {
@@ -1464,10 +1449,31 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                         joey_response["full_usage_report"] = {};
                                                     }
                                                 }
-                                                if (filters.length == 0) {
-                                                    res.send(JSON.stringify(joey_response));
-                                                }
-
+                                            }
+                                            if (filters.length == 0) {
+                                                res.send(JSON.stringify(joey_response));
+                                            }
+                                            if (filters.length >= 1) {
+                                                var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                                console.log(sqlSelect);
+                                                performSqlQuery(sqlSelect).then((result) => {
+                                                    if (filters.includes("wasm_id")) {
+                                                        joey_response["wasm_id"] = result[0].wasm_id;
+                                                    }
+                                                    if (filters.includes("wasm_description")) {
+                                                        joey_response["wasm_description"] = result[0].wasm_description;
+                                                    }
+                                                    if (filters.includes("wasm_state")) {
+                                                        joey_response["wasm_state"] = result[0].wasm_state;
+                                                    }
+                                                    if (filters.includes("wasm_callback_object")) {
+                                                        joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                                                    }
+                                                    filters = [];
+                                                    if (filters.length == 0) {
+                                                        res.send(JSON.stringify(joey_response));
+                                                    }
+                                                });
                                             }
                                         });
                                     } else {
@@ -1475,32 +1481,32 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                         res.send(JSON.stringify(joey_response));
                                     }
                                 });
+                            } else {
+                                if (filters.length >= 1) {
+                                    var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                    console.log(sqlSelect);
+                                    performSqlQuery(sqlSelect).then((result) => {
+                                        if (filters.includes("wasm_id")) {
+                                            joey_response["wasm_id"] = result[0].wasm_id;
+                                        }
+                                        if (filters.includes("wasm_description")) {
+                                            joey_response["wasm_description"] = result[0].wasm_description;
+                                        }
+                                        if (filters.includes("wasm_state")) {
+                                            joey_response["wasm_state"] = result[0].wasm_state;
+                                        }
+                                        if (filters.includes("wasm_callback_object")) {
+                                            joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
+                                        }
+                                        filters = [];
+                                        if (filters.length == 0) {
+                                            res.send(JSON.stringify(joey_response));
+                                        }
+                                    });
+                                }
                             }
                         }
-                        console.log(filters.length);
-                        // If there are still filters left, then we can join the simple objects i.e. char and just perform one select query for the remaining filters
-                        if (filters.length >= 1) {
-                            var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                            console.log(sqlSelect);
-                            performSqlQuery(sqlSelect).then((result) => {
-                                if (filters.includes("wasm_id")) {
-                                    joey_response["wasm_id"] = result[0].wasm_id;
-                                }
-                                if (filters.includes("wasm_description")) {
-                                    joey_response["wasm_description"] = result[0].wasm_description;
-                                }
-                                if (filters.includes("wasm_state")) {
-                                    joey_response["wasm_state"] = result[0].wasm_state;
-                                }
-                                if (filters.includes("wasm_callback_object")) {
-                                    joey_response["wasm_callback_object"] = result[0].wasm_callback_object;
-                                }
-                                filters = [];
-                                if (filters.length == 0) {
-                                    res.send(JSON.stringify(joey_response));
-                                }
-                            });
-                        }
+
                     }
                 }
             } else {
