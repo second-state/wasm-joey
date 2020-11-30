@@ -544,9 +544,13 @@ function getOptions(_wasm_id) {
         performSqlQuery(sqlSelect).then((result, error) => {
             var _storage_key = result[0].storage_key;
             var _wasm_state = result[0].wasm_state;
+            var enable_measurement = false;
+            if (measure_gas_and_invocations > 0){
+                enable_measurement = true;
+            }
             var ssvm_options = {
                 "EnableAOT": true,
-                "EnableMeasurement": false,
+                "EnableMeasurement": enable_measurement,
                 "args": [],
                 "env": {
                     "wasm_id": _wasm_id,
