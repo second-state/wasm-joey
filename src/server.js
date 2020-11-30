@@ -560,6 +560,7 @@ function getOptions(_wasm_id) {
                 }
             };
             ssvm_options.args[0] = _wasm_state;
+            console.log("SSVM Options: " + JSON.stringify(ssvm_options));
             resolve(JSON.stringify(ssvm_options));
         });
     });
