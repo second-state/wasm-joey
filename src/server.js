@@ -166,11 +166,11 @@ function writeToUsageFile(_wasm_id, _gas) {
         var usage_file = _wasm_id + ".txt";
         var file_path = path.join(process.env.usage_dir, usage_file);
         var timestamp = Math.floor(new Date().getTime() / 1000)
-            fs.appendFile(file_path, timestamp + "," + _gas + '\n', function(err) {
-                if (err) throw err;
-                console.log("Usage recorded at " + file_path);
-                resolve();
-            });
+        fs.appendFile(file_path, timestamp + "," + _gas + '\n', function(err) {
+            if (err) throw err;
+            console.log("Usage recorded at " + file_path);
+            resolve();
+        });
     });
 }
 
@@ -195,7 +195,7 @@ function readUsageFile(_wasm_id) {
             resolve(JSON.stringify(usage_obj));
         } else {
             usage_obj["full_usage_report"] = {};
-            console.log("No usage recorded for " +  wasm_id + " \nPlease set measure_gas_and_invocations=1 in the .env file to start usage collection");
+            console.log("No usage recorded for " + wasm_id + " \nPlease set measure_gas_and_invocations=1 in the .env file to start usage collection");
             resolve(JSON.stringify(usage_obj));
         }
     });
@@ -545,7 +545,7 @@ function getOptions(_wasm_id) {
             var _storage_key = result[0].storage_key;
             var _wasm_state = result[0].wasm_state;
             var enable_measurement = false;
-            if (measure_gas_and_invocations > 0){
+            if (measure_gas_and_invocations > 0) {
                 enable_measurement = true;
             }
             var ssvm_options = {
@@ -639,10 +639,20 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing ssvm function WITH a callback ...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name, fetched_result);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
                                         }
@@ -658,9 +668,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing ssvm function WITHOUT a callback...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name, fetched_result);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         }
                                     } catch (err) {
@@ -684,10 +704,20 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing ssvm function WITH a callback ...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name, fetched_result2);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result2);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
                                         }
@@ -704,9 +734,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing ssvm function WITHOUT a callback...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name, fetched_result2);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result2);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         }
                                     } catch (err) {
@@ -730,10 +770,20 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                 console.log("Executing function WITH a callback ...");
                                 if (_return_type == "string") {
                                     var return_value = vm.RunString(_function_name);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     callback_object_for_processing["body"] = return_value;
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
                                     var return_value = vm.RunUint8Array(_function_name);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                     callback_object_for_processing["body"] = return_value;
                                 }
@@ -751,9 +801,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                 console.log("Executing function WITHOUT a callback...");
                                 if (_return_type == "string") {
                                     var return_value = vm.RunString(_function_name);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
                                     var return_value = vm.RunUint8Array(_function_name);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                 }
                             } catch (err) {
@@ -778,10 +838,20 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing function WITH a callback ...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
                                         }
@@ -799,9 +869,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing function WITHOUT a callback...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         }
                                     } catch (err) {
@@ -823,10 +903,20 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing function WITH a callback ...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
                                         }
@@ -844,9 +934,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Executing function WITHOUT a callback...");
                                         if (_return_type == "string") {
                                             var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
                                             var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                            if (measure_gas_and_invocations > 0) {
+                                                var usage = vm.GetStatistics();
+                                                console.log("Statistics object: " + JSON.stringify(usage));
+                                                //writeToUsageFile(_wasm_id, _gas)
+                                            }
                                             console.log("Success!");
                                         }
                                     } catch (err) {
@@ -872,10 +972,20 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                 console.log("Executing function WITH a callback ...");
                                 if (_return_type == "string") {
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     callback_object_for_processing["body"] = return_value;
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                     callback_object_for_processing["body"] = return_value;
                                 }
@@ -893,9 +1003,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                 console.log("Executing function WITHOUT a callback...");
                                 if (_return_type == "string") {
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                 }
                             } catch (err) {
@@ -917,10 +1037,20 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                 console.log("Executing function WITH a callback ...");
                                 if (_return_type == "string") {
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     callback_object_for_processing["body"] = return_value;
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                     callback_object_for_processing["body"] = return_value;
                                 }
@@ -938,9 +1068,19 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                 console.log("Executing function WITHOUT a callback...");
                                 if (_return_type == "string") {
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                    if (measure_gas_and_invocations > 0) {
+                                        var usage = vm.GetStatistics();
+                                        console.log("Statistics object: " + JSON.stringify(usage));
+                                        //writeToUsageFile(_wasm_id, _gas)
+                                    }
                                     console.log("Success!");
                                 }
                             } catch (err) {
