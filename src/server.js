@@ -161,7 +161,7 @@ readInterface.on('line', function(line) {
 });
 // END Load AOT files from manifect
 
-function writeToUsageFile(_wasm_id, _gas); {
+function writeToUsageFile(_wasm_id, _gas) {
     return new Promise(function(resolve, reject) {
         var usage_file = _wasm_id + ".txt";
         var file_path = path.join(process.env.usage_dir, usage_file);
