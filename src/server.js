@@ -246,7 +246,6 @@ function removeElementFromArray(arr, value) {
 }
 
 function performSqlQuery(string_query) {
-
     return new Promise(function(resolve, reject) {
         connection.query(string_query, function(err, resultSelect) {
             if (err) {
@@ -1403,6 +1402,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                             if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report")) {
                                 var header_admin_key = req.header('SSVM_Admin_Key');
                                 var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                console.log(sqlCheckKey);
                                 performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
                                     if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
                                         readUsageFile(req.params.wasm_id).then((usageResult) => {
@@ -1477,10 +1477,11 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 });
                             }
                         }
-
+                        console.log(filters.length);
                         // If there are still filters left, then we can join the simple objects i.e. char and just perform one select query for the remaining filters
                         if (filters.length >= 1) {
                             var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            console.log(sqlSelect);
                             performSqlQuery(sqlSelect).then((result) => {
                                 if (filters.includes("wasm_id")) {
                                     joey_response["wasm_id"] = result[0].wasm_id;
