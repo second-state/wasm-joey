@@ -161,32 +161,42 @@ readInterface.on('line', function(line) {
 });
 // END Load AOT files from manifect
 
-// Create usage files if they are not present
-createBlankUsageFile(_wasm_id){
-    if(_wasm_id != undefined){
-        filename = path.join(_wasm_id, '.txt')),
-    }
-
-}
-    var sqlSelectAllIds = "SELECT wasm_id from wasm_executables;";
-    performSqlQuery(sqlSelectAllIds).then((result) => {
-        res.send(JSON.stringify(result));
-    });
-const readInterface = readline.createInterface({
-    input: fs.createReadStream(path.join(process.env.aot_dir, 'manifest.txt')),
-    output: process.stdout,
-    console: false
-});
-
-function readUsageFile(_wasm_id){
+function writeToUsageFile(_wasm_id, _gas) {
     return new Promise(function(resolve, reject) {
-        console.log("Reading usage file");
-        readInterface.on('line', function(line) {
-            var split_id_aot = line.split(",");
-            console.log("Loading " + split_id_aot[0] + "'s AOT file into cache (" + split_id_aot[1] + ")");
-            myCache.set(split_id_aot[0], split_id_aot[1], 0);
-        });
-        resolve(empty);
+        var usage_file = _wasm_id + ".txt";
+        var file_path = path.join(process.env.usage_dir, usage_file);
+        var timestamp = Math.floor(new Date().getTime() / 1000)
+            fs.appendFile(file_path, timestamp + "," + _gas + '\n', function(err) {
+                if (err) throw err;
+                console.log("Usage recorded at " + file_path);
+                resolve();
+            });
+    });
+}
+
+function readUsageFile(_wasm_id) {
+    return new Promise(function(resolve, reject) {
+        var usage_obj = {};
+        internal_object = {};
+        var usage_file = _wasm_id + ".txt";
+        var file_path = path.join(process.env.usage_dir, usage_file);
+        if (fs.existsSync(file_path)) {
+            console.log("Reading usage file");
+            const readInterface2 = readline.createInterface({
+                input: fs.createReadStream(file_path),
+                output: process.stdout,
+                console: false
+            });
+            readInterface.on('line', function(line) {
+                var split_time_gas = line.split(",");
+                internal_object[split_time_gas[0]] = split_time_gas[1];
+            });
+            usage_obj["full_usage_report"] = internal_object;
+            resolve(JSON.stringify(usage_obj));
+        } else {
+            console.log("No usage recorded for " +  wasm_id + " \nPlease set measure_gas_and_invocations=1 in the .env file to start usage collection");
+            resolve(JSON.stringify(usage_obj));
+        }
     });
 }
 

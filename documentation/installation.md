@@ -32,7 +32,6 @@ Create a file system
 sudo mkfs -t ext4 /dev/nvme0n1 
 ```
 (on Azure it would be something like `sudo mkfs -t ext4 /dev/sdb`)
-
 Part of the output from the above mkfs command will include the Filesystem UUID. Cut and paste this UUID because it will be used in an upcoming command.
 ```bash
 Filesystem UUID: 6f6177fe-947a-46a2-b593-c36dfaaa8407
@@ -55,7 +54,6 @@ After the reboot, see the mounted ~300Gb NVMe SSD using the df command
 df -h
 /dev/nvme0n1    275G   65M  260G   1% /media/nvme
 ```
-
 Ensure that the /media/nvme directory is owned by ubuntu by typing ls -la /media/nvme If it is not then type the following command
 
 ```bash
