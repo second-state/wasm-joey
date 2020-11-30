@@ -194,6 +194,7 @@ function readUsageFile(_wasm_id) {
             usage_obj["full_usage_report"] = internal_object;
             resolve(JSON.stringify(usage_obj));
         } else {
+            usage_obj["full_usage_report"] = {};
             console.log("No usage recorded for " +  wasm_id + " \nPlease set measure_gas_and_invocations=1 in the .env file to start usage collection");
             resolve(JSON.stringify(usage_obj));
         }
