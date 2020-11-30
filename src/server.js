@@ -1260,16 +1260,77 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                 var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
                                     if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
-                                        // Send the contents of this functions meter file back to the caller
-                                        // Parse the text file and send back JSON object
-                                        //
-                                        //
+                                        readUsageFile(req.params.wasm_id).then((usageResult) => {
+                                            var usage_obj = JSON.parse(usageResult);
+                                            if (Object.keys(usage_obj.full_usage_report).length >= 1) {
+                                                if (filters.length >= 1) {
+                                                    if (filters.includes("total_gas_consumed")) {
+                                                        filters = removeElementFromArray(filters, "total_gas_consumed");
+                                                        var gas_total = 0;
+                                                        for (let [key, value] of Object.entries(usage_obj.full_usage_report)) {
+                                                            gas_total = gas_total + value;
+                                                        }
+                                                        joey_response["total_gas_consumed"] = gas_total;
+                                                        if (filters.length == 0) {
+                                                            res.send(JSON.stringify(joey_response));
+                                                        }
+                                                    }
+                                                }
+                                                if (filters.length >= 1) {
+                                                    if (filters.includes("total_invocations")) {
+                                                        filters = removeElementFromArray(filters, "total_invocations");
+                                                        joey_response["total_invocations"] = Object.keys(usage_obj.full_usage_report).length;
+                                                        if (filters.length == 0) {
+                                                            res.send(JSON.stringify(joey_response));
+                                                        }
+                                                    }
+                                                }
+                                                if (filters.length >= 1) {
+                                                    if (filters.includes("full_usage_report")) {
+                                                        filters = removeElementFromArray(filters, "full_usage_report");
+                                                        joey_response["full_usage_report"] = usage_obj.full_usage_report;
+                                                        if (filters.length == 0) {
+                                                            res.send(JSON.stringify(joey_response));
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                if (filters.length >= 1) {
+                                                    if (filters.includes("total_gas_consumed")) {
+                                                        filters = removeElementFromArray(filters, "total_gas_consumed");
+                                                        joey_response["total_gas_consumed"] = 0;
+                                                    }
+                                                }
+                                                if (filters.length == 0) {
+                                                    res.send(JSON.stringify(joey_response));
+                                                }
+                                                if (filters.length >= 1) {
+                                                    if (filters.includes("total_invocations")) {
+                                                        filters = removeElementFromArray(filters, "total_invocations");
+                                                        joey_response["total_invocations"] = 0;
+                                                    }
+                                                }
+                                                if (filters.length == 0) {
+                                                    res.send(JSON.stringify(joey_response));
+                                                }
+                                                if (filters.length >= 1) {
+                                                    if (filters.includes("full_usage_report")) {
+                                                        filters = removeElementFromArray(filters, "full_usage_report");
+                                                        joey_response["full_usage_report"] = {};
+                                                    }
+                                                }
+                                                if (filters.length == 0) {
+                                                    res.send(JSON.stringify(joey_response));
+                                                }
+
+                                            }
+                                        });
                                     } else {
                                         joey_response["error"] = "Wrong admin key! total_gas_consumed, total_invocations and full_usage_report for " + req.params.wasm_id + " require that San SVM_Admin_Key is present in the request headers.";
                                         res.send(JSON.stringify(joey_response));
                                     }
                                 });
-                                getUsage
+
                                 filters = removeElementFromArray(filters, "wasm_sha256");
                                 var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 performSqlQuery(sqlSelect).then((result) => {
