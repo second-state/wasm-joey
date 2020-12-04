@@ -184,6 +184,7 @@ function readLines(_readInterface2) {
             var split_time_gas = line.split(",");
             internal_object[split_time_gas[0]] = split_time_gas[1];
         });
+        console.log("Internal object: " + internal_object);
         resolve(internal_object);
     });
 }
