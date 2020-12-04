@@ -117,7 +117,7 @@ const formidable = require('formidable');
 
 // SSVM
 //var ssvm = require('ssvm-storage');
-const ssvm = require("ssvm-extensions";
+const ssvm = require("ssvm-extensions");
 
 // Checksum
 const checksum = require('crypto');
