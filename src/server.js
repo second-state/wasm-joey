@@ -1433,7 +1433,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                         filters = removeElementFromArray(filters, "total_gas_consumed");
                                                         var gas_total = 0;
                                                         for (let [key, value] of Object.entries(usage_obj.full_usage_report)) {
-                                                            gas_total = gas_total + value;
+                                                            gas_total = gas_total + parseInt(value);
                                                         }
                                                         joey_response["total_gas_consumed"] = gas_total;
                                                     }
