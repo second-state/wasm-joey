@@ -204,7 +204,7 @@ function readUsageFile(_wasm_id) {
             readLines(readInterface2).then((readResult) => {
                 usage_obj["full_usage_report"] = readResult;
                 console.log("Usage object: " + JSON.stringify(usage_obj));
-                resolve(JSON.stringify(internal_object));
+                resolve(internal_object);
             });
 
         } else {
