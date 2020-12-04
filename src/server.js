@@ -182,6 +182,7 @@ function readLines(_readInterface2) {
         _readInterface2.on('line', function(line) {
             console.log("Line:" + line);
             var split_time_gas = line.split(",");
+            console.log("Adding: " + split_time_gas[0] + " and " +  split_time_gas[1]);
             internal_object[split_time_gas[0]] = split_time_gas[1];
         });
         console.log("Internal object: " + JSON.stringify(internal_object));
