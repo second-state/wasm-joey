@@ -196,8 +196,8 @@ function readUsageFile(_wasm_id) {
                 console.log("Internal object" + JSON.stringify(internal_object));
             });
             console.log("Internal object" + JSON.stringify(internal_object));
-            console.log("Usage object: " + JSON.stringify(usage_obj));
             usage_obj["full_usage_report"] = internal_object;
+            console.log("Usage object: " + JSON.stringify(usage_obj));
             resolve(JSON.stringify(usage_obj));
         } else {
             usage_obj["full_usage_report"] = {};
