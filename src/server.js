@@ -188,7 +188,7 @@ function readUsageFile(_wasm_id) {
                 output: process.stdout,
                 console: false
             });
-            readInterface.on('line', function(line) {
+            readInterface2.on('line', function(line) {
                 var split_time_gas = line.split(",");
                 internal_object[split_time_gas[0]] = split_time_gas[1];
             });
