@@ -644,7 +644,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name, fetched_result);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             callback_object_for_processing["body"] = return_value;
@@ -653,7 +653,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -673,7 +673,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name, fetched_result);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -681,7 +681,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -709,7 +709,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name, fetched_result2);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             callback_object_for_processing["body"] = return_value;
@@ -718,7 +718,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result2);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -739,7 +739,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name, fetched_result2);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -747,7 +747,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name, fetched_result2);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -775,7 +775,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunString(_function_name);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     callback_object_for_processing["body"] = return_value;
@@ -784,7 +784,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunUint8Array(_function_name);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -806,7 +806,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunString(_function_name);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -814,7 +814,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunUint8Array(_function_name);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -843,7 +843,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             callback_object_for_processing["body"] = return_value;
@@ -852,7 +852,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -874,7 +874,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -882,7 +882,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -908,7 +908,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name, ..._array_of_parameters);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             callback_object_for_processing["body"] = return_value;
@@ -917,7 +917,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -939,7 +939,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunString(_function_name, ..._array_of_parameters);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -947,7 +947,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
-                                                console.log("Statistics object: " + usage);
+                                                console.log("Statistics object: " + JSON.stringify(usage));
                                                 //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                             }
                                             console.log("Success!");
@@ -977,7 +977,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     callback_object_for_processing["body"] = return_value;
@@ -986,7 +986,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -1008,7 +1008,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -1016,7 +1016,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -1042,7 +1042,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     callback_object_for_processing["body"] = return_value;
@@ -1051,7 +1051,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -1073,7 +1073,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunString(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -1081,7 +1081,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
-                                        console.log("Statistics object: " + usage);
+                                        console.log("Statistics object: " + JSON.stringify(usage));
                                         //writeToUsageFile(_wasm_id, _gas); // TODO console.log the usage so we can see how to parse the object and extract _gas
                                     }
                                     console.log("Success!");
@@ -1289,7 +1289,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
                 length: 32,
                 charset: 'hex'
             });
-            var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key, storage_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "', '" + storage_key + "');";
+            var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key, storage_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + JSON.stringify(usage)_key + "', '" + admin_key + "', '" + storage_key + "');";
             performSqlQuery(sqlInsert).then((resultInsert) => {
                 console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
                 joey_response["wasm_id"] = resultInsert.insertId;
@@ -1313,7 +1313,7 @@ app.put('/api/keys/:wasm_id/usage_key', (req, res) => {
     performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
         if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
             var usage_key = uuidv4();
-            var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+            var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + JSON.stringify(usage)_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlInsert).then((resultInsertKey) => {
                 joey_response["SSVM_Usage_Key"] = usage_key;
                 res.send(joey_response);
@@ -1332,7 +1332,7 @@ app.delete('/api/keys/:wasm_id/usage_key', (req, res) => {
     performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
         if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
             var usage_key = "00000000-0000-0000-0000-000000000000";
-            var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+            var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + JSON.stringify(usage)_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
             performSqlQuery(sqlInsert).then((resultInsertKey) => {
                 joey_response["SSVM_Usage_Key"] = usage_key;
                 res.send(joey_response);
