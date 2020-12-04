@@ -334,10 +334,19 @@ cd /media/nvme/node_rpc/wasm-joey/src
 ### Install the required dependencies for ssvm-napi-extensions
 Please visit [this link which details the requirements to continue](https://github.com/second-state/ssvm-napi-extensions#requirements) and ensure that your system has these required dependencies before proceeding.
 
+#### Temporarily downgrade npm
+The following installation will require that npm is downgraded to `6.14.9`. There is [an npm cli issue](https://github.com/npm/cli/issues/1865) which prevents us from using the latest npm for this particular build from source task.
+```
+sudo npm install -g npm@6.14.9
+```
 #### Install from source
 Then install ssvm-napi-extensions like this
 ```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi-extensions
+```
+Following the successful installation of the above, please go ahead and run the following command to return npm to the latest version
+```
+npm install npm@latest -g
 ```
 
 ### Create directory for usage statistics
