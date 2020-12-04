@@ -193,7 +193,7 @@ function readUsageFile(_wasm_id) {
             readInterface2.on('line', function(line) {
                 var split_time_gas = line.split(",");
                 internal_object[split_time_gas[0]] = split_time_gas[1];
-                console.log("Internal object" + internal_object);
+                console.log("Internal object" + JSON.stringify(internal_object));
             });
             usage_obj["full_usage_report"] = internal_object;
             resolve(JSON.stringify(usage_obj));
