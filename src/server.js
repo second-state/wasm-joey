@@ -180,10 +180,9 @@ function readLines(_readInterface2) {
     return new Promise(function(resolve, reject) {
         internal_object = {};
         _readInterface2.on('line', function(line) {
-            console.log("Line: " + line);
+            console.log("Line:" + line);
             var split_time_gas = line.split(",");
             internal_object[split_time_gas[0]] = split_time_gas[1];
-            //console.log("Internal object" + JSON.stringify(internal_object));
         });
         resolve(internal_object);
     });
@@ -204,13 +203,13 @@ function readUsageFile(_wasm_id) {
             });
             readLines(readInterface2).then((readResult) => {
                 usage_obj["full_usage_report"] = readResult;
-                console.log("Usage object: " + JSON.stringify(usage_obj));
-                resolve(internal_object);
+                console.log("Usage object ... : " + JSON.stringify(usage_obj));
+                resolve(JSON.stringify(usage_obj);
             });
 
         } else {
             usage_obj["full_usage_report"] = {};
-            console.log("No usage recorded for " + _wasm_id + " \nPlease set measure_gas_and_invocations=1 in the .env file to start usage collection");
+            console.log(" ... No usage recorded for " + _wasm_id + " \nPlease set measure_gas_and_invocations=1 in the .env file to start usage collection");
             resolve(JSON.stringify(usage_obj));
         }
     });
