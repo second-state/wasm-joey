@@ -195,7 +195,7 @@ function readUsageFile(_wasm_id) {
                 internal_object[split_time_gas[0]] = split_time_gas[1];
                 console.log("Internal object" + JSON.stringify(internal_object));
             });
-            console.log("Usage object: " + usage_obj);
+            console.log("Usage object: " + JSON.stringify(usage_obj));
             usage_obj["full_usage_report"] = internal_object;
             resolve(JSON.stringify(usage_obj));
         } else {
