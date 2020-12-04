@@ -162,11 +162,7 @@ readInterface.on('line', function(line) {
 });
 // END Load AOT files from manifect
 
-const readInterface2 = readline.createInterface({
-    input: fs.createReadStream(path.join(process.env.aot_dir, 'manifest.txt')),
-    output: process.stdout,
-    console: false
-});
+
 function writeToUsageFile(_wasm_id, _gas) {
     return new Promise(function(resolve, reject) {
         var usage_file = _wasm_id + ".txt";
@@ -188,7 +184,7 @@ function readUsageFile(_wasm_id) {
         var file_path = path.join(process.env.usage_dir, usage_file);
         if (fs.existsSync(file_path)) {
             console.log("Reading usage file");
-            const readInterface2 = readline.createInterface2({
+            const readInterface2 = readline.createInterface({
                 input: fs.createReadStream(file_path),
                 output: process.stdout,
                 console: false
