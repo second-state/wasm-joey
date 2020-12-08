@@ -163,12 +163,12 @@ readInterface.on('line', function(line) {
 // END Load AOT files from manifect
 
 
-function writeToUsageFile(_wasm_id, _gas) {
+function writeToUsageFile(_wasm_id, _gas, _execution_time) {
     return new Promise(function(resolve, reject) {
         var usage_file = _wasm_id + ".txt";
         var file_path = path.join(process.env.usage_dir, usage_file);
         var timestamp = Math.floor(new Date().getTime() / 1000)
-        fs.appendFile(file_path, timestamp + "," + _gas + '\n', function(err) {
+        fs.appendFile(file_path, timestamp + "," + _gas + "," + _execution_time + '\n', function(err) {
             if (err) throw err;
             console.log("Usage recorded at " + file_path);
             resolve();
@@ -178,15 +178,17 @@ function writeToUsageFile(_wasm_id, _gas) {
 
 function readLines(_readInterface2) {
     return new Promise(function(resolve, reject) {
-        internal_object = {};
+        overview = {};
+        details = {};
         _readInterface2.on('line', function(line) {
             console.log("Line:" + line);
             var split_time_gas = line.split(",");
-            console.log("Adding: " + split_time_gas[0] + " and " + split_time_gas[1]);
-            internal_object[split_time_gas[0]] = split_time_gas[1];
+            details["gas"] = split_time_gas[1];
+            details["total_execution_time"] = split_time_gas[2];
+            overview[split_time_gas[0]] = details;
         }).on('close', function() {
-            console.log("Internal object: " + JSON.stringify(internal_object));
-            resolve(internal_object);
+            console.log("Internal object: " + JSON.stringify(overview));
+            resolve(overview);
         });
     });
 }
@@ -661,7 +663,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
@@ -670,7 +672,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
@@ -690,7 +692,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
@@ -698,7 +700,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         }
@@ -726,7 +728,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
@@ -735,7 +737,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
@@ -756,7 +758,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
@@ -764,7 +766,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         }
@@ -792,7 +794,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     callback_object_for_processing["body"] = return_value;
                                     console.log("Success!");
@@ -801,7 +803,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                     callback_object_for_processing["body"] = return_value;
@@ -823,7 +825,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
@@ -831,7 +833,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                 }
@@ -860,7 +862,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
@@ -869,7 +871,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
@@ -891,7 +893,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
@@ -899,7 +901,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         }
@@ -925,7 +927,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
@@ -934,7 +936,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                             callback_object_for_processing["body"] = return_value;
@@ -956,7 +958,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
@@ -964,7 +966,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                                writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                                writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                             }
                                             console.log("Success!");
                                         }
@@ -994,7 +996,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     callback_object_for_processing["body"] = return_value;
                                     console.log("Success!");
@@ -1003,7 +1005,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                     callback_object_for_processing["body"] = return_value;
@@ -1025,7 +1027,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
@@ -1033,7 +1035,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                 }
@@ -1059,7 +1061,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     callback_object_for_processing["body"] = return_value;
                                     console.log("Success!");
@@ -1068,7 +1070,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                     callback_object_for_processing["body"] = return_value;
@@ -1090,7 +1092,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                 } else if (_return_type == "bytes") {
@@ -1098,7 +1100,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                     if (measure_gas_and_invocations > 0) {
                                         var usage = vm.GetStatistics();
                                         console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
-                                        writeToUsageFile(_wasm_id, usage.TotalGasCost);
+                                        writeToUsageFile(_wasm_id, usage.TotalGasCost, usage.TotalExecutionTime);
                                     }
                                     console.log("Success!");
                                 }
