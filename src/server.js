@@ -183,9 +183,10 @@ function readLines(_readInterface2) {
         _readInterface2.on('line', function(line) {
             console.log("Line:" + line);
             var split_time_gas = line.split(",");
+            details["timestamp"] = split_time_gas[0];
             details["gas"] = split_time_gas[1];
             details["total_execution_time"] = split_time_gas[2];
-            overview[split_time_gas[0]] = details;
+            overview["details"] = details;
         }).on('close', function() {
             console.log("Internal object: " + JSON.stringify(overview));
             resolve(overview);
@@ -1367,7 +1368,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object", "total_gas_consumed", "total_invocations", "full_usage_report"];
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object", "total_gas_consumed", "total_invocations", "full_usage_report", "latest_execution_time"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 try {
@@ -1421,7 +1422,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         }
                         // Separate section for usage statistics (this way we don't have to read from DB if caller is only wanting gas and invocation details)
                         if (filters.length >= 1) {
-                            if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report")) {
+                            if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report") || filters.includes("latest_execution_time")) {
                                 var header_admin_key = req.header('SSVM_Admin_Key');
                                 var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 console.log(sqlCheckKey);
@@ -1469,6 +1470,12 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                     if (filters.includes("full_usage_report")) {
                                                         filters = removeElementFromArray(filters, "full_usage_report");
                                                         joey_response["full_usage_report"] = {};
+                                                    }
+                                                }
+                                                if (filters.length >= 1) {
+                                                    if (filters.includes("latest_execution_time")) {
+                                                        filters = removeElementFromArray(filters, "latest_execution_time");
+                                                        joey_response["latest_execution_time"] = Object.keys(usage_obj.full_usage_report).length;
                                                     }
                                                 }
                                             }
