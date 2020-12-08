@@ -1430,9 +1430,15 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                         readUsageFile(req.params.wasm_id).then((usageResult) => {
                                             var usage_obj = JSON.parse(usageResult);
                                             if (filters.length >= 1) {
-                                                if (filters.includes("latest_execution_time")) {
+                                                if (filters.includes("latest_execution_time")) {                                                    item = 0;
                                                     filters = removeElementFromArray(filters, "latest_execution_time");
-                                                    joey_response["latest_execution_time"] = usage_obj.full_usage_report[Object.keys(usage_obj.full_usage_report).length -1];
+                                                    last_element = Object.keys(usage_obj.full_usage_report).length;
+                                                    for (let [k, v] of Object.entries(usage_obj.full_usage_report)) {
+                                                        item = item + 1;
+                                                        if (item == last_element) {
+                                                            joey_response["latest_execution_time"] = v.total_execution_time;
+                                                        }
+                                                    }
                                                 }
                                             }
                                             if (filters.length == 0) {
