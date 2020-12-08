@@ -1367,7 +1367,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
-            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object", "total_gas_consumed", "total_invocations", "full_usage_report", "latest_execution_time"];
+            var valid_filters = ["wasm_id", "wasm_description", "wasm_as_buffer", "wasm_state", "wasm_sha256", "wasm_callback_object", "total_gas_consumed", "total_invocations", "full_usage_report", "latest_execution_time_microsecond"];
             var request_validity = true;
             if (req.query.filterBy != undefined) {
                 try {
@@ -1421,7 +1421,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         }
                         // Separate section for usage statistics (this way we don't have to read from DB if caller is only wanting gas and invocation details)
                         if (filters.length >= 1) {
-                            if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report") || filters.includes("latest_execution_time")) {
+                            if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report") || filters.includes("latest_execution_time_microsecond")) {
                                 var header_admin_key = req.header('SSVM_Admin_Key');
                                 var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
                                 console.log(sqlCheckKey);
@@ -1453,13 +1453,13 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                     }
                                                 }
                                             if (filters.length >= 1) {
-                                                if (filters.includes("latest_execution_time")) {                                                    item = 0;
-                                                    filters = removeElementFromArray(filters, "latest_execution_time");
+                                                if (filters.includes("latest_execution_time_microsecond")) {                                                    item = 0;
+                                                    filters = removeElementFromArray(filters, "latest_execution_time_microsecond");
                                                     last_element = Object.keys(usage_obj.full_usage_report).length;
                                                     for (let [k, v] of Object.entries(usage_obj.full_usage_report)) {
                                                         item = item + 1;
                                                         if (item == last_element) {
-                                                            joey_response["latest_execution_time"] = v.total_execution_time;
+                                                            joey_response["latest_execution_time_microsecond"] = v.total_execution_time;
                                                         }
                                                     }
                                                 }
