@@ -183,10 +183,9 @@ function readLines(_readInterface2) {
         _readInterface2.on('line', function(line) {
             console.log("Line:" + line);
             var split_time_gas = line.split(",");
-            details["timestamp"] = split_time_gas[0];
             details["gas"] = split_time_gas[1];
             details["total_execution_time"] = split_time_gas[2];
-            overview["details"] = details;
+            overview[split_time_gas[0]] = details;
         }).on('close', function() {
             console.log("Internal object: " + JSON.stringify(overview));
             resolve(overview);
