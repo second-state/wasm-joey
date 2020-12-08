@@ -1430,13 +1430,22 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                     if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
                                         readUsageFile(req.params.wasm_id).then((usageResult) => {
                                             var usage_obj = JSON.parse(usageResult);
+                                            if (filters.length >= 1) {
+                                                if (filters.includes("latest_execution_time")) {
+                                                    filters = removeElementFromArray(filters, "latest_execution_time");
+                                                    joey_response["latest_execution_time"] = usage_obj.full_usage_report[Object.keys(usage_obj.full_usage_report).length -1];
+                                                }
+                                            }
+                                            if (filters.length == 0) {
+                                                res.send(JSON.stringify(joey_response));
+                                            }
                                             if (Object.keys(usage_obj.full_usage_report).length >= 1) {
                                                 if (filters.length >= 1) {
                                                     if (filters.includes("total_gas_consumed")) {
                                                         filters = removeElementFromArray(filters, "total_gas_consumed");
                                                         var gas_total = 0;
                                                         for (let [key, value] of Object.entries(usage_obj.full_usage_report)) {
-                                                            gas_total = gas_total + parseInt(value);
+                                                            gas_total = gas_total + parseInt(value.gas);
                                                         }
                                                         joey_response["total_gas_consumed"] = gas_total;
                                                     }
@@ -1470,12 +1479,6 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                     if (filters.includes("full_usage_report")) {
                                                         filters = removeElementFromArray(filters, "full_usage_report");
                                                         joey_response["full_usage_report"] = {};
-                                                    }
-                                                }
-                                                if (filters.length >= 1) {
-                                                    if (filters.includes("latest_execution_time")) {
-                                                        filters = removeElementFromArray(filters, "latest_execution_time");
-                                                        joey_response["latest_execution_time"] = Object.keys(usage_obj.full_usage_report).length;
                                                     }
                                                 }
                                             }
