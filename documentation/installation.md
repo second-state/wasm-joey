@@ -336,11 +336,18 @@ Please visit [this link which details the requirements to continue](https://gith
 
 #### Temporarily downgrade npm
 The following installation will require that npm is downgraded to `6.14.9`. There is [an npm cli issue](https://github.com/npm/cli/issues/1865) which prevents us from using the latest npm for this particular build from source task.
+
+Because of the complexity of dependency management, please install aptitude because it provides a way to automatically resolve depencency conflicts.
+```
+sudo apt install aptitude
+sudo aptitude install npm
+```
+The following command is used to alter the npm version.
 ```
 sudo npm install -g npm@6.14.9
 ```
 #### Install from source
-Then install ssvm-napi-extensions like this
+Once you have temporarily downgraded npm, please go ahead and install the latest ssvm-napi-extensions like this
 ```bash
 npm install --build-from-source https://github.com/second-state/ssvm-napi-extensions
 ```
