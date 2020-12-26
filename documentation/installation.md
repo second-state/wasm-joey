@@ -413,8 +413,13 @@ Install the Tensorflow for C library
 mkdir /media/nvme/tensorflow
 sudo chown -R ubuntu:ubuntu /media/nvme/tensorflow/
 cd /media/nvme/tensorflow
-wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-2.3.0.tar.gz
-tar -zxvf libtensorflow-gpu-linux-x86_64-2.3.0.tar.gz
+wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-2.4.0.tar.gz
+tar -zxvf libtensorflow-gpu-linux-x86_64-2.4.0.tar.gz
+cd /tmp
+wget https://github.com/second-state/ssvm-tensorflow-deps/releases/download/0.1.0/ssvm-tensorflow-deps-lite-0.1.0-linux-x64.tar.gz
+tar -zxvf ssvm-tensorflow-deps-lite-0.1.0-linux-x64.tar.gz
+cp /tmp/libtensorflowlite_c.so /media/nvme/tensorflow/lib
+cd /media/nvme/tensorflow
 sudo ldconfig
 ```
 Open `.profile` and export the `LIBRARY_PATH` and `LD_LIBRARY_PATH` at the very end of the file.
