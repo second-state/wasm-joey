@@ -487,7 +487,7 @@ export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classifica
 
 **ALT** Follow [the official documentation](https://www.tensorflow.org/install/lang_c). 
 ```
-sudo tar -C /usr/local -xzf /media/nvme/tensorflow/libtensorflow-gpu-linux-x86_64-2.3.0.tar.gz
+sudo tar -C /usr/local -xzf /media/nvme/tensorflow/libtensorflow-gpu-linux-x86_64-2.4.0.tar.gz
 cd /usr/lib
 cp -rp /usr/local/lib/libtensorflow* .
 ```
