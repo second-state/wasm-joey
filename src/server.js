@@ -634,6 +634,7 @@ function updateAOT(_wasm_id, _ssvm_options, _is_an_update) {
 }
 
 function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _array_of_parameters, _return_type) {
+    console.log("IPADDRESS:"+req.socket.remoteAddress);
     var _joey_response = {};
     return new Promise(function(resolve, reject) {
         getOptions(_wasm_id).then((optionsResult, optionsError) => {
