@@ -358,6 +358,8 @@ Following the successful installation of the above, please go ahead and run the 
 npm install npm@latest -g
 ```
 
+Please note, if this is not a new installation (i.e. you are upgrading extensions) please delete all .so files from the /media/nvme/aot section and ensure that the manifest.txt file is blank/empty before restarting the FaaS.
+
 ### Create directory for usage statistics
 Gas and invocation details are gathered for all wasm executables. Please create the following directory and adjust the permissions as follows.
 
