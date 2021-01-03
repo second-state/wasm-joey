@@ -334,8 +334,6 @@ cd /media/nvme/node_rpc/wasm-joey/src
 ### Install the required dependencies for ssvm-napi-extensions
 Please visit [this link which details the requirements to continue](https://github.com/second-state/ssvm-napi-extensions#requirements) and ensure that your system has these required dependencies before proceeding.
 
-**Please note:** you will most likely need to separate the (`wget`) [commands](https://github.com/second-state/ssvm-napi-extensions/tree/0.7.2#requirements) and add sudo to the commands which occur after `wget`. Following this, you can update the ownership of the effected location like this `sudo chown $USER:$USER -R /usr/local/lib/`
-
 #### Temporarily downgrade npm
 The following installation will require that npm is downgraded to `6.14.9`. There is [an npm cli issue](https://github.com/npm/cli/issues/1865) which prevents us from using the latest npm for this particular build from source task.
 
@@ -410,46 +408,6 @@ Obviously if you ever need to flush this manifest you would just remove and recr
 
 ### Tensorflow functionality
 
-Install the Tensorflow for C library
-```
-mkdir /media/nvme/tensorflow
-sudo chown -R ubuntu:ubuntu /media/nvme/tensorflow/
-cd /media/nvme/tensorflow
-wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-2.4.0.tar.gz
-tar -zxvf libtensorflow-gpu-linux-x86_64-2.4.0.tar.gz
-cd /tmp
-wget https://github.com/second-state/ssvm-tensorflow-deps/releases/download/0.1.0/ssvm-tensorflow-deps-lite-0.1.0-linux-x64.tar.gz
-tar -zxvf ssvm-tensorflow-deps-lite-0.1.0-linux-x64.tar.gz
-cp /tmp/libtensorflowlite_c.so /media/nvme/tensorflow/lib
-cd /media/nvme/tensorflow
-sudo ldconfig
-```
-Open `.profile` and export the `LIBRARY_PATH` and `LD_LIBRARY_PATH` at the very end of the file.
-```
-vi ~/.profile
-```
-These get added to the end of the file
-```
-export LIBRARY_PATH="/media/nvme/tensorflow/lib:$LIBRARY_PATH"
-export LD_LIBRARY_PATH="/media/nvme/tensorflow/lib:$LD_LIBRARY_PATH"
-```
-Log out and back in again and check that these values are now permanent.
-```
-echo $LIBRARY_PATH
-```
-Returns
-```
-/media/nvme/tensorflow/lib:
-```
-Also, 
-```
-echo $LD_LIBRARY_PATH
-```
-Returns
-```
-/media/nvme/tensorflow/lib:
-```
-
 Fetch the AI as a Service code 
 ```
 mkdir /media/nvme/AIaaS
@@ -485,13 +443,6 @@ export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/mobilenet_v2/tar
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/mtcnn/target/release:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet/target/release:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet_v2_14_224/target/release:$PATH"
-```
-
-**ALT** Follow [the official documentation](https://www.tensorflow.org/install/lang_c). 
-```
-sudo tar -C /usr/local -xzf /media/nvme/tensorflow/libtensorflow-gpu-linux-x86_64-2.4.0.tar.gz
-cd /usr/lib
-cp -rp /usr/local/lib/libtensorflow* .
 ```
 
 # Joey hostname config
