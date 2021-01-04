@@ -409,9 +409,9 @@ touch /media/nvme/aot/manifest.txt
 
 Obviously if you ever need to flush this manifest you would just remove and recreate a blank file
 
-### Tensorflow functionality
+### http_proxy functionality
 
-Fetch the AI as a Service code 
+Fetch the code 
 ```
 mkdir /media/nvme/AIaaS
 sudo chown -R $USER:$USER /media/nvme/AIaaS/
@@ -422,30 +422,14 @@ Compile the necessary binaries to `/usr/bin/` (/usr/bin is default setting as pe
 ```
 rustup update nightly
 rustup update stable
-cd /media/nvme/AIaaS/AI-as-a-Service/native_model_zoo
-cd face_detection_mtcnn/
-cargo install --path .
-cd ../http_proxy
-cargo install --path .
-cd ../mobilenet_v2
-cargo install --path .
-cd ../mtcnn
-cargo install --path .
-cd ../image_classification_mobilenet
-cargo install --path .
-cd ../image_classification_mobilenet_v2_14_224
+cd /media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/http_proxy
 cargo install --path .
 ```
 Ensure that all of those binaries are available in the user (who is running Joey's path).
 Set the system path so it can find the binaries via `vi ~/.profile` (then log out and back in again as shown above)
 ```
 export PATH="/usr/bin:$PATH"
-export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/face_detection_mtcnn/target/release:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/http_proxy/target/release:$PATH"
-export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/mobilenet_v2/target/release:$PATH"
-export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/mtcnn/target/release:$PATH"
-export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet/target/release:$PATH"
-export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/image_classification_mobilenet_v2_14_224/target/release:$PATH"
 ```
 
 # Joey hostname config
