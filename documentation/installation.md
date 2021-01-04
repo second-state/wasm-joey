@@ -39,7 +39,7 @@ Filesystem UUID: 6f6177fe-947a-46a2-b593-c36dfaaa8407
 Create an easily accesible mount point on the main drive (where the operating system runs) and then set the permissions of this mount point to the ubuntu user.
 ```bash
 sudo mkdir /media/nvme
-sudo chown -R ubuntu:ubuntu /media/nvme/
+sudo chown -R $USER:$USER /media/nvme/
 ```
 Ensure that this drive is mounted each time the system is restarted. Add this line to the */etc/fstab* file (remember the UUID from the previous step?).
 ```bash
@@ -57,7 +57,7 @@ df -h
 Ensure that the /media/nvme directory is owned by ubuntu by typing ls -la /media/nvme If it is not then type the following command
 
 ```bash
-sudo chown -R ubuntu:ubuntu /media/nvme/
+sudo chown -R $USER:$USER /media/nvme/
 ```
 
 Create dir to house the application 
@@ -411,7 +411,7 @@ Obviously if you ever need to flush this manifest you would just remove and recr
 Fetch the AI as a Service code 
 ```
 mkdir /media/nvme/AIaaS
-sudo chown -R ubuntu:ubuntu /media/nvme/AIaaS/
+sudo chown -R $USER:$USER /media/nvme/AIaaS/
 cd /media/nvme/AIaaS/
 git clone https://github.com/second-state/AI-as-a-Service.git
 ```
