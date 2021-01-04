@@ -273,7 +273,6 @@ CREATE TABLE wasm_execution_log(
 
 ### SSL
 ```bash
-sudo add-apt-repository ppa:certbot/certbot
 sudo apt-get update
 sudo apt-get -y upgrade
 npm install helmet
