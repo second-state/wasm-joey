@@ -14,9 +14,15 @@ To begin, create a new EC2 Ubuntu Server instance which has an additional SSD i.
 sudo apt-get update
 sudo apt-get -y upgrade
 sudo apt-get install -y build-essential
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source $HOME/.cargo/env
 ```
+
+## Rust
+Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
+```
+export CARGO_HOME="/media/nvme"
+export RUSTUP_HOME="/media/nvme"
+```
+Once you have performed the config above, please then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install) to install Rust.
 
 # Auxillary hardware
 View NVMe volume (which is not yet mounted/mapped/formatted)
@@ -470,14 +476,6 @@ nodejs server.js
 
 # Testing Joey
 This section shows you how to build, compile, deploy and call a FaaS.
-
-## Rust
-Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
-```
-export CARGO_HOME="/media/nvme"
-export RUSTUP_HOME="/media/nvme"
-```
-Once you have performed the config above, please then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install) to install Rust.
 
 # FaaS example
 There are many pre-made functions that you can implement. Perhaps the simplest of them all is this [hello world](https://github.com/second-state/wasm-learning/tree/master/faas/hello) FaaS.
