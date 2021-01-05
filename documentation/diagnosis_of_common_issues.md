@@ -40,7 +40,8 @@ sudo apt-get -y autoremove
 sudo apt-get -y autoclean
 sudo apt install -y mysql-server
 echo 'datadir = /media/nvme/joey_database' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
-echo 'max_allowed_packet = 1000M' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
+echo 'max_allowed_packet = 128M' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
+echo 'wait_timeout = 28800' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo mysqld --initialize --user=mysql
 sudo /etc/init.d/mysql start
 sudo mysql
