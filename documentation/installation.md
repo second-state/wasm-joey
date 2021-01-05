@@ -189,6 +189,7 @@ sudo apt-get install -y mysql-server
 Create dir to house the database and update the default MySQL config
 ```bash
 mkdir /media/nvme/joey_database
+sudo chown -R $USER:$USER /media/nvme/joey_database
 ```
 Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
 
