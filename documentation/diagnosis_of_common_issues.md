@@ -110,6 +110,13 @@ Transfer this data to the next machine (perhaps to local machine and then back u
 scp -i "~/.ssh/my.pem" -rp ubuntu@123.45.67:/media/nvme/backup_2020_10_24.sql .
 scp -i ~/.ssh/other.pem -rp backup_2020_10_24.sql ubuntu@89.10.11.12:/media/nvme
 ```
+# Restoring an sql file
+
+Please make sure that you have the following values set in the `/etc/mysql/mysql.conf.d/mysqld.cnf` first
+```
+max_allowed_packet = 128M
+wait_timeout = 28800
+```
 Then restore the entire database on the new machine
 ```
 cd /media/nvme
