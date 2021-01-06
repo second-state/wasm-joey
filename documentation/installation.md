@@ -439,6 +439,10 @@ export PATH="/usr/bin:$PATH"
 export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/http_proxy/target/release:$PATH"
 ```
 
+### Optical Character Recognition (OCR) functionality
+
+Follow [these instructions to install tesseract OCR](https://tesseract-ocr.github.io/tessdoc/Compiling.html#linux).
+
 # Joey hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
 ```bash
