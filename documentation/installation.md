@@ -441,7 +441,14 @@ export PATH="/media/nvme/AIaaS/AI-as-a-Service/native_model_zoo/http_proxy/targe
 
 ### Optical Character Recognition (OCR) functionality
 
-Follow [these instructions to install tesseract OCR](https://tesseract-ocr.github.io/tessdoc/Compiling.html#linux).
+Follow [these instructions to install tesseract OCR](https://tesseract-ocr.github.io/tessdoc/Compiling.html#linux). If you would like to add extra languages (other than the English default) then download [this repo](https://github.com/tesseract-ocr/tessdata), copy all of the `.traineddata` files to the `/usr/share/tesseract-ocr/4.00/tessdata` folder and then add this line to your `~/.profile` file `export TESSDATA_PREFIX="/usr/share/tesseract-ocr/4.00/tessdata"`.
+
+### Translation functionality
+
+Install translation software using the following command
+```
+sudo apt install translate-shell
+```
 
 # Joey hostname config
 Open the `.env` file and ensure that the base domain name is correct i.e.
