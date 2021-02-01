@@ -1599,7 +1599,7 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
                             joey_response["error"] = "Wasm executable is blank, please check your HTTP request syntax, the wasm file location and also the contents of the wasm file and try again.";
                             res.send(JSON.stringify(joey_response));
                         } else {
-                            var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
+                            var sqlUpdate = "UPDATE wasm_executables SET wasm_binary = '" + wasm_as_buffer + "', wasm_sha256 = '" + wasm_sha256 + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
                             performSqlQuery(sqlUpdate).then((result) => {
                                 joey_response["wasm_id"] = req.params.wasm_id;
                                 joey_response["wasm_sha256"] = wasm_sha256;
