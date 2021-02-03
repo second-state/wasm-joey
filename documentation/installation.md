@@ -3,6 +3,12 @@ The following information provides enough detail to install and deploy wasm-joey
 - MySQL Database; including user, tables, sample data etc.
 - All relevant dependencies; CORS, SSL etc.
 
+If installing on alternative infrastructure where you are provided with root access, please create a new group and user like this
+```
+groupadd -g2021 ubuntu
+useradd ubuntu -g ubuntu -s "/bin/bash" -d "/home/ubuntu" -m 
+```
+
 # Automatic installation
 There is a [feature enhancement/issue](https://github.com/second-state/wasm-joey/issues/1) which requests that the following commands are all written into a bash script. This will make it much quicker to install.
 
