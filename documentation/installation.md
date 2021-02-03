@@ -7,7 +7,18 @@ If installing on alternative infrastructure where you are provided with root acc
 ```
 groupadd -g2021 ubuntu
 useradd ubuntu -g ubuntu -s "/bin/bash" -d "/home/ubuntu" -m 
+```
+Set new user's password
+```
 passwd ubuntu
+```
+Add sudo privileges for the new user
+```
+adduser ubuntu sudo
+```
+Change to new user
+```
+su ubuntu
 ```
 
 # Automatic installation
