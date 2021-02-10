@@ -114,13 +114,24 @@ scp -i ~/.ssh/other.pem -rp backup_2020_10_24.sql ubuntu@89.10.11.12:/media/nvme
 
 Please make sure that you have the following values set in the `/etc/mysql/mysql.conf.d/mysqld.cnf` first
 ```
-max_allowed_packet = 128M
 wait_timeout = 28800
+```
+Also make sure you set the max allowed packet to avoid the `ERROR 2006 (HY000) at line 57: MySQL server has gone away` error
+First log in
+```
+mysql -u root -p
+```
+Then update the setting
+```
+SET GLOBAL max_allowed_packet=1073741824;
+```
+Then log back out
+```
+quit
 ```
 Then restore the entire database on the new machine
 ```
 cd /media/nvme
-set global max_allowed_packet = 1000000000
 sudo mysql -u root -p joeydb < backup_2020_10_24.sql
 ```
 
