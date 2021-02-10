@@ -76,11 +76,6 @@ Ensure that the /media/nvme directory is owned by ubuntu by typing ls -la /media
 sudo chown -R $USER:$USER /media/nvme/
 ```
 
-Create dir to house the application 
-```bash
-mkdir /media/nvme/node_rpc
-```
-
 ## Rust
 Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
 ```
@@ -102,6 +97,15 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 # Application
+
+Create dir to house the application 
+```bash
+mkdir /media/nvme/node_rpc
+```
+Alter permissions
+```
+sudo chown -R $USER:$USER /media/nvme/node_rpc
+```
 
 ## Install
 Fetch the application code
