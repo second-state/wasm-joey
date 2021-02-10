@@ -34,14 +34,6 @@ sudo apt-get -y upgrade
 sudo apt-get install -y build-essential
 ```
 
-## Rust
-Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
-```
-export CARGO_HOME="/media/nvme"
-export RUSTUP_HOME="/media/nvme"
-```
-Once you have performed the config above, please then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install) to install Rust.
-
 # Auxillary hardware
 View NVMe volume (which is not yet mounted/mapped/formatted)
 ```bash
@@ -87,6 +79,26 @@ sudo chown -R $USER:$USER /media/nvme/
 Create dir to house the application 
 ```bash
 mkdir /media/nvme/node_rpc
+```
+
+## Rust
+Just a quick word about Rust; it is suggested that you use the SSD mount point because the `.rustup` folder can get quite large and max out disk space. To install Rust on the SSD just put these two lines in your `~/.profile` file before you install Rust (using the standard command)
+```
+vi ~/.profile
+```
+Add these lines
+```
+export CARGO_HOME="/media/nvme"
+export RUSTUP_HOME="/media/nvme"
+```
+Execute profile
+```
+source ~/.profile
+```
+Once you have performed the config above, please then follow [these official Rust installation instructions](https://www.rust-lang.org/tools/install) to install Rust. Essentially running the following command should do it.
+```
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
 ```
 
 # Application
