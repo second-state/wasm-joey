@@ -328,7 +328,7 @@ sudo chown $USER:$USER -R /etc/letsencrypt
 
 ### Permanent storage
 
-Create the infrastructure for the permanent storage by following [these rust_native_storage_library instructions](https://github.com/second-state/rust_native_storage_library#installing-database-rocksdb)
+Create the infrastructure for the permanent storage by following [these rust_native_storage_library instructions](https://github.com/second-state/rust_native_storage_library#installing-database-rocksdb) specifically the `Installing database (RocksDB)` section at the bottom of the aforementioned link.
 
 ### SSVM Nodejs add-on
 ```bash
