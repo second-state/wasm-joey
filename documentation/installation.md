@@ -223,50 +223,23 @@ sudo apt-get install -y mysql-server
 Create dir to house the database and update the default MySQL config
 ```bash
 mkdir /media/nvme/joey_database
-sudo chown -R $USER:$USER /media/nvme/joey_database
-```
-Open MySQL config using `sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`. 
-
-Then change the datadir line from the default to what is listed directly below this line
-```bash
-datadir = /media/nvme/joey_database
-```
-In that same Open MySQL conf file (`sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf`), also go ahead and change the max_allowed_packet so that large Wasm files can be uploaed
-```
-max_allowed_packet = 1000M
-```
-
-Configure Ubuntu to allow new MySQL directory
-```bash
-sudo vi /etc/apparmor.d/tunables/alias
-```
-Add the following line
-```bash
-alias /var/lib/mysql/ -> /media/nvme/joey_database,
-```
-Then restart AppArmor
-```bash
-sudo systemctl restart apparmor
-```
-## MySQL Security
-Tighten MySQL security
-```bash
-sudo mysql_secure_installation utility
-```
-## Init MySQL data dir
-```bash
 sudo chown -R mysql:mysql /media/nvme/joey_database/
 sudo chmod 750 /media/nvme/joey_database/
+```
+## Purge all MySQL and install afresh
+
+```#!/bin/bash
+sudo apt-get -y remove --purge mysql*
+sudo rm -rf /etc/mysql /var/lib/mysql
+sudo apt-get -y autoremove
+sudo apt-get -y autoclean
+sudo apt install -y mysql-server
+echo 'datadir = /media/nvme/joey_database' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
+echo 'max_allowed_packet = 128M' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
+echo 'wait_timeout = 28800' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo mysqld --initialize --user=mysql
-```
-## Start MySQL
-```bash
 sudo /etc/init.d/mysql start
-```
-## MySQL setup for application
-Access MySQL console use the following
-```bash
-sudo mysql -u root -p
+sudo mysql
 ```
 
 Create new user and database for the application
@@ -309,6 +282,33 @@ CREATE TABLE wasm_execution_log(
     FOREIGN KEY (wasm_executable_id) REFERENCES wasm_executables(wasm_id) ON DELETE CASCADE
 );
 ```
+Alter root user
+```SQL
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password_here';
+FLUSH PRIVILEGES;
+```
+Then exit
+```bash
+quit
+```
+
+Configure Ubuntu to allow new MySQL directory
+```bash
+sudo vi /etc/apparmor.d/tunables/alias
+```
+Add the following line
+```bash
+alias /var/lib/mysql/ -> /media/nvme/joey_database,
+```
+Then restart AppArmor
+```bash
+sudo systemctl restart apparmor
+```
+## MySQL Security
+Tighten MySQL security
+```bash
+sudo mysql_secure_installation utility
+```
 
 ## Deployment
 
@@ -317,7 +317,7 @@ CREATE TABLE wasm_execution_log(
 sudo apt-get update
 sudo apt-get -y upgrade
 npm install helmet
-sudo apt-get install certbot
+sudo apt-get install -y certbot
 sudo certbot certonly --manual
 ```
 
