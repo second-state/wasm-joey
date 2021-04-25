@@ -923,7 +923,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Parameters len == 1 and it is an empty object");
                                         console.log("Executing function WITH a callback ...");
                                         if (_return_type == "string") {
-                                            var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                            var return_value = vm.RunString(_function_name, JSON.stringify(..._array_of_parameters));
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
@@ -932,7 +932,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             callback_object_for_processing["body"] = return_value;
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
-                                            var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                            var return_value = vm.RunUint8Array(_function_name, JSON.stringify(..._array_of_parameters));
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
@@ -954,7 +954,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                         console.log("Parameters len == 1 and it is an empty object");
                                         console.log("Executing function WITHOUT a callback...");
                                         if (_return_type == "string") {
-                                            var return_value = vm.RunString(_function_name, ..._array_of_parameters);
+                                            var return_value = vm.RunString(_function_name, JSON.stringify(..._array_of_parameters));
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
@@ -962,7 +962,7 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                                             }
                                             console.log("Success!");
                                         } else if (_return_type == "bytes") {
-                                            var return_value = vm.RunUint8Array(_function_name, ..._array_of_parameters);
+                                            var return_value = vm.RunUint8Array(_function_name, JSON.stringify(..._array_of_parameters));
                                             if (measure_gas_and_invocations > 0) {
                                                 var usage = vm.GetStatistics();
                                                 console.log("Statistics object: " + JSON.stringify(usage.TotalGasCost));
