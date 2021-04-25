@@ -181,13 +181,13 @@ function readLines(_readInterface2) {
         overview = {};
         details = {};
         _readInterface2.on('line', function(line) {
-            console.log("Line:" + line);
+            //console.log("Line:" + line);
             var split_time_gas = line.split(",");
             details["gas"] = split_time_gas[1];
             details["total_execution_time"] = split_time_gas[2];
             overview[split_time_gas[0]] = details;
         }).on('close', function() {
-            console.log("Internal object: " + JSON.stringify(overview));
+            //console.log("Internal object: " + JSON.stringify(overview));
             resolve(overview);
         });
     });
@@ -208,7 +208,7 @@ function readUsageFile(_wasm_id) {
             });
             readLines(readInterface2).then((readResult) => {
                 usage_obj["full_usage_report"] = readResult;
-                console.log("Usage object ... : " + JSON.stringify(usage_obj));
+                //console.log("Usage object ... : " + JSON.stringify(usage_obj));
                 resolve(JSON.stringify(usage_obj));
             });
 
@@ -642,8 +642,8 @@ function executeSSVM(_readyAtZero, _wasm_id, _storage_key, _function_name, _arra
                 console.log("Instantiating SSVM with AOT filename of: " + path.join(process.env.aot_dir, aot_filename) + " which has a typeof: " + typeof(aot_filename));
                 options_object = JSON.parse(optionsResult);
                 var vm = new ssvm.VM(path.join(process.env.aot_dir, aot_filename), options_object);
-                console.log("VM:" + vm);
-                console.log(vm.GetStatistics());
+                //console.log("VM:" + vm);
+                //console.log(vm.GetStatistics());
                 console.log("Instantiation success!");
                 if (_readyAtZero.fetchable_already_set == true) {
                     var fetchable_object = _readyAtZero.get_fetchable_object();
@@ -1183,7 +1183,7 @@ class ReadyAtZero {
 
 // Post data to ephmeral storage location ("Must be valid JSON")
 app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     if (req.is('application/json') == 'application/json') {
         isValidJSON(JSON.stringify(req.body)).then((result, error) => {
@@ -1205,7 +1205,7 @@ app.post('/api/ephemeral_storage', bodyParser.json(), (req, res) => {
 });
 // Get content at ephemeral storage location
 app.get('/api/ephemeral_storage/:key', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     var joey_response = {};
     var value = myCache.get(req.params.key);
     if (value == undefined) {
@@ -1218,7 +1218,7 @@ app.get('/api/ephemeral_storage/:key', (req, res) => {
 });
 
 app.get('/api/state/:wasm_id', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     console.log("Request to update state into the database ...");
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
@@ -1248,7 +1248,7 @@ app.get('/api/state/:wasm_id', (req, res) => {
 
 // Update data at ephemeral storage location ("Must be valid JSON")
 app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     if (req.is('application/json') == 'application/json') {
         isValidJSON(JSON.stringify(req.body)).then((result, error) => {
@@ -1268,7 +1268,7 @@ app.put('/api/ephemeral_storage/:key', bodyParser.json(), (req, res) => {
 });
 // Delete data at ephemeral storage location
 app.delete('/api/ephemeral_storage/:key', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     value = myCache.del(req.params.key);
     joey_response["key"] = req.params.key;
@@ -1280,7 +1280,7 @@ app.delete('/api/ephemeral_storage/:key', (req, res) => {
 /* Putting, getting, updating and deleting Wasm executables - START */
 
 app.get('/', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = [{
         "application": "wasm_joey"
     }, {
@@ -1291,7 +1291,7 @@ app.get('/', (req, res) => {
 
 // Set a Wasm executable
 app.post('/api/executables', bodyParser.raw(), (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     if (req.is('application/octet-stream') == 'application/octet-stream') {
         var wasm_as_buffer = Uint8Array.from(req.body);
@@ -1332,7 +1332,7 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
 });
 
 app.put('/api/keys/:wasm_id/usage_key', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     var header_admin_key = req.header('SSVM_Admin_Key');
     var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -1352,7 +1352,7 @@ app.put('/api/keys/:wasm_id/usage_key', (req, res) => {
 });
 
 app.delete('/api/keys/:wasm_id/usage_key', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     var header_admin_key = req.header('SSVM_Admin_Key');
     var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
@@ -1373,7 +1373,7 @@ app.delete('/api/keys/:wasm_id/usage_key', (req, res) => {
 
 // Get a Wasm executable
 app.get('/api/executables/:wasm_id', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
@@ -1434,7 +1434,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                             if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report") || filters.includes("latest_execution_time_in_nanoseconds")) {
                                 var header_admin_key = req.header('SSVM_Admin_Key');
                                 var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                console.log(sqlCheckKey);
+                                //console.log(sqlCheckKey);
                                 performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
                                     if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
                                         readUsageFile(req.params.wasm_id).then((usageResult) => {
@@ -1499,7 +1499,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                             }
                                             if (filters.length >= 1) {
                                                 var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                                console.log(sqlSelect);
+                                                //console.log(sqlSelect);
                                                 performSqlQuery(sqlSelect).then((result) => {
                                                     if (filters.includes("wasm_id")) {
                                                         joey_response["wasm_id"] = result[0].wasm_id;
@@ -1528,7 +1528,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                             } else {
                                 if (filters.length >= 1) {
                                     var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                    console.log(sqlSelect);
+                                    //console.log(sqlSelect);
                                     performSqlQuery(sqlSelect).then((result) => {
                                         if (filters.includes("wasm_id")) {
                                             joey_response["wasm_id"] = result[0].wasm_id;
@@ -1574,7 +1574,7 @@ app.get('/api/executables/:wasm_id', (req, res) => {
 
 // Get all Wasm executable
 app.get('/api/executables', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     var sqlSelectAllIds = "SELECT wasm_id from wasm_executables;";
     performSqlQuery(sqlSelectAllIds).then((result) => {
         res.send(JSON.stringify(result));
@@ -1582,7 +1582,7 @@ app.get('/api/executables', (req, res) => {
 });
 
 app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
@@ -1628,7 +1628,7 @@ app.put('/api/update_wasm_binary/:wasm_id', bodyParser.raw(), (req, res) => {
 });
 
 app.delete('/api/executables/:wasm_id', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
@@ -1660,7 +1660,7 @@ app.delete('/api/executables/:wasm_id', (req, res) => {
 
 // Run a function by calling with multi part form data (returns a string)
 app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     var storage_key = "";
     var joey_response = {};
     var array_of_parameters = [];
@@ -1771,7 +1771,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name', (req, res, next) => {
 
 // Run a function by calling with multi part form data (returns a string)
 app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     var storage_key = "";
     var joey_response = {};
     var array_of_parameters = [];
@@ -1863,7 +1863,7 @@ app.post('/api/multipart/run/:wasm_id/:function_name/bytes', (req, res, next) =>
 });
 // Run a function belonging to a Wasm executable -> returns a JSON string
 app.post('/api/run/:wasm_id/:function_name', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     var bytes_input = false;
     var array_of_parameters = [];
     var storage_key = "";
@@ -2062,7 +2062,7 @@ app.post('/api/run/:wasm_id/:function_name', (req, res) => {
 
 // Run a function belonging to a Wasm executable -> returns a bytes 
 app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     var bytes_input = false;
     var array_of_parameters = [];
     var storage_key = "";
@@ -2245,7 +2245,7 @@ app.post('/api/run/:wasm_id/:function_name/bytes', (req, res) => {
 
 // State is set to blank when a new Wasm executable is put in the system. The following function allows you to update the state via REST
 app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     console.log("Request to update state into the database ...");
     executableExists(req.params.wasm_id).then((result, error) => {
@@ -2282,7 +2282,7 @@ app.put('/api/state/:wasm_id', bodyParser.text(), (req, res) => {
 // The callback object of a Wasm executable is set to blank in the DB at the outset. The following function allows you to update the callback object via REST
 
 app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     if (JSON.stringify(req.body).includes("rpc.ssvm.secondstate.io")) {
         joey_response["error"] = "Not allowed to store a callback to the rpc.ssvm.secondstate.io hostname in the database. Please utilise the SSVM_Callback feature in the request header if you want to execute a callback to this hostname";
@@ -2334,7 +2334,7 @@ app.put('/api/callback/:wasm_id', bodyParser.json(), (req, res) => {
 
 // Get a set of records in relation to execution of callbacks for a particular wasm_id
 app.get('/api/log/:wasm_id', (req, res) => {
-    console.log("IPADDRESS:"+req.socket.remoteAddress);
+    //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     executionLogExists(req.params.wasm_id).then((result, error) => {
         if (result >= 1) {
