@@ -353,7 +353,7 @@ cd /media/nvme/node_rpc/wasm-joey/src
 export CXX=g++-9
 ```
 
-### Install ssvm-napi-extensions from source
+### Install wasmedge-extensions from source
 
 The following `ssvm-napi-extensions` allows the SSVM runtime to access permanent storage.
 You will need to alter the Git configuration on the machine where this installation procedure is being performed. Reason being, this machine will not have the SSH keys to communicate with git@github. If you add the following config, you will be able to successfully run the `npm install --build-from-source ...` below.
@@ -389,7 +389,7 @@ sudo npm install -g npm@6.14.9
 #### Install from source
 Once you have temporarily downgraded npm, please go ahead and install the latest ssvm-napi-extensions like this
 ```bash
-npm install --build-from-source https://github.com/second-state/ssvm-napi-extensions
+npm install --build-from-source https://github.com/second-state/wasmedge-extensions
 ```
 If you receive an error about permissions such as this `Missing write access to /usr/local/lib/node_modules` then please run the following command and then try the `npm install --build-from-source` command, outlined above, again.
 ```
