@@ -408,7 +408,7 @@ Then run `source ~/.profile` command
 Then run the command like this instead
 
 ```bash
-sudo npm install --unsafe-perm -g --build-from-source https://github.com/second-state/wasmedge-extensions
+npm install --unsafe-perm -g --build-from-source https://github.com/second-state/wasmedge-extensions
 ```
 If you receive an error about permissions such as this `Missing write access to /usr/local/lib/node_modules` then please run the following command and then try the `npm install --build-from-source` command, outlined above, again.
 ```
