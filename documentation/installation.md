@@ -391,6 +391,25 @@ Once you have temporarily downgraded npm, please go ahead and install the latest
 ```bash
 npm install --build-from-source https://github.com/second-state/wasmedge-extensions
 ```
+If getting the error `does not have permission to access the dev dir "/root/.cache/node-gyp` then try the following instead.
+
+Make a new global cache dir and update profile i.e.
+
+```bash
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+```
+Then update your `~/.profile` file
+```bash
+export PATH=~/.npm-global/bin:$PATH
+```
+Then run `source ~/.profile` command 
+```
+Then run the command like this instead
+
+```bash
+sudo npm install --unsafe-perm -g --build-from-source https://github.com/second-state/wasmedge-extensions
+```
 If you receive an error about permissions such as this `Missing write access to /usr/local/lib/node_modules` then please run the following command and then try the `npm install --build-from-source` command, outlined above, again.
 ```
 sudo chown -R $USER /usr/local/lib/node_modules
