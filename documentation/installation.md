@@ -404,7 +404,7 @@ Then update your `~/.profile` file
 export PATH=~/.npm-global/bin:$PATH
 ```
 Then run `source ~/.profile` command 
-```
+
 Then run the command like this instead
 
 ```bash
