@@ -171,3 +171,10 @@ Plugin mysqlx reported: 'Setup of socket: '/var/run/mysqld/mysqlx.sock' failed
 sudo mkdir /var/run/mysqld
 sudo chown mysql:mysql /var/run/mysqld
 ```
+
+## MYSQL
+If the following error occurs
+`mysql Access denied for user 'root'@'localhost'`
+Then, open /etc/mysql/my.cnf, add a new section at the bottom of the file called `[mysqld]` and then under that add `skip-grant-tables`
+Restart Mysql
+You should be able to login to mysql now using the below command mysql -u root -p
