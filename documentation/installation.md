@@ -389,9 +389,14 @@ sudo npm install -g npm@6.14.9
 #### Install from source
 Once you have temporarily downgraded npm, please go ahead and install the latest ssvm-napi-extensions like this
 ```bash
-npm install --build-from-source https://github.com/second-state/wasmedge-extensions
+cd /media/nvme
+git clone --recurse-submodules https://github.com/second-state/wasmedge-extensions.git
+cd /media/nvme/wasmedge-extensions
+npm install
+cd /media/nvme/node_rpc/wasm-joey/src
+npm install --build-from-source /media/nvme/wasmedge-extensions
 ```
-If getting the error `does not have permission to access the dev dir "/root/.cache/node-gyp` then try the following instead.
+If getting the error `does not have permission to access the dev dir "/root/.cache/node-gyp` then try the following.
 
 Make a new global cache dir and update profile i.e.
 
@@ -405,11 +410,8 @@ export PATH=~/.npm-global/bin:$PATH
 ```
 Then run `source ~/.profile` command 
 
-Then run the command like this instead
+Then run the commands again.
 
-```bash
-npm install --build-from-source https://github.com/second-state/wasmedge-extensions
-```
 If you receive an error about permissions such as this `Missing write access to /usr/local/lib/node_modules` then please run the following command and then try the `npm install --build-from-source` command, outlined above, again.
 ```
 sudo chown -R $USER /usr/local/lib/node_modules
