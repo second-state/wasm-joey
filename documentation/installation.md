@@ -355,7 +355,6 @@ export CXX=g++-9
 
 ### Install wasmedge-extensions from source
 
-The following `ssvm-napi-extensions` allows the SSVM runtime to access permanent storage.
 You will need to alter the Git configuration on the machine where this installation procedure is being performed. Reason being, this machine will not have the SSH keys to communicate with git@github. If you add the following config, you will be able to successfully run the `npm install --build-from-source ...` below.
 ```bash
 git config --global url."https://github.com/".insteadOf git@github.com:
@@ -371,7 +370,7 @@ You can reverse/revert this Git config by typing `git config --global --edit` an
 cd /media/nvme/node_rpc/wasm-joey/src
 ```
 
-### Install the required dependencies for ssvm-napi-extensions
+### Install the required dependencies for wasmedge-extensions
 Please visit [this link which details the requirements to continue](https://github.com/second-state/ssvm-napi-extensions#requirements) and ensure that your system has these required dependencies before proceeding.
 
 #### Temporarily downgrade npm
