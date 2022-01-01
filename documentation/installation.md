@@ -330,7 +330,7 @@ sudo chown $USER:$USER -R /etc/letsencrypt
 
 Create the infrastructure for the permanent storage by following [these rust_native_storage_library instructions](https://github.com/second-state/rust_native_storage_library#installing-database-rocksdb) specifically the `Installing database (RocksDB)` section at the bottom of the aforementioned link.
 
-### SSVM Nodejs add-on
+### Wasmedge Nodejs add-on
 ```bash
 sudo apt-get install libboost-all-dev
 ```
@@ -386,7 +386,7 @@ The following command is used to alter the npm version.
 sudo npm install -g npm@6.14.9
 ```
 #### Install from source
-Once you have temporarily downgraded npm, please go ahead and install the latest ssvm-napi-extensions like this
+Once you have temporarily downgraded npm, please go ahead and install the latest wasmedge-extensions like this
 ```bash
 cd /media/nvme
 git clone --recurse-submodules https://github.com/second-state/wasmedge-extensions.git
@@ -449,7 +449,7 @@ measure_gas_and_invocations=1
 
 ### Create directory for AOT compiler files
 
-SSVM generates AOT files which need to be stored on the solid state file system. Please create the following directory and adjust the permissions as follows.
+WasmEdge generates AOT files which need to be stored on the solid state file system. Please create the following directory and adjust the permissions as follows.
 
 ```
 mkdir /media/nvme/aot
