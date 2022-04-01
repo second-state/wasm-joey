@@ -264,9 +264,9 @@ function removeElementFromArray(arr, value) {
     });
 }
 
-function performSqlQuery(string_query) {
+function performSqlQuery(string_query, parameter_array) {
     return new Promise(function(resolve, reject) {
-        connection.query(string_query, function(err, resultSelect) {
+        connection.query(string_query, parameter_array, function(err, resultSelect) {
             if (err) {
                 res.status(400).send("Perhaps a bad request, or database is not running");
             }
@@ -300,13 +300,15 @@ function executionLogExists(wasm_id) {
 function executeCallbackRequest(_original_id, _request_options) {
     return new Promise(function(resolve, reject) {
         if (log_level == 1) {
-            var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
-            performSqlQuery(sqlSelect).then((stateResult) => {
+            parameterArray = [_original_id];
+            var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = ?;";
+            performSqlQuery(sqlSelect, parameterArray).then((stateResult) => {
                 var logging_object = {};
                 logging_object["original_wasm_executables_id"] = _original_id;
                 logging_object["callback_request_options"] = _request_options;
-                var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-                performSqlQuery(sqlInsert).then((resultInsert) => {});
+                parameterArray2 = [_original_id, stateResult[0].wasm_state, JSON.stringify(logging_object)];
+                var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES (?, ?, NOW(), ?);";
+                performSqlQuery(sqlInsert, parameterArray2).then((resultInsert) => {});
             });
         }
         var options = JSON.parse(_request_options);
@@ -340,13 +342,15 @@ function executeCallbackRequest(_original_id, _request_options) {
 function executeMultipartRequest(_original_id, _request_options) {
     return new Promise(function(resolve, reject) {
         if (log_level == 1) {
-            var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + _original_id + "';";
-            performSqlQuery(sqlSelect).then((stateResult) => {
+            parameterArray = [_original_id];
+            var sqlSelect = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = ?;";
+            performSqlQuery(sqlSelect, parameterArray).then((stateResult) => {
                 var logging_object = {};
                 logging_object["original_wasm_executables_id"] = _original_id;
                 logging_object["callback_request_options"] = _request_options;
-                var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES ('" + _original_id + "', '" + stateResult[0].wasm_state + "', NOW(), '" + JSON.stringify(logging_object) + "');";
-                performSqlQuery(sqlInsert).then((resultInsert) => {});
+                parameterArray2 = [_original_id, stateResult[0].wasm_state, JSON.stringify(logging_object)];
+                var sqlInsert = "INSERT INTO wasm_execution_log (wasm_executable_id, wasm_executable_state, execution_timestamp, execution_object) VALUES (?, ?, NOW(), ?);";
+                performSqlQuery(sqlInsert, parameterArray2).then((resultInsert) => {});
             });
         }
         var options = JSON.parse(_request_options);
@@ -558,8 +562,9 @@ function parseMultipart(_readyAtZero, _files, _fields, _req) {
 
 function getOptions(_wasm_id) {
     return new Promise(function(resolve, reject) {
-        var sqlSelect = "SELECT storage_key, wasm_state from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
-        performSqlQuery(sqlSelect).then((result, error) => {
+        parameterArray = [_wasm_id];
+        var sqlSelect = "SELECT storage_key, wasm_state from wasm_executables WHERE wasm_id = ?;";
+        performSqlQuery(sqlSelect, parameterArray).then((result, error) => {
             var _storage_key = result[0].storage_key;
             var _wasm_state = result[0].wasm_state;
             var enable_measurement = false;
@@ -591,8 +596,9 @@ function updateAOT(_wasm_id, _ssvm_options, _is_an_update) {
             var aot_filename = myCache.get(_wasm_id);
             if (aot_filename == undefined) {
                 console.log("AOT filename not found, please wait ...");
-                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
-                performSqlQuery(sqlSelect).then((result2, error2) => {
+                parameterArray = [_wasm_id];
+                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = ?;";
+                performSqlQuery(sqlSelect, parameterArray).then((result2, error2) => {
                     const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
                     var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
                     var vm = new ssvm.VM(uint8array, _ssvm_options);
@@ -613,8 +619,9 @@ function updateAOT(_wasm_id, _ssvm_options, _is_an_update) {
             }
         } else if (_is_an_update == true) {
             console.log("AOT file needs to be updated, please wait ...");
-            var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + _wasm_id + "';";
-            performSqlQuery(sqlSelect).then((result2, error2) => {
+            parameterArray = [_wasm_id];
+            var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = ?;";
+            performSqlQuery(sqlSelect, parameterArray).then((result2, error2) => {
                 const nodeBuffer2 = new Buffer.from(result2[0].wasm_binary.toString().split(','));
                 var uint8array = new Uint8Array(nodeBuffer2.buffer, nodeBuffer2.byteOffset, nodeBuffer2.length);
                 var vm = new ssvm.VM(uint8array, _ssvm_options);
@@ -1265,16 +1272,18 @@ app.get('/api/state/:wasm_id', (req, res) => {
     executableExists(req.params.wasm_id).then((result, error) => {
         if (result == 1) {
             var header_usage_key = req.header('SSVM_Usage_Key');
-            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+            parameterArray = [req.params.wasm_id];
+            var sqlCheckKey = "SELECT usage_key from wasm_executables WHERE wasm_id = ?;";
+            performSqlQuery(sqlCheckKey, parameterArray).then((resultCheckKey) => {
                 // Set usage key
                 if (typeof header_usage_key === 'undefined') {
                     header_usage_key = "00000000-0000-0000-0000-000000000000";
                 }
                 // Set usage key
                 if (header_usage_key == resultCheckKey[0].usage_key.toString()) {
-                    var sqlState = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                    performSqlQuery(sqlState).then((sqlStateRes) => {
+                    parameterArray = [req.params.wasm_id];
+                    var sqlState = "SELECT wasm_state FROM wasm_executables WHERE wasm_id = ?;";
+                    performSqlQuery(sqlState, parameterArray).then((sqlStateRes) => {
                         res.send(sqlStateRes[0].wasm_state.toString());
                     });
                 } else {
@@ -1356,8 +1365,9 @@ app.post('/api/executables', bodyParser.raw(), (req, res) => {
                 length: 32,
                 charset: 'hex'
             });
-            var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key, storage_key) VALUES ('" + req.header('SSVM_Description') + "','" + wasm_as_buffer + "', '{}', '{}', '" + usage_key + "', '" + admin_key + "', '" + storage_key + "');";
-            performSqlQuery(sqlInsert).then((resultInsert) => {
+            parameterArray = [req.header('SSVM_Description'), wasm_as_buffer, usage_key, admin_key, storage_key];
+            var sqlInsert = "INSERT INTO wasm_executables (wasm_description,wasm_binary, wasm_state, wasm_callback_object, usage_key, admin_key, storage_key) VALUES (?,?, '{}', '{}', ?, ?, ?);";
+            performSqlQuery(sqlInsert, parameterArray).then((resultInsert) => {
                 console.log("1 record inserted at wasm_id: " + resultInsert.insertId);
                 joey_response["wasm_id"] = resultInsert.insertId;
                 joey_response["wasm_sha256"] = wasm_sha256;
@@ -1377,12 +1387,14 @@ app.put('/api/keys/:wasm_id/usage_key', (req, res) => {
     //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     var header_admin_key = req.header('SSVM_Admin_Key');
-    var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+    parameterArray = [req.params.wasm_id];
+    var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = ?;";
+    performSqlQuery(sqlCheckKey, parameterArray).then((resultCheckKey) => {
         if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
             var usage_key = uuidv4();
-            var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlInsert).then((resultInsertKey) => {
+            parameterArray2 = [usage_key, req.params.wasm_id];
+            var sqlInsert = "UPDATE wasm_executables SET usage_key =? WHERE wasm_id = ?;";
+            performSqlQuery(sqlInsert, parameterArray2).then((resultInsertKey) => {
                 joey_response["SSVM_Usage_Key"] = usage_key;
                 res.send(joey_response);
             });
@@ -1397,12 +1409,14 @@ app.delete('/api/keys/:wasm_id/usage_key', (req, res) => {
     //console.log("IPADDRESS:"+req.socket.remoteAddress);
     joey_response = {};
     var header_admin_key = req.header('SSVM_Admin_Key');
-    var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-    performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+    parameterArray = [req.params.wasm_id];
+    var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = ?;";
+    performSqlQuery(sqlCheckKey, parameterArray).then((resultCheckKey) => {
         if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
             var usage_key = "00000000-0000-0000-0000-000000000000";
-            var sqlInsert = "UPDATE wasm_executables SET usage_key ='" + usage_key + "' WHERE wasm_id = '" + req.params.wasm_id + "';";
-            performSqlQuery(sqlInsert).then((resultInsertKey) => {
+            parameterArray2 = [usage_key, req.params.wasm_id];
+            var sqlInsert = "UPDATE wasm_executables SET usage_key =? WHERE wasm_id = ?;";
+            performSqlQuery(sqlInsert, parameterArray2).then((resultInsertKey) => {
                 joey_response["SSVM_Usage_Key"] = usage_key;
                 res.send(joey_response);
             });
@@ -1449,8 +1463,9 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         if (filters.length >= 1) {
                             if (filters.includes("wasm_as_buffer")) {
                                 filters = removeElementFromArray(filters, "wasm_as_buffer");
-                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                performSqlQuery(sqlSelect).then((result) => {
+                                parameterArray = [req.params.wasm_id];
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = ?;";
+                                performSqlQuery(sqlSelect, parameterArray).then((result) => {
                                     joey_response["wasm_as_buffer"] = result[0].wasm_binary;
                                     if (filters.length == 0) {
                                         res.send(JSON.stringify(joey_response));
@@ -1462,8 +1477,9 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         if (filters.length >= 1) {
                             if (filters.includes("wasm_sha256")) {
                                 filters = removeElementFromArray(filters, "wasm_sha256");
-                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
-                                performSqlQuery(sqlSelect).then((result) => {
+                                parameterArray = [req.params.wasm_id];
+                                var sqlSelect = "SELECT wasm_binary from wasm_executables WHERE wasm_id = ?;";
+                                performSqlQuery(sqlSelect, parameterArray).then((result) => {
                                     joey_response["wasm_sha256"] = "0x" + checksum.createHash('sha256').update(result[0].wasm_binary.toString()).digest('hex');
                                     if (filters.length == 0) {
                                         res.send(JSON.stringify(joey_response));
@@ -1475,9 +1491,10 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                         if (filters.length >= 1) {
                             if (filters.includes("total_gas_consumed") || filters.includes("total_invocations") || filters.includes("full_usage_report") || filters.includes("latest_execution_time_in_nanoseconds")) {
                                 var header_admin_key = req.header('SSVM_Admin_Key');
-                                var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                var sqlCheckKey = "SELECT admin_key from wasm_executables WHERE wasm_id = ?;";
                                 //console.log(sqlCheckKey);
-                                performSqlQuery(sqlCheckKey).then((resultCheckKey) => {
+                                parameterArray = [req.params.wasm_id];
+                                performSqlQuery(sqlCheckKey, parameterArray).then((resultCheckKey) => {
                                     if (header_admin_key == resultCheckKey[0].admin_key.toString()) {
                                         readUsageFile(req.params.wasm_id).then((usageResult) => {
                                             var usage_obj = JSON.parse(usageResult);
@@ -1540,9 +1557,10 @@ app.get('/api/executables/:wasm_id', (req, res) => {
                                                 res.send(JSON.stringify(joey_response));
                                             }
                                             if (filters.length >= 1) {
-                                                var sqlSelect = "SELECT " + filters.join() + " from wasm_executables WHERE wasm_id = '" + req.params.wasm_id + "';";
+                                                parameterArray = [filters.join(), req.params.wasm_id]
+                                                var sqlSelect = "SELECT ? from wasm_executables WHERE wasm_id = ?;";
                                                 //console.log(sqlSelect);
-                                                performSqlQuery(sqlSelect).then((result) => {
+                                                performSqlQuery(sqlSelect, parameterArray).then((result) => {
                                                     if (filters.includes("wasm_id")) {
                                                         joey_response["wasm_id"] = result[0].wasm_id;
                                                     }
